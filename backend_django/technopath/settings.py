@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'apps.notifications',
     'apps.feedback',
     'apps.core',
+    'apps.announcements',
 ]
 
 MIDDLEWARE = [

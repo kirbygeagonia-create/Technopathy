@@ -1,0 +1,626 @@
+# 📚 Data Dictionary
+
+## TechnoPath — SEAIT Campus Guide System
+
+**Databases:**
+- **technopath.db** — Django primary database (SQLite) — 21 tables
+- **chatbot.db** — Flask chatbot database (SQLite) — 1 table
+
+---
+
+## Database 1: `technopath.db` (Django Backend)
+
+---
+
+### Table 1: `admin_users`
+
+**App:** `apps.users` | **Model:** `AdminUser`  
+**Description:** Stores all admin (authenticated) user accounts. Extends Django's `AbstractBaseUser` with custom roles and department assignment.
+
+| # | Field | Data Type | Constraints | Description |
+|---|-------|-----------|-------------|-------------|
+| 1 | `id` | `BigAutoField` (INTEGER) | PK, AUTO INCREMENT | Unique user identifier |
+| 2 | `password` | `VARCHAR(128)` | NOT NULL | Hashed password (Django PBKDF2) |
+| 3 | `username` | `VARCHAR(150)` | NOT NULL, UNIQUE | Login username |
+| 4 | `email` | `VARCHAR(254)` | NULL, BLANK | Optional email address |
+| 5 | `display_name` | `VARCHAR(200)` | NULL, BLANK | Full name/title shown in UI and audit logs |
+| 6 | `role` | `VARCHAR(20)` | NOT NULL, DEFAULT `'program_head'` | Role key: `super_admin`, `dean`, `program_head`, `basic_ed_head` |
+| 7 | `department` | `VARCHAR(50)` | NULL, BLANK | Department code (e.g., `college_ict`, `college_criminology`) |
+| 8 | `department_label` | `VARCHAR(200)` | NULL, BLANK | Display override for department name on announcements |
+| 9 | `is_active` | `BOOLEAN` | NOT NULL, DEFAULT `True` | Whether account is active (soft-delete flag) |
+| 10 | `is_staff` | `BOOLEAN` | NOT NULL, DEFAULT `False` | Django admin site access flag |
+| 11 | `is_superuser` | `BOOLEAN` | NOT NULL, DEFAULT `False` | Django superuser flag |
+| 12 | `login_attempts` | `INTEGER` | NOT NULL, DEFAULT `0` | Consecutive failed login attempt counter |
+| 13 | `locked_until` | `DATETIME` | NULL, BLANK | Account lockout expiry timestamp (set after 5 failures) |
+| 14 | `last_login` | `DATETIME` | NULL, BLANK | Timestamp of last successful login |
+| 15 | `created_at` | `DATETIME` | NOT NULL, AUTO | Account creation timestamp |
+| 16 | `updated_at` | `DATETIME` | NOT NULL, AUTO | Last modification timestamp |
+
+**Relationships:**
+- Referenced by: `departments.head_user`, `ratings.user`, `feedback_flags.user`, `feedback_flags.resolved_by`, `notifications.created_by`, `announcements.created_by`, `announcements.approved_by`, `announcements.rejected_by`, `announcements.archived_by`, `admin_audit_log.admin`, `search_history.user`, `app_usage.user`, `usage_analytics.user`, `device_preferences.user`, `app_config.updated_by`, `notification_preferences.user`, `connectivity_log.user`
+
+---
+
+### Table 2: `facilities`
+
+**App:** `apps.facilities` | **Model:** `Facility`  
+**Description:** Campus buildings and facilities (e.g., RST Building, Library, Gymnasium).
+
+| # | Field | Data Type | Constraints | Description |
+|---|-------|-----------|-------------|-------------|
+| 1 | `id` | `BigAutoField` (INTEGER) | PK, AUTO INCREMENT | Unique facility identifier |
+| 2 | `name` | `VARCHAR(200)` | NOT NULL | Building/facility name |
+| 3 | `code` | `VARCHAR(20)` | NOT NULL, UNIQUE | Short code (e.g., `RST`, `MST`, `JST`) |
+| 4 | `description` | `TEXT` | NULL, BLANK | Detailed description |
+| 5 | `building_code` | `VARCHAR(20)` | NULL, BLANK | Alternative building identifier |
+| 6 | `department_id` | `INTEGER` | NULL, BLANK, FK → `departments.id` | Owning department |
+| 7 | `latitude` | `FLOAT` | NULL, BLANK | GPS latitude for geolocation |
+| 8 | `longitude` | `FLOAT` | NULL, BLANK | GPS longitude for geolocation |
+| 9 | `image_path` | `VARCHAR(500)` | NULL, BLANK | Path to facility image file |
+| 10 | `map_svg_id` | `VARCHAR(100)` | NULL, BLANK | SVG element ID (e.g., `building-RST`) for interactive map |
+| 11 | `total_floors` | `INTEGER` | NOT NULL, DEFAULT `1` | Number of floors in the building |
+| 12 | `is_deleted` | `BOOLEAN` | NOT NULL, DEFAULT `False` | Soft-delete flag |
+| 13 | `is_active` | `BOOLEAN` | NOT NULL, DEFAULT `True` | Active status flag |
+| 14 | `created_at` | `DATETIME` | NOT NULL, AUTO | Creation timestamp |
+| 15 | `updated_at` | `DATETIME` | NOT NULL, AUTO | Last update timestamp |
+
+**Relationships:**
+- FK: `department_id` → `departments.id` (SET_NULL)
+- Referenced by: `rooms.facility`, `navigation_nodes.facility`, `map_markers.facility`, `ratings.facility`, `feedback.facility`
+
+---
+
+### Table 3: `rooms`
+
+**App:** `apps.rooms` | **Model:** `Room`  
+**Description:** Individual rooms within facilities — classrooms, offices, labs, restrooms, etc.
+
+| # | Field | Data Type | Constraints | Description |
+|---|-------|-----------|-------------|-------------|
+| 1 | `id` | `BigAutoField` (INTEGER) | PK, AUTO INCREMENT | Unique room identifier |
+| 2 | `facility_id` | `INTEGER` | NOT NULL, FK → `facilities.id` | Parent building |
+| 3 | `name` | `VARCHAR(200)` | NOT NULL | Room display name |
+| 4 | `code` | `VARCHAR(50)` | NOT NULL | Room code (e.g., `CL1`, `CL3`) |
+| 5 | `room_number` | `VARCHAR(50)` | NULL, BLANK | Physical room number |
+| 6 | `description` | `TEXT` | NULL, BLANK | Room description |
+| 7 | `floor` | `INTEGER` | NOT NULL, DEFAULT `1` | Floor level (1-based) |
+| 8 | `map_svg_id` | `VARCHAR(100)` | NULL, BLANK | SVG element ID (e.g., `RST-F1-CL1`) |
+| 9 | `room_type` | `VARCHAR(50)` | NOT NULL, DEFAULT `'classroom'` | Type: `classroom`, `office`, `lab`, `facility`, `staircase`, `restroom`, `other` |
+| 10 | `capacity` | `INTEGER` | NOT NULL, DEFAULT `30` | Maximum occupancy |
+| 11 | `is_office` | `BOOLEAN` | NOT NULL, DEFAULT `False` | Quick filter for office rooms |
+| 12 | `is_crucial` | `BOOLEAN` | NOT NULL, DEFAULT `False` | Important/frequently-visited flag |
+| 13 | `search_count` | `INTEGER` | NOT NULL, DEFAULT `0` | Number of times searched (popularity counter) |
+| 14 | `is_deleted` | `BOOLEAN` | NOT NULL, DEFAULT `False` | Soft-delete flag |
+| 15 | `is_active` | `BOOLEAN` | NOT NULL, DEFAULT `True` | Active status flag |
+| 16 | `created_at` | `DATETIME` | NOT NULL, AUTO | Creation timestamp |
+| 17 | `updated_at` | `DATETIME` | NOT NULL, AUTO | Last update timestamp |
+
+**Relationships:**
+- FK: `facility_id` → `facilities.id` (CASCADE)
+- Referenced by: `navigation_nodes.room`, `map_markers.room`, `ratings.room`, `feedback.room`
+
+---
+
+### Table 4: `departments`
+
+**App:** `apps.core` | **Model:** `Department`  
+**Description:** Academic and administrative departments within SEAIT.
+
+| # | Field | Data Type | Constraints | Description |
+|---|-------|-----------|-------------|-------------|
+| 1 | `id` | `BigAutoField` (INTEGER) | PK, AUTO INCREMENT | Unique department identifier |
+| 2 | `name` | `VARCHAR(200)` | NOT NULL | Full department name |
+| 3 | `code` | `VARCHAR(20)` | NOT NULL, UNIQUE | Department code |
+| 4 | `description` | `TEXT` | NULL, BLANK | Department description |
+| 5 | `head_user_id` | `INTEGER` | NULL, BLANK, FK → `admin_users.id` | Department head admin account |
+| 6 | `is_active` | `BOOLEAN` | NOT NULL, DEFAULT `True` | Active status |
+| 7 | `created_at` | `DATETIME` | NOT NULL, AUTO | Creation timestamp |
+
+**Relationships:**
+- FK: `head_user_id` → `admin_users.id` (SET_NULL)
+- Referenced by: `facilities.department_id`
+
+---
+
+### Table 5: `navigation_nodes`
+
+**App:** `apps.navigation` | **Model:** `NavigationNode`  
+**Description:** Graph nodes representing navigable points on the campus map (rooms, entrances, waypoints, staircases, junctions, elevators).
+
+| # | Field | Data Type | Constraints | Description |
+|---|-------|-----------|-------------|-------------|
+| 1 | `id` | `BigAutoField` (INTEGER) | PK, AUTO INCREMENT | Unique node identifier |
+| 2 | `name` | `VARCHAR(200)` | NOT NULL | Node label |
+| 3 | `node_type` | `VARCHAR(20)` | NOT NULL | Type: `room`, `facility`, `waypoint`, `entrance`, `staircase`, `elevator`, `junction` |
+| 4 | `facility_id` | `INTEGER` | NULL, BLANK, FK → `facilities.id` | Associated facility |
+| 5 | `room_id` | `INTEGER` | NULL, BLANK, FK → `rooms.id` | Associated room |
+| 6 | `map_svg_id` | `VARCHAR(100)` | NULL, BLANK | SVG element ID on map |
+| 7 | `x` | `FLOAT` | NOT NULL | X coordinate on map |
+| 8 | `y` | `FLOAT` | NOT NULL | Y coordinate on map |
+| 9 | `floor` | `INTEGER` | NOT NULL, DEFAULT `1` | Floor level |
+| 10 | `is_deleted` | `BOOLEAN` | NOT NULL, DEFAULT `False` | Soft-delete flag |
+| 11 | `created_at` | `DATETIME` | NOT NULL, AUTO | Creation timestamp |
+| 12 | `updated_at` | `DATETIME` | NOT NULL, AUTO | Last update timestamp |
+
+**Relationships:**
+- FK: `facility_id` → `facilities.id` (SET_NULL)
+- FK: `room_id` → `rooms.id` (SET_NULL)
+- Referenced by: `navigation_edges.from_node`, `navigation_edges.to_node`
+
+---
+
+### Table 6: `navigation_edges`
+
+**App:** `apps.navigation` | **Model:** `NavigationEdge`  
+**Description:** Weighted edges connecting navigation nodes — used by pathfinding algorithms.
+
+| # | Field | Data Type | Constraints | Description |
+|---|-------|-----------|-------------|-------------|
+| 1 | `id` | `BigAutoField` (INTEGER) | PK, AUTO INCREMENT | Unique edge identifier |
+| 2 | `from_node_id` | `INTEGER` | NOT NULL, FK → `navigation_nodes.id` | Source node |
+| 3 | `to_node_id` | `INTEGER` | NOT NULL, FK → `navigation_nodes.id` | Destination node |
+| 4 | `distance` | `INTEGER` | NOT NULL | Edge weight (distance units) |
+| 5 | `is_bidirectional` | `BOOLEAN` | NOT NULL, DEFAULT `True` | Whether traversal works in both directions |
+| 6 | `is_deleted` | `BOOLEAN` | NOT NULL, DEFAULT `False` | Soft-delete flag |
+| 7 | `created_at` | `DATETIME` | NOT NULL, AUTO | Creation timestamp |
+| 8 | `updated_at` | `DATETIME` | NOT NULL, AUTO | Last update timestamp |
+
+**Relationships:**
+- FK: `from_node_id` → `navigation_nodes.id` (CASCADE)
+- FK: `to_node_id` → `navigation_nodes.id` (CASCADE)
+
+---
+
+### Table 7: `faq_entries`
+
+**App:** `apps.chatbot` | **Model:** `FAQEntry`  
+**Description:** Chatbot FAQ knowledge base — question/answer pairs used for offline matching and chatbot responses.
+
+| # | Field | Data Type | Constraints | Description |
+|---|-------|-----------|-------------|-------------|
+| 1 | `id` | `BigAutoField` (INTEGER) | PK, AUTO INCREMENT | Unique FAQ identifier |
+| 2 | `question` | `TEXT` | NOT NULL | The question text |
+| 3 | `answer` | `TEXT` | NOT NULL | The answer text |
+| 4 | `category` | `VARCHAR(50)` | NOT NULL, DEFAULT `'general'` | Category: `location`, `schedule`, `academic`, `services`, `general` |
+| 5 | `keywords` | `TEXT` | DEFAULT `''`, BLANK | Comma-separated keywords for offline matching |
+| 6 | `usage_count` | `INTEGER` | NOT NULL, DEFAULT `0` | Number of times this FAQ was matched |
+| 7 | `is_deleted` | `BOOLEAN` | NOT NULL, DEFAULT `False` | Soft-delete flag |
+| 8 | `created_at` | `DATETIME` | NOT NULL, AUTO | Creation timestamp |
+| 9 | `updated_at` | `DATETIME` | NOT NULL, AUTO | Last update timestamp |
+
+---
+
+### Table 8: `ai_chat_logs`
+
+**App:** `apps.chatbot` | **Model:** `AIChatLog`  
+**Description:** Logs of chatbot interactions — both online AI responses and offline FAQ fallback matches.
+
+| # | Field | Data Type | Constraints | Description |
+|---|-------|-----------|-------------|-------------|
+| 1 | `id` | `BigAutoField` (INTEGER) | PK, AUTO INCREMENT | Unique log identifier |
+| 2 | `user_query` | `TEXT` | NOT NULL | The user's message/question |
+| 3 | `ai_response` | `TEXT` | NULL, BLANK | The chatbot's reply |
+| 4 | `mode` | `VARCHAR(10)` | NOT NULL | Mode: `online` (AI), `offline` (FAQ fallback) |
+| 5 | `response_time_ms` | `INTEGER` | NULL, BLANK | Response time in milliseconds |
+| 6 | `is_successful` | `BOOLEAN` | NOT NULL, DEFAULT `True` | Whether the response was generated successfully |
+| 7 | `error_message` | `TEXT` | NULL, BLANK | Error details if response failed |
+| 8 | `faq_entry_id` | `INTEGER` | NULL, BLANK, FK → `faq_entries.id` | Matched FAQ entry (if offline mode) |
+| 9 | `session_id` | `VARCHAR(100)` | NULL, BLANK | Chat session identifier |
+| 10 | `created_at` | `DATETIME` | NOT NULL, AUTO | Interaction timestamp |
+
+**Relationships:**
+- FK: `faq_entry_id` → `faq_entries.id` (SET_NULL)
+
+---
+
+### Table 9: `notifications`
+
+**App:** `apps.notifications` | **Model:** `Notification`  
+**Description:** System and department notifications displayed to all app users.
+
+| # | Field | Data Type | Constraints | Description |
+|---|-------|-----------|-------------|-------------|
+| 1 | `id` | `BigAutoField` (INTEGER) | PK, AUTO INCREMENT | Unique notification identifier |
+| 2 | `title` | `VARCHAR(200)` | NOT NULL | Notification title |
+| 3 | `message` | `TEXT` | NOT NULL | Notification body content |
+| 4 | `type` | `VARCHAR(30)` | NOT NULL, DEFAULT `'info'` | Type: `announcement`, `info`, `emergency`, `facility_update`, `room_update`, `system_maintenance`, `app_update` |
+| 5 | `source_label` | `VARCHAR(200)` | BLANK, DEFAULT `''` | Department/office name shown on the mobile card |
+| 6 | `source_color` | `VARCHAR(20)` | NOT NULL, DEFAULT `'orange'` | Color key for department chip |
+| 7 | `announcement_id` | `INTEGER` | NULL, BLANK, FK → `announcements.id` | Link to originating announcement |
+| 8 | `priority` | `INTEGER` | NOT NULL, DEFAULT `1` | Priority level: 1=Normal, 2=Important, 3=Urgent, 4=Emergency |
+| 9 | `is_read` | `BOOLEAN` | NOT NULL, DEFAULT `False` | Read status (global, not per-user) |
+| 10 | `expires_at` | `DATETIME` | NULL, BLANK | Expiration timestamp |
+| 11 | `created_by_id` | `INTEGER` | NULL, BLANK, FK → `admin_users.id` | Admin who created the notification |
+| 12 | `created_at` | `DATETIME` | NOT NULL, AUTO | Creation timestamp |
+
+**Relationships:**
+- FK: `announcement_id` → `announcements.id` (SET_NULL)
+- FK: `created_by_id` → `admin_users.id` (SET_NULL)
+
+---
+
+### Table 10: `announcements`
+
+**App:** `apps.announcements` | **Model:** `Announcement`  
+**Description:** Department announcements with an approval workflow. Created by admin roles; published by Dean/Super Admin.
+
+| # | Field | Data Type | Constraints | Description |
+|---|-------|-----------|-------------|-------------|
+| 1 | `id` | `BigAutoField` (INTEGER) | PK, AUTO INCREMENT | Unique announcement identifier |
+| 2 | `title` | `VARCHAR(200)` | NOT NULL | Announcement title |
+| 3 | `content` | `TEXT` | NOT NULL | Announcement body text |
+| 4 | `created_by_id` | `INTEGER` | NULL, FK → `admin_users.id` | Author admin account |
+| 5 | `source_label` | `VARCHAR(200)` | NOT NULL | Department label frozen at creation time |
+| 6 | `source_color` | `VARCHAR(20)` | NOT NULL, DEFAULT `'orange'` | Department color key for the mobile chip |
+| 7 | `scope` | `VARCHAR(20)` | NOT NULL, DEFAULT `'campus_wide'` | Visibility: `campus_wide`, `all_college`, `basic_ed_only`, `department` |
+| 8 | `target_department` | `VARCHAR(50)` | NULL, BLANK | Department filter (when scope = `department`) |
+| 9 | `status` | `VARCHAR(20)` | NOT NULL, DEFAULT `'pending_approval'` | Status: `pending_approval`, `published`, `rejected`, `archived` |
+| 10 | `requires_approval` | `BOOLEAN` | NOT NULL, DEFAULT `True` | Whether approval is needed before publishing |
+| 11 | `approved_by_id` | `INTEGER` | NULL, BLANK, FK → `admin_users.id` | Admin who approved |
+| 12 | `rejected_by_id` | `INTEGER` | NULL, BLANK, FK → `admin_users.id` | Admin who rejected |
+| 13 | `rejection_note` | `TEXT` | NULL, BLANK | Reason for rejection visible to submitter |
+| 14 | `approved_at` | `DATETIME` | NULL, BLANK | Approval timestamp |
+| 15 | `archived_by_id` | `INTEGER` | NULL, BLANK, FK → `admin_users.id` | Admin who archived |
+| 16 | `archived_at` | `DATETIME` | NULL, BLANK | Archive timestamp |
+| 17 | `is_deleted` | `BOOLEAN` | NOT NULL, DEFAULT `False` | Soft-delete flag |
+| 18 | `created_at` | `DATETIME` | NOT NULL, AUTO | Creation timestamp |
+| 19 | `updated_at` | `DATETIME` | NOT NULL, AUTO | Last update timestamp |
+
+**Relationships:**
+- FK: `created_by_id` → `admin_users.id` (SET_NULL)
+- FK: `approved_by_id` → `admin_users.id` (SET_NULL)
+- FK: `rejected_by_id` → `admin_users.id` (SET_NULL)
+- FK: `archived_by_id` → `admin_users.id` (SET_NULL)
+- Referenced by: `notifications.announcement_id`
+
+---
+
+### Table 11: `feedback`
+
+**App:** `apps.feedback` | **Model:** `Feedback`  
+**Description:** User feedback submissions with optional facility/room association and moderation flags.
+
+| # | Field | Data Type | Constraints | Description |
+|---|-------|-----------|-------------|-------------|
+| 1 | `id` | `BigAutoField` (INTEGER) | PK, AUTO INCREMENT | Unique feedback identifier |
+| 2 | `rating` | `INTEGER` | NULL, BLANK | Star rating (1-5) |
+| 3 | `comment` | `TEXT` | NULL, BLANK | Free-text comment |
+| 4 | `category` | `VARCHAR(30)` | NOT NULL, DEFAULT `'general'` | Category: `map_accuracy`, `ai_chatbot`, `navigation`, `general`, `bug_report`, `facility`, `room` |
+| 5 | `facility_id` | `INTEGER` | NULL, BLANK, FK → `facilities.id` | Associated facility (optional) |
+| 6 | `room_id` | `INTEGER` | NULL, BLANK, FK → `rooms.id` | Associated room (optional) |
+| 7 | `is_flagged` | `BOOLEAN` | NOT NULL, DEFAULT `False` | Whether feedback has been flagged for review |
+| 8 | `flag_reason` | `TEXT` | NULL, BLANK | Reason for flagging |
+| 9 | `created_at` | `DATETIME` | NOT NULL, AUTO | Submission timestamp |
+
+**Relationships:**
+- FK: `facility_id` → `facilities.id` (SET_NULL)
+- FK: `room_id` → `rooms.id` (SET_NULL)
+
+---
+
+### Table 12: `ratings`
+
+**App:** `apps.core` | **Model:** `Rating`  
+**Description:** Star ratings for facilities, rooms, navigation, and overall app experience.
+
+| # | Field | Data Type | Constraints | Description |
+|---|-------|-----------|-------------|-------------|
+| 1 | `id` | `BigAutoField` (INTEGER) | PK, AUTO INCREMENT | Unique rating identifier |
+| 2 | `user_id` | `INTEGER` | NULL, BLANK, FK → `admin_users.id` | Rating author (null if anonymous guest) |
+| 3 | `facility_id` | `INTEGER` | NULL, BLANK, FK → `facilities.id` | Rated facility (optional) |
+| 4 | `room_id` | `INTEGER` | NULL, BLANK, FK → `rooms.id` | Rated room (optional) |
+| 5 | `rating` | `INTEGER` | NOT NULL | Star value (1-5) |
+| 6 | `comment` | `TEXT` | NULL, BLANK | Optional comment |
+| 7 | `category` | `VARCHAR(20)` | NOT NULL, DEFAULT `'general'` | Category: `general`, `facility`, `room`, `navigation`, `app` |
+| 8 | `is_anonymous` | `BOOLEAN` | NOT NULL, DEFAULT `True` | Whether the rating is anonymous |
+| 9 | `is_active` | `BOOLEAN` | NOT NULL, DEFAULT `True` | Active status (soft-delete) |
+| 10 | `created_at` | `DATETIME` | NOT NULL, AUTO | Submission timestamp |
+
+**Relationships:**
+- FK: `user_id` → `admin_users.id` (SET_NULL)
+- FK: `facility_id` → `facilities.id` (SET_NULL)
+- FK: `room_id` → `rooms.id` (SET_NULL)
+- Referenced by: `feedback_flags.rating`
+
+---
+
+### Table 13: `feedback_flags`
+
+**App:** `apps.core` | **Model:** `FeedbackFlag`  
+**Description:** Moderation flags on ratings — tracks the review/resolution workflow.
+
+| # | Field | Data Type | Constraints | Description |
+|---|-------|-----------|-------------|-------------|
+| 1 | `id` | `BigAutoField` (INTEGER) | PK, AUTO INCREMENT | Unique flag identifier |
+| 2 | `user_id` | `INTEGER` | NULL, BLANK, FK → `admin_users.id` | Admin who flagged |
+| 3 | `rating_id` | `INTEGER` | NOT NULL, FK → `ratings.id` | Flagged rating |
+| 4 | `reason` | `TEXT` | NOT NULL | Reason for flagging |
+| 5 | `status` | `VARCHAR(20)` | NOT NULL, DEFAULT `'pending'` | Status: `pending`, `reviewed`, `resolved`, `dismissed` |
+| 6 | `resolved_by_id` | `INTEGER` | NULL, BLANK, FK → `admin_users.id` | Admin who resolved |
+| 7 | `resolved_at` | `DATETIME` | NULL, BLANK | Resolution timestamp |
+| 8 | `created_at` | `DATETIME` | NOT NULL, AUTO | Flag creation timestamp |
+
+**Relationships:**
+- FK: `user_id` → `admin_users.id` (SET_NULL)
+- FK: `rating_id` → `ratings.id` (CASCADE)
+- FK: `resolved_by_id` → `admin_users.id` (SET_NULL)
+
+---
+
+### Table 14: `map_markers`
+
+**App:** `apps.core` | **Model:** `MapMarker`  
+**Description:** Position markers on the interactive SVG campus map.
+
+| # | Field | Data Type | Constraints | Description |
+|---|-------|-----------|-------------|-------------|
+| 1 | `id` | `BigAutoField` (INTEGER) | PK, AUTO INCREMENT | Unique marker identifier |
+| 2 | `facility_id` | `INTEGER` | NULL, BLANK, FK → `facilities.id` | Associated facility |
+| 3 | `room_id` | `INTEGER` | NULL, BLANK, FK → `rooms.id` | Associated room |
+| 4 | `name` | `VARCHAR(200)` | NOT NULL | Marker label |
+| 5 | `x_position` | `FLOAT` | NOT NULL | X coordinate on SVG map |
+| 6 | `y_position` | `FLOAT` | NOT NULL | Y coordinate on SVG map |
+| 7 | `marker_type` | `VARCHAR(20)` | NOT NULL, DEFAULT `'facility'` | Type: `facility`, `room`, `entrance`, `waypoint`, `amenity` |
+| 8 | `icon_name` | `VARCHAR(100)` | NOT NULL, DEFAULT `'location_on'` | Material icon name |
+| 9 | `color_hex` | `VARCHAR(7)` | NOT NULL, DEFAULT `'#FF9800'` | Marker color in hex |
+| 10 | `is_active` | `BOOLEAN` | NOT NULL, DEFAULT `True` | Active status |
+| 11 | `created_at` | `DATETIME` | NOT NULL, AUTO | Creation timestamp |
+
+**Relationships:**
+- FK: `facility_id` → `facilities.id` (SET_NULL)
+- FK: `room_id` → `rooms.id` (SET_NULL)
+
+---
+
+### Table 15: `map_labels`
+
+**App:** `apps.core` | **Model:** `MapLabel`  
+**Description:** Text labels overlaid on the SVG campus map.
+
+| # | Field | Data Type | Constraints | Description |
+|---|-------|-----------|-------------|-------------|
+| 1 | `id` | `BigAutoField` (INTEGER) | PK, AUTO INCREMENT | Unique label identifier |
+| 2 | `label_text` | `VARCHAR(200)` | NOT NULL | Displayed text |
+| 3 | `x_position` | `FLOAT` | NOT NULL | X coordinate on map |
+| 4 | `y_position` | `FLOAT` | NOT NULL | Y coordinate on map |
+| 5 | `font_size` | `INTEGER` | NOT NULL, DEFAULT `14` | Font size in pixels |
+| 6 | `color_hex` | `VARCHAR(7)` | NOT NULL, DEFAULT `'#000000'` | Text color in hex |
+| 7 | `rotation` | `FLOAT` | NOT NULL, DEFAULT `0` | Rotation angle in degrees |
+| 8 | `is_active` | `BOOLEAN` | NOT NULL, DEFAULT `True` | Active status |
+| 9 | `created_at` | `DATETIME` | NOT NULL, AUTO | Creation timestamp |
+
+---
+
+### Table 16: `notification_types`
+
+**App:** `apps.core` | **Model:** `NotificationType`  
+**Description:** Configurable notification categories with display properties.
+
+| # | Field | Data Type | Constraints | Description |
+|---|-------|-----------|-------------|-------------|
+| 1 | `id` | `BigAutoField` (INTEGER) | PK, AUTO INCREMENT | Unique type identifier |
+| 2 | `name` | `VARCHAR(100)` | NOT NULL, UNIQUE | Type name |
+| 3 | `description` | `TEXT` | NULL, BLANK | Type description |
+| 4 | `icon_name` | `VARCHAR(100)` | NOT NULL, DEFAULT `'notifications'` | Material icon name |
+| 5 | `color_hex` | `VARCHAR(7)` | NOT NULL, DEFAULT `'#FF9800'` | Display color |
+| 6 | `is_active` | `BOOLEAN` | NOT NULL, DEFAULT `True` | Active status |
+| 7 | `created_at` | `DATETIME` | NOT NULL, AUTO | Creation timestamp |
+
+**Relationships:**
+- Referenced by: `notification_preferences.notification_type_id`
+
+---
+
+### Table 17: `notification_preferences`
+
+**App:** `apps.core` | **Model:** `NotificationPreference`  
+**Description:** Per-user notification subscription preferences.
+
+| # | Field | Data Type | Constraints | Description |
+|---|-------|-----------|-------------|-------------|
+| 1 | `id` | `BigAutoField` (INTEGER) | PK, AUTO INCREMENT | Unique preference identifier |
+| 2 | `user_id` | `INTEGER` | NOT NULL, FK → `admin_users.id` | User account |
+| 3 | `notification_type_id` | `INTEGER` | NOT NULL, FK → `notification_types.id` | Notification type |
+| 4 | `is_enabled` | `BOOLEAN` | NOT NULL, DEFAULT `True` | Whether notifications of this type are enabled |
+| 5 | `created_at` | `DATETIME` | NOT NULL, AUTO | Creation timestamp |
+
+**Constraints:** UNIQUE (`user_id`, `notification_type_id`)
+
+**Relationships:**
+- FK: `user_id` → `admin_users.id` (CASCADE)
+- FK: `notification_type_id` → `notification_types.id` (CASCADE)
+
+---
+
+### Table 18: `admin_audit_log`
+
+**App:** `apps.core` | **Model:** `AdminAuditLog`  
+**Description:** Immutable audit trail of all admin actions — logins, CRUD operations, approvals, etc.
+
+| # | Field | Data Type | Constraints | Description |
+|---|-------|-----------|-------------|-------------|
+| 1 | `id` | `BigAutoField` (INTEGER) | PK, AUTO INCREMENT | Unique log entry identifier |
+| 2 | `admin_id` | `INTEGER` | NULL, FK → `admin_users.id` | Admin who performed the action |
+| 3 | `action` | `VARCHAR(20)` | NOT NULL | Action type: `login`, `logout`, `create`, `update`, `soft_delete`, `restore`, `approve`, `reject`, `publish`, `reset_password` |
+| 4 | `entity_type` | `VARCHAR(50)` | NULL, BLANK | Entity type affected (e.g., `user`, `announcement`, `admin_user`) |
+| 5 | `entity_id` | `INTEGER` | NULL, BLANK | ID of affected entity |
+| 6 | `entity_label` | `VARCHAR(200)` | NULL, BLANK | Human-readable label for the entity |
+| 7 | `old_value_json` | `TEXT` | NULL, BLANK | JSON snapshot of old values (before change) |
+| 8 | `new_value_json` | `TEXT` | NULL, BLANK | JSON snapshot of new values (after change) |
+| 9 | `ip_address` | `VARCHAR(50)` | NULL, BLANK | Client IP address |
+| 10 | `created_at` | `DATETIME` | NOT NULL, AUTO | When the action occurred |
+
+**Relationships:**
+- FK: `admin_id` → `admin_users.id` (SET_NULL)
+
+---
+
+### Table 19: `search_history`
+
+**App:** `apps.core` | **Model:** `SearchHistory`  
+**Description:** Logs of user search queries for analytics.
+
+| # | Field | Data Type | Constraints | Description |
+|---|-------|-----------|-------------|-------------|
+| 1 | `id` | `BigAutoField` (INTEGER) | PK, AUTO INCREMENT | Unique entry identifier |
+| 2 | `user_id` | `INTEGER` | NULL, BLANK, FK → `admin_users.id` | Searching user (null if guest) |
+| 3 | `query` | `VARCHAR(500)` | NOT NULL | Search query string |
+| 4 | `results_count` | `INTEGER` | NOT NULL, DEFAULT `0` | Number of results returned |
+| 5 | `was_clicked` | `BOOLEAN` | NOT NULL, DEFAULT `False` | Whether a result was selected |
+| 6 | `created_at` | `DATETIME` | NOT NULL, AUTO | Search timestamp |
+
+**Relationships:**
+- FK: `user_id` → `admin_users.id` (SET_NULL)
+
+---
+
+### Table 20: `app_usage`
+
+**App:** `apps.core` | **Model:** `AppUsage`  
+**Description:** Per-session app usage statistics.
+
+| # | Field | Data Type | Constraints | Description |
+|---|-------|-----------|-------------|-------------|
+| 1 | `id` | `BigAutoField` (INTEGER) | PK, AUTO INCREMENT | Unique entry identifier |
+| 2 | `user_id` | `INTEGER` | NULL, BLANK, FK → `admin_users.id` | User account |
+| 3 | `session_date` | `DATE` | NOT NULL | Date of the session |
+| 4 | `session_duration` | `INTEGER` | NOT NULL, DEFAULT `0` | Duration in seconds |
+| 5 | `screen_views` | `INTEGER` | NOT NULL, DEFAULT `0` | Number of screen views |
+| 6 | `created_at` | `DATETIME` | NOT NULL, AUTO | Record creation timestamp |
+
+**Relationships:**
+- FK: `user_id` → `admin_users.id` (CASCADE)
+
+---
+
+### Table 21: `usage_analytics`
+
+**App:** `apps.core` | **Model:** `UsageAnalytics`  
+**Description:** Granular event-level analytics for tracking user behavior.
+
+| # | Field | Data Type | Constraints | Description |
+|---|-------|-----------|-------------|-------------|
+| 1 | `id` | `BigAutoField` (INTEGER) | PK, AUTO INCREMENT | Unique event identifier |
+| 2 | `user_id` | `INTEGER` | NULL, BLANK, FK → `admin_users.id` | User account (null if guest) |
+| 3 | `event_type` | `VARCHAR(50)` | NOT NULL | Event: `screen_view`, `search`, `navigation`, `rating`, `feedback`, `share`, `notification_open` |
+| 4 | `event_data` | `JSON` | NULL, BLANK | Event payload (key-value pairs) |
+| 5 | `screen_name` | `VARCHAR(100)` | NULL, BLANK | Screen where event occurred |
+| 6 | `session_id` | `VARCHAR(100)` | NULL, BLANK | Session identifier |
+| 7 | `created_at` | `DATETIME` | NOT NULL, AUTO | Event timestamp |
+
+**Relationships:**
+- FK: `user_id` → `admin_users.id` (SET_NULL)
+
+---
+
+### Table 22: `device_preferences`
+
+**App:** `apps.core` | **Model:** `DevicePreference`  
+**Description:** Per-device accessibility and display preferences.
+
+| # | Field | Data Type | Constraints | Description |
+|---|-------|-----------|-------------|-------------|
+| 1 | `id` | `BigAutoField` (INTEGER) | PK, AUTO INCREMENT | Unique preference identifier |
+| 2 | `user_id` | `INTEGER` | NULL, BLANK, FK → `admin_users.id` | User account |
+| 3 | `device_id` | `VARCHAR(200)` | NOT NULL | Device identifier string |
+| 4 | `dark_mode` | `BOOLEAN` | NOT NULL, DEFAULT `False` | Dark mode enabled |
+| 5 | `language` | `VARCHAR(10)` | NOT NULL, DEFAULT `'en'` | Preferred language code |
+| 6 | `font_scale` | `FLOAT` | NOT NULL, DEFAULT `1.0` | Font scaling factor |
+| 7 | `high_contrast` | `BOOLEAN` | NOT NULL, DEFAULT `False` | High contrast mode |
+| 8 | `reduce_animations` | `BOOLEAN` | NOT NULL, DEFAULT `False` | Reduced motion preference |
+| 9 | `last_sync` | `DATETIME` | NULL, BLANK | Last device-server sync time |
+| 10 | `created_at` | `DATETIME` | NOT NULL, AUTO | Creation timestamp |
+
+**Relationships:**
+- FK: `user_id` → `admin_users.id` (SET_NULL)
+
+---
+
+### Table 23: `app_config`
+
+**App:** `apps.core` | **Model:** `AppConfig`  
+**Description:** Global key-value configuration store for runtime settings.
+
+| # | Field | Data Type | Constraints | Description |
+|---|-------|-----------|-------------|-------------|
+| 1 | `id` | `BigAutoField` (INTEGER) | PK, AUTO INCREMENT | Unique config identifier |
+| 2 | `config_key` | `VARCHAR(100)` | NOT NULL, UNIQUE | Configuration key name |
+| 3 | `config_value` | `TEXT` | NOT NULL | Configuration value |
+| 4 | `description` | `TEXT` | NULL, BLANK | Description of the setting |
+| 5 | `updated_by_id` | `INTEGER` | NULL, BLANK, FK → `admin_users.id` | Last admin who updated |
+| 6 | `updated_at` | `DATETIME` | NOT NULL, AUTO | Last update timestamp |
+
+**Relationships:**
+- FK: `updated_by_id` → `admin_users.id` (SET_NULL)
+
+---
+
+### Table 24: `connectivity_log`
+
+**App:** `apps.core` | **Model:** `ConnectivityLog`  
+**Description:** Records device online/offline events for connectivity monitoring.
+
+| # | Field | Data Type | Constraints | Description |
+|---|-------|-----------|-------------|-------------|
+| 1 | `id` | `BigAutoField` (INTEGER) | PK, AUTO INCREMENT | Unique log identifier |
+| 2 | `user_id` | `INTEGER` | NULL, BLANK, FK → `admin_users.id` | User account (null if guest) |
+| 3 | `is_online` | `BOOLEAN` | NOT NULL | Online (true) or offline (false) |
+| 4 | `connection_type` | `VARCHAR(50)` | NULL, BLANK | Connection type (wifi, cellular, etc.) |
+| 5 | `latency_ms` | `INTEGER` | NULL, BLANK | Network latency in milliseconds |
+| 6 | `error_message` | `TEXT` | NULL, BLANK | Connection error details |
+| 7 | `created_at` | `DATETIME` | NOT NULL, AUTO | Event timestamp |
+
+**Relationships:**
+- FK: `user_id` → `admin_users.id` (SET_NULL)
+
+---
+
+## Database 2: `chatbot.db` (Flask Chatbot Microservice)
+
+---
+
+### Table 25: `chat_history`
+
+**App:** Flask `chatbot_flask/app.py`  
+**Description:** Simple log of all chatbot conversations — stored independently from the Django database.
+
+| # | Field | Data Type | Constraints | Description |
+|---|-------|-----------|-------------|-------------|
+| 1 | `id` | `INTEGER` | PK, AUTOINCREMENT | Unique entry identifier |
+| 2 | `user_message` | `TEXT` | NOT NULL | The user's input message |
+| 3 | `bot_reply` | `TEXT` | NOT NULL | The chatbot's generated reply |
+
+**Note:** This table has no timestamps, no foreign keys, and no relationship to the Django database. It is a standalone chat log.
+
+---
+
+## Frontend IndexedDB Schema (`TechnoPathDB` — Dexie.js)
+
+The frontend PWA mirrors the server data in an IndexedDB database for offline-first operation. Schema version 2 contains 23 object stores matching the backend tables plus a `sync_meta` store:
+
+| Object Store | Indexed Fields | Server Source |
+|-------------|---------------|---------------|
+| `facilities` | `id`, `code`, `map_svg_id`, `is_deleted`, `is_active` | `/api/facilities/` |
+| `rooms` | `id`, `facility_id`, `code`, `map_svg_id`, `floor`, `is_deleted`, `is_active` | `/api/rooms/` |
+| `departments` | `id`, `code`, `is_active` | `/api/core/departments/` |
+| `navigation_nodes` | `id`, `map_svg_id`, `node_type`, `floor`, `is_deleted`, `is_active` | `/api/navigation/nodes/` |
+| `navigation_edges` | `id`, `from_node_id`, `to_node_id`, `is_deleted` | `/api/navigation/edges/` |
+| `map_markers` | `id`, `facility_id`, `room_id`, `marker_type`, `is_active` | `/api/core/map-markers/` |
+| `map_labels` | `id`, `is_active` | `/api/core/map-labels/` |
+| `faq_entries` | `id`, `category`, `keywords`, `is_deleted` | `/api/chatbot/faq/` |
+| `ai_chat_logs` | `id`, `mode`, `created_at` | Local only |
+| `notifications` | `id`, `type`, `is_read`, `source_color`, `created_at` | `/api/notifications/` |
+| `notification_types` | `id`, `name`, `is_active` | `/api/core/notification-types/` |
+| `notification_preferences` | `id`, `user_id`, `notification_type_id` | Local only |
+| `feedback` | `id`, `category`, `synced`, `created_at` | Local + sync |
+| `ratings` | `id`, `facility_id`, `room_id`, `category`, `is_active`, `created_at` | Local + sync |
+| `feedback_flags` | `id`, `rating_id`, `status`, `created_at` | Local only |
+| `search_history` | `id`, `query`, `created_at` | Local only |
+| `app_usage` | `id`, `user_id`, `session_date` | Local only |
+| `usage_analytics` | `id`, `event_type`, `screen_name`, `created_at` | Local only |
+| `admin_audit_log` | `id`, `action`, `entity_type`, `created_at` | Local only |
+| `users` | `id`, `username`, `user_type`, `is_active` | Local only |
+| `device_preferences` | `id`, `user_id`, `device_id` | Local only |
+| `app_config` | `id`, `config_key` | `/api/core/app-config/` |
+| `connectivity_log` | `id`, `is_online`, `created_at` | Local only |
+| `sync_meta` | `key` | Local sync tracking |

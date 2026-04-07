@@ -11,7 +11,17 @@
         </div>
         <div class="chatbot-header-text">
           <h1>Campus Assistant</h1>
-          <p>Ask me about SEAIT campus</p>
+          <p class="chatbot-status">
+            <span v-if="isOffline" class="status-offline">
+              <span class="material-icons">wifi_off</span> Offline Mode
+            </span>
+            <span v-else-if="isAIEnabled" class="status-ai">
+              <span class="material-icons">psychology</span> AI Powered
+            </span>
+            <span v-else class="status-basic">
+              <span class="material-icons">chat</span> Basic Mode
+            </span>
+          </p>
         </div>
       </div>
     </header>
@@ -43,7 +53,10 @@
         </div>
         <div :class="['chatbot-message', msg.type]">
           <div class="chatbot-message-content">{{ msg.text }}</div>
-          <div class="chatbot-message-time">{{ formatTime(msg.timestamp) }}</div>
+          <div class="chatbot-message-meta">
+            <span class="chatbot-message-time">{{ formatTime(msg.timestamp) }}</span>
+            <span v-if="msg.source" class="chatbot-message-source">{{ msg.source }}</span>
+          </div>
         </div>
       </div>
       <div v-if="isTyping" class="chatbot-message-wrapper bot typing">
@@ -55,6 +68,10 @@
           <span></span>
           <span></span>
         </div>
+      </div>
+      <div v-if="error" class="chatbot-error">
+        <span class="material-icons">error_outline</span>
+        {{ error }}
       </div>
     </div>
 
@@ -79,12 +96,13 @@
         <input 
           v-model="userInput" 
           @keyup.enter="sendMessage"
-          placeholder="Type your question..."
+          :placeholder="isOffline ? 'Offline mode - using cached responses' : 'Ask me anything about SEAIT...'"
           type="text"
           ref="inputField"
+          :disabled="isTyping"
         />
-        <button class="chatbot-send-btn" @click="sendMessage" :disabled="!userInput.trim()">
-          <span class="material-icons">send</span>
+        <button class="chatbot-send-btn" @click="sendMessage" :disabled="!userInput.trim() || isTyping">
+          <span class="material-icons">{{ isTyping ? 'hourglass_top' : 'send' }}</span>
         </button>
       </div>
     </div>
@@ -92,16 +110,20 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, nextTick, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import aiChatbot from '../services/aiChatbot.js'
+import { isOnline } from '../services/sync.js'
+import { getFAQEntries } from '../services/offlineData.js'
 
 const router = useRouter()
 
 const messages = ref([
   { 
     type: 'bot', 
-    text: 'Hello! I\'m your SEAIT Campus Assistant. I can help you find buildings, rooms, and answer common questions about our campus. What would you like to know?',
-    timestamp: new Date()
+    text: "Hello! I'm your SEAIT Campus Assistant. I can help you find buildings, rooms, navigate the campus, and answer questions about SEAIT. What would you like to know?",
+    timestamp: new Date(),
+    source: ''
   }
 ])
 const userInput = ref('')
@@ -109,26 +131,20 @@ const isTyping = ref(false)
 const showFAQ = ref(true)
 const messagesContainer = ref(null)
 const inputField = ref(null)
+const error = ref('')
+const faqList = ref([])
 
-const goBack = () => router.back()
-
-// FAQ Data from Flutter archive
-const faqList = ref([
-  { question: 'Where is the MST Building?', answer: 'The MST (Main Science and Technology) Building is located at the center of the campus. It houses computer labs CL1, CL2 on the 1st floor and CL5, CL6 on the 2nd floor, as well as lecture rooms and administrative offices.' },
-  { question: 'Where is the comfort room?', answer: 'Comfort rooms are available in all campus buildings. The main restrooms are located on each floor of MST, JST, and RST buildings, near the stairwells.' },
-  { question: 'How do I navigate the campus?', answer: 'You can use the Navigate tab in this app to find routes between buildings and rooms. The campus has 3 main buildings: MST, JST, and RST arranged in a central layout.' },
-  { question: 'Where is the CICT office?', answer: 'The CICT (College of Information and Communications Technology) office is located in the MST Building, 2nd floor, near the computer labs.' },
-  { question: 'What are the library hours?', answer: 'The library is open Monday to Friday from 8:00 AM to 6:00 PM, and Saturday from 8:00 AM to 12:00 PM. It\'s closed on Sundays and holidays.' },
-  { question: 'Where is the cafeteria?', answer: 'The cafeteria is located near the main entrance of the campus, between the MST Building and the Gymnasium. It serves meals from 7:00 AM to 6:00 PM.' },
-  { question: 'What rooms are in JST Building?', answer: 'JST (Junior Science and Technology) Building contains lecture rooms JST101-JST102 on the 1st floor, laboratories JST201-JST202 on the 2nd floor, and seminar rooms on the 3rd floor.' },
-  { question: 'Where is the Registrar Office?', answer: 'The Registrar Office is located on the ground floor of the MST Building, near the main entrance. Office hours are 8:00 AM to 5:00 PM, Monday to Friday.' }
-])
+const isOffline = computed(() => !isOnline())
+const isAIEnabled = computed(() => {
+  const status = aiChatbot.getStatus()
+  return status.isAIEnabled
+})
 
 const quickActions = ref([
-  'Find CL1',
-  'MST Building',
+  'Where is CL1?',
+  'MST Building info',
   'Library hours',
-  'Registrar location'
+  'How do I get to the Registrar?'
 ])
 
 const showQuickActions = ref(true)
@@ -149,15 +165,47 @@ function toggleFAQ() {
   showFAQ.value = !showFAQ.value
 }
 
+function goBack() {
+  router.back()
+}
+
 function askQuestion(question) {
   userInput.value = question
   sendMessage()
   showFAQ.value = false
 }
 
-function sendMessage() {
-  if (!userInput.value.trim()) return
+async function loadFAQ() {
+  try {
+    const faqData = await getFAQEntries()
+    if (faqData.data && faqData.data.length > 0) {
+      faqList.value = faqData.data.slice(0, 8).map(f => ({
+        question: f.question,
+        answer: f.answer
+      }))
+    } else {
+      // Fallback FAQ
+      faqList.value = [
+        { question: 'Where is the MST Building?', answer: 'Center of campus, 4 floors with classrooms and computer labs' },
+        { question: 'Where is the comfort room?', answer: 'Available on every floor near stairwells in all buildings' },
+        { question: 'How do I navigate the campus?', answer: 'Use the Navigate tab for turn-by-turn directions' },
+        { question: 'Where is the CICT office?', answer: '2nd floor MST Building, near computer labs' },
+        { question: 'What are the library hours?', answer: 'Mon-Fri 8AM-6PM, Sat 8AM-12PM' },
+        { question: 'Where is the cafeteria?', answer: 'Between MST Building and Gymnasium, open 7AM-6PM' },
+        { question: 'What rooms are in JST Building?', answer: 'Lecture rooms (1F), labs (2F), seminar rooms (3F)' },
+        { question: 'Where is the Registrar Office?', answer: '1st floor RST Building, Mon-Fri 8AM-5PM' }
+      ]
+    }
+  } catch (err) {
+    console.log('[Chatbot] Using fallback FAQ')
+  }
+}
 
+async function sendMessage() {
+  if (!userInput.value.trim() || isTyping.value) return
+
+  error.value = ''
+  
   // Add user message
   const userMessage = userInput.value.trim()
   messages.value.push({ 
@@ -171,100 +219,115 @@ function sendMessage() {
   showQuickActions.value = false
   scrollToBottom()
 
-  // Simulate bot thinking and response
-  setTimeout(() => {
+  try {
+    // Get AI response
+    const result = await aiChatbot.sendMessage(userMessage)
+    
     isTyping.value = false
-    const response = generateResponse(userMessage)
+    
+    // Determine source label
+    let sourceLabel = ''
+    if (result.isOffline) {
+      sourceLabel = 'Offline'
+    } else if (result.source === 'ai') {
+      sourceLabel = 'AI'
+    } else if (result.source === 'fallback') {
+      sourceLabel = 'Cached'
+    }
+    
     messages.value.push({ 
       type: 'bot', 
-      text: response,
-      timestamp: new Date()
+      text: result.reply,
+      timestamp: new Date(),
+      source: sourceLabel
     })
-    scrollToBottom()
-  }, 1000 + Math.random() * 1000)
+  } catch (err) {
+    isTyping.value = false
+    error.value = 'Sorry, I had trouble processing that. Please try again.'
+    console.error('[Chatbot] Error:', err)
+    
+    // Add fallback message
+    messages.value.push({ 
+      type: 'bot', 
+      text: "I'm having trouble connecting right now. For campus info, try the Map and Navigate tabs, or check the FAQ section above.",
+      timestamp: new Date(),
+      source: 'Error'
+    })
+  }
+  
+  scrollToBottom()
 }
 
-function generateResponse(userMessage) {
-  const lowerMsg = userMessage.toLowerCase()
-  
-  // Check FAQ first
-  for (const faq of faqList.value) {
-    if (lowerMsg.includes(faq.question.toLowerCase().substring(0, 10))) {
-      return faq.answer
-    }
-  }
-  
-  // Building queries
-  if (lowerMsg.includes('mst') || lowerMsg.includes('main science')) {
-    return 'The MST Building is our main academic building with 4 floors. It houses Computer Labs CL1-CL2 on the 1st floor, CL5-CL6 on the 2nd floor, Classroom CR1-CR2, and various administrative offices including the Registrar.'
-  }
-  
-  if (lowerMsg.includes('jst') || lowerMsg.includes('junior science')) {
-    return 'JST Building has 4 floors with lecture rooms on the 1st floor (JST101-JST102), laboratories on the 2nd floor (JST201-JST202), and seminar rooms on the 3rd floor.'
-  }
-  
-  if (lowerMsg.includes('rst') || lowerMsg.includes('research')) {
-    return 'RST Building is our Research Science and Technology building with 3 floors. It contains research labs, graduate studies areas, specialized equipment, and conference rooms.'
-  }
-  
-  // Room queries
-  if (lowerMsg.includes('cl1') || lowerMsg.includes('cl2') || lowerMsg.includes('cl5') || lowerMsg.includes('cl6')) {
-    return 'Computer Labs CL1 and CL2 are on the 1st floor of MST Building. CL5 and CL6 are on the 2nd floor. Each lab has 30 PCs available for student use.'
-  }
-  
-  if (lowerMsg.includes('cr1') || lowerMsg.includes('cr2')) {
-    return 'Classrooms CR1 and CR2 are located on the 1st floor of MST Building, each with a capacity of 35 seats.'
-  }
-  
-  if (lowerMsg.includes('library')) {
-    return 'The Library is located near the main campus entrance. It has 2 floors with book lending, study areas, digital resources, and reading rooms. Open Mon-Fri 8AM-6PM, Sat 8AM-12PM.'
-  }
-  
-  if (lowerMsg.includes('registrar')) {
-    return 'The Registrar Office is on the ground floor of MST Building. They handle enrollment services, academic records, and transcript requests. Office hours: Mon-Fri 8AM-5PM.'
-  }
-  
-  if (lowerMsg.includes('canteen') || lowerMsg.includes('cafeteria')) {
-    return 'Our Cafeteria is located between MST Building and the Gymnasium. It serves meals, snacks, and beverages from 7:00 AM to 6:00 PM daily.'
-  }
-  
-  if (lowerMsg.includes('gym') || lowerMsg.includes('gymnasium')) {
-    return 'The Gymnasium features a basketball court, volleyball court, fitness equipment, locker rooms, and hosts various sports events. It\'s located near the cafeteria.'
-  }
-  
-  if (lowerMsg.includes('comfort room') || lowerMsg.includes('restroom') || lowerMsg.includes('cr') || lowerMsg.includes('bathroom')) {
-    return 'Comfort rooms are available on every floor of all campus buildings (MST, JST, RST). They\'re typically located near the stairwells for easy access.'
-  }
-  
-  if (lowerMsg.includes('cict') || lowerMsg.includes('office')) {
-    return 'The CICT (College of Information and Communications Technology) office is on the 2nd floor of MST Building, near the computer labs area.'
-  }
-  
-  // Greetings
-  if (lowerMsg.includes('hello') || lowerMsg.includes('hi') || lowerMsg.includes('hey')) {
-    return 'Hello! Welcome to SEAIT Campus. I can help you find buildings, rooms, and answer questions about our facilities. What would you like to know?'
-  }
-  
-  // Navigation help
-  if (lowerMsg.includes('navigate') || lowerMsg.includes('direction') || lowerMsg.includes('map') || lowerMsg.includes('where')) {
-    return 'I can help you navigate! Use the Navigate tab for detailed routes. Our campus has 3 main buildings: MST (center), JST (east), and RST (west). What specific location are you looking for?'
-  }
-  
-  // Thank you
-  if (lowerMsg.includes('thank')) {
-    return 'You\'re welcome! Feel free to ask if you need any other help navigating the campus.'
-  }
-  
-  // Default response
-  return "I'm not sure about that specific question. Try asking about:\n• Building locations (MST, JST, RST)\n• Computer Labs (CL1-CL6) or Classrooms (CR1-CR2)\n• Library or Registrar Office\n• Cafeteria or Gymnasium\n• Or tap the FAQ button for common questions!"
-}
-
-onMounted(() => {
+onMounted(async () => {
   inputField.value?.focus()
+  await loadFAQ()
+  await aiChatbot.initChatHistory()
 })
 </script>
 
 <style>
 /* Styles moved to external file: src/assets/chatbot.css */
 @import '../assets/chatbot.css';
+
+/* AI Chatbot specific styles */
+.chatbot-status {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.chatbot-status .material-icons {
+  font-size: 14px;
+}
+
+.status-offline {
+  color: #FF9800;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.status-ai {
+  color: #388E3C;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.status-basic {
+  color: #1976D2;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.chatbot-message-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.chatbot-message-source {
+  font-size: 10px;
+  padding: 2px 6px;
+  background: rgba(255, 152, 0, 0.2);
+  color: #FF9800;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.chatbot-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  margin: 8px 16px;
+  background: #FFEBEE;
+  color: #D32F2F;
+  border-radius: 8px;
+  font-size: 13px;
+}
 </style>

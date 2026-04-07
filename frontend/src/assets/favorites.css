@@ -1,0 +1,258 @@
+/* FavoritesView External Styles */
+
+.favorites-view {
+  min-height: 100%;
+  background: var(--color-surface);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.favorites-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.favorites-back-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: var(--color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.favorites-back-btn:hover {
+  background: var(--color-border);
+}
+
+.favorites-back-btn .material-icons {
+  font-size: 24px;
+  color: var(--color-text-primary);
+}
+
+.favorites-header h1 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.favorites-spacer {
+  width: 40px;
+}
+
+/* Content */
+.favorites-content {
+  flex: 1;
+  padding: 16px;
+}
+
+/* Empty State */
+.favorites-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.favorites-empty-icon {
+  font-size: 80px;
+  color: var(--color-border);
+  margin-bottom: 24px;
+}
+
+.favorites-empty h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 8px 0;
+}
+
+.favorites-empty p {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin: 0 0 24px 0;
+  max-width: 280px;
+}
+
+.favorites-explore-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  border: none;
+  border-radius: 12px;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.favorites-explore-btn:hover {
+  background: var(--color-primary-dark);
+  transform: translateY(-2px);
+}
+
+.favorites-explore-btn .material-icons {
+  font-size: 20px;
+}
+
+/* Favorites List */
+.favorites-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.favorites-count {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  padding: 8px 4px;
+}
+
+.favorites-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--color-bg);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.favorites-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+.favorites-item-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.favorites-item-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.favorites-item-icon.facility {
+  background: #FFF3E0;
+  color: #FF9800;
+}
+
+.favorites-item-icon.room {
+  background: #E3F2FD;
+  color: #2196F3;
+}
+
+.favorites-item-icon .material-icons {
+  font-size: 24px;
+}
+
+.favorites-item-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.favorites-item-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.favorites-item-subtitle {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  text-transform: capitalize;
+  margin-bottom: 4px;
+}
+
+.favorites-item-date {
+  font-size: 11px;
+  color: var(--color-text-hint);
+}
+
+.favorites-delete-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.favorites-delete-btn:hover {
+  background: #FFEBEE;
+}
+
+.favorites-delete-btn .material-icons {
+  font-size: 20px;
+  color: #F44336;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .favorites-content {
+    padding: 12px;
+  }
+
+  .favorites-empty {
+    padding: 40px 16px;
+  }
+
+  .favorites-empty-icon {
+    font-size: 64px;
+  }
+
+  .favorites-item {
+    padding: 14px;
+  }
+
+  .favorites-item-icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .favorites-item-title {
+    font-size: 15px;
+  }
+
+  .favorites-item-subtitle {
+    font-size: 12px;
+  }
+}

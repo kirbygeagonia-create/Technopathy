@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
+from apps.users.permissions import ReadOnlyOrSuperAdmin, CanViewAuditLog
 from .models import (
     Department, MapMarker, MapLabel, Rating, FeedbackFlag,
     NotificationType, NotificationPreference, AdminAuditLog,
@@ -35,7 +36,7 @@ class DepartmentDetailView(generics.RetrieveUpdateDestroyAPIView):
 class MapMarkerListCreateView(generics.ListCreateAPIView):
     queryset = MapMarker.objects.filter(is_active=True)
     serializer_class = MapMarkerSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [ReadOnlyOrSuperAdmin]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['marker_type', 'facility']
     search_fields = ['name']
@@ -44,20 +45,20 @@ class MapMarkerListCreateView(generics.ListCreateAPIView):
 class MapMarkerDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = MapMarker.objects.all()
     serializer_class = MapMarkerSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [ReadOnlyOrSuperAdmin]
 
 
 # Map Label Views
 class MapLabelListCreateView(generics.ListCreateAPIView):
     queryset = MapLabel.objects.filter(is_active=True)
     serializer_class = MapLabelSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [ReadOnlyOrSuperAdmin]
 
 
 class MapLabelDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = MapLabel.objects.all()
     serializer_class = MapLabelSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [ReadOnlyOrSuperAdmin]
 
 
 # Rating Views
@@ -123,7 +124,7 @@ class NotificationPreferenceDetailView(generics.RetrieveUpdateDestroyAPIView):
 class AdminAuditLogListView(generics.ListAPIView):
     queryset = AdminAuditLog.objects.all()
     serializer_class = AdminAuditLogSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CanViewAuditLog]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ['action', 'entity_type', 'user']
     ordering_fields = ['created_at']

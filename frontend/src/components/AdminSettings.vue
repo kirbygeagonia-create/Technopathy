@@ -14,7 +14,7 @@
           <div class="profile-info">
             <div class="profile-name">{{ authStore.user?.username || 'Administrator' }}</div>
             <div class="profile-email">{{ authStore.user?.email || 'admin@seait.edu.ph' }}</div>
-            <div class="profile-role">{{ authStore.user?.user_type_display || 'Super Admin' }}</div>
+            <div class="profile-role">{{ authStore.user?.role_display || 'Super Admin' }}</div>
           </div>
           <button class="btn-edit" @click="showEditProfile = true">Edit</button>
         </div>
@@ -256,6 +256,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/authStore.js'
+import { showToast } from '../services/toast.js'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -303,16 +304,16 @@ function selectLanguage(lang) {
 function saveProfile() {
   showEditProfile.value = false
   // TODO: Save profile to backend
-  alert('Profile updated!')
+  showToast('Profile updated!', 'success')
 }
 
 function backupData() {
-  alert('Backup feature - Downloading database backup...')
+  showToast('Backup feature - Downloading database backup...', 'info')
   // TODO: Implement actual backup
 }
 
 function restoreData() {
-  alert('Restore feature - Select backup file to import...')
+  showToast('Restore feature - Select backup file to import...', 'info')
   // TODO: Implement actual restore
 }
 
@@ -320,7 +321,7 @@ function clearCache() {
   showClearCacheDialog.value = false
   // Clear localStorage and IndexedDB cache
   localStorage.clear()
-  alert('Cache cleared successfully!')
+  showToast('Cache cleared successfully!', 'success')
 }
 
 function logout() {

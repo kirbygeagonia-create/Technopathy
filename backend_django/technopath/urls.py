@@ -35,4 +35,5 @@ urlpatterns = [
     path('api/notifications/', include('apps.notifications.urls')),
     path('api/feedback/', include('apps.feedback.urls')),
     path('api/core/', include('apps.core.urls')),
+    path('api/announcements/', include('apps.announcements.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

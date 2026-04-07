@@ -6,8 +6,15 @@ cd backend_django
 
 Backend Run command:
 
-python manage.py runserver
+python manage.py 
 
+
+frontend Path:
+
+cd frontend
+
+Frontend npm build:
+npm run build
 Frontend Run command:
 cd "c:\Users\ADMIN\OneDrive\Documents\SAD System files\version4_technopath\frontend"
 npm run dev
@@ -23,4 +30,4 @@ APi base:
 setx OLLAMA_API_BASE http://localhost:11434
 
 Add command:
-/add .
+/git add .

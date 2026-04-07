@@ -1,0 +1,235 @@
+# 👥 Use-Case Diagram
+
+## TechnoPath — SEAIT Campus Guide System
+
+### Visual Diagram (SVG)
+
+![TechnoPath Use-Case Diagram](C:/Users/ADMIN/.gemini/antigravity/brain/cf20f25b-43df-44f8-b442-8993fdd6a542/Use_Case_Diagram.svg)
+
+---
+
+### Actor Hierarchy
+
+```mermaid
+graph TD
+    SA["🔴 Super Admin<br/>(Safety & Security Office)"]
+    D["🔵 Dean<br/>(Per Department — 8+ accounts)"]
+    PH["🟢 Program Head<br/>(Per Program)"]
+    BEH["🟣 Basic Ed. Admin<br/>(Basic Education Dept)"]
+    S["🟠 Student<br/>(Guest)"]
+    F["🟠 Faculty / Instructor<br/>(Guest)"]
+    V["🟠 Visitor<br/>(Guest)"]
+    SYS["🟩 System<br/>(Automated)"]
+
+    SA -->|manages| D
+    SA -->|manages| PH
+    SA -->|manages| BEH
+    D -.->|inherits from| SA
+    PH -.->|reports to| D
+    BEH -.->|reports to| D
+
+    subgraph Guests ["Guests (Unauthenticated)"]
+        S
+        F
+        V
+    end
+```
+
+### Actor Details
+
+| Actor | Role Key | # of Accounts | Access Scope |
+|-------|----------|:-------------:|-------------|
+| **Super Admin** | `super_admin` | 1 | Full system access — manages everything |
+| **Dean** accounts | `dean` | 8+ (one per dept) | College of Agriculture, Criminology, Business, ICT, Civil Eng., Teacher Ed., TESDA, General Ed. |
+| **Program Head** accounts | `program_head` | Multiple (per program) | Own department rooms, post announcements for approval |
+| **Basic Ed. Admin** | `basic_ed_head` | 1+ | Basic Education dept rooms, post announcements for approval |
+| **Student** | *(guest)* | Unlimited | Browse, navigate, chatbot, feedback — no login |
+| **Faculty / Instructor** | *(guest)* | Unlimited | Browse, navigate, chatbot, feedback — no login |
+| **Visitor** | *(guest)* | Unlimited | Browse, navigate, chatbot, feedback — no login |
+| **System** | *(automated)* | N/A | Data sync, JWT refresh, analytics, audit trail |
+
+### Department Matrix (Dean Accounts)
+
+Each department **must** have its own Dean account:
+
+| Department Code | Department Name | Color Key |
+|----------------|----------------|-----------|
+| `college_agriculture` | College of Agriculture and Fisheries | 🟢 green |
+| `college_criminology` | College of Criminal Justice Education | ⬛ charcoal |
+| `college_business` | College of Business and Good Governance | 🟣 purple |
+| `college_ict` | College of Information and Communication Technology | 🟢 teal |
+| `dept_civil_engineering` | Department of Civil Engineering | 🟡 amber |
+| `college_teacher_education` | College of Teacher Education | 🔵 blue |
+| `tesda` | TESDA | 🟢 dark_green |
+| `general_education` | General Education Department | 🟣 indigo |
+
+---
+
+### Use-Case Summary Table
+
+#### Guest Use Cases (All users — no login required)
+
+| UC# | Use Case | Actors | Include/Extend |
+|-----|----------|--------|---------------|
+| G1 | View Campus Map | Student, Faculty, Visitor | «extend» Select Floor |
+| G2 | Navigate Campus | Student, Faculty, Visitor | «include» Compute Shortest Path; «extend» Use GPS Location |
+| G3 | Use AI Chatbot | Student, Faculty, Visitor | «include» Generate AI Reply |
+| G4 | View Notifications | Student, Faculty, Visitor | — |
+| G5 | Submit Feedback | Student, Faculty, Visitor | «extend» Queue Offline Feedback |
+| G6 | Submit Rating | Student, Faculty, Visitor | — |
+| G7 | Browse Building Info | Student, Faculty, Visitor | — |
+| G8 | Browse Room Directory | Student, Faculty, Visitor | — |
+| G9 | Search Locations | Student, Faculty, Visitor | — |
+| G10 | Scan QR Code | Student, Faculty, Visitor | — |
+| G11 | View Announcements | Student, Faculty, Visitor | — |
+| G12 | Change App Settings | Student, Faculty, Visitor | — |
+| G13 | Save Favorites | Student, Faculty, Visitor | — |
+| G14 | Mark Notifications Read | Student, Faculty, Visitor | — |
+| G15 | View Onboarding Tutorial | Student, Faculty, Visitor | — |
+
+#### Shared Admin Use Cases (All admin roles)
+
+| UC# | Use Case | Actors | Include/Extend |
+|-----|----------|--------|---------------|
+| A1 | Admin Login | All admin roles | «include» Issue JWT Token; «extend» Account Lockout |
+| A2 | Admin Logout | All admin roles | — |
+| A3 | View Dashboard | All admin roles | — |
+| A4 | Post Announcement | All admin roles | «extend» Submit for Approval (PH, BEH only) |
+| A5 | View My Announcements | All admin roles | — |
+| A6 | Manage Own Dept Rooms | Dean, PH, BEH | — |
+
+#### Dean + Super Admin Only
+
+| UC# | Use Case | Actors | Include/Extend |
+|-----|----------|--------|---------------|
+| D1 | Approve Announcement | Super Admin, Dean | «include» Create Notification |
+| D2 | Reject Announcement | Super Admin, Dean | «extend» Add Rejection Note |
+| D3 | View Pending Approvals | Super Admin, Dean | — |
+| D4 | View Audit Log | Super Admin, Dean | — |
+| D5 | View All Feedback | Super Admin, Dean | — |
+| D6 | Send Campus Notification | Super Admin, Dean | — |
+
+#### Super Admin Exclusive
+
+| UC# | Use Case | Actors | Include/Extend |
+|-----|----------|--------|---------------|
+| S1 | Manage Facilities (CRUD) | Super Admin | «include» CRUD Operations |
+| S2 | Manage All Rooms (CRUD) | Super Admin | — |
+| S3 | Manage Navigation Graph | Super Admin | — |
+| S4 | Manage FAQ / Chatbot | Super Admin | — |
+| S5 | Manage Admin Accounts | Super Admin | «include» Write Audit; «extend» Reset Password, Deactivate Account |
+| S6 | Manage Departments | Super Admin | — |
+| S7 | Manage Map Markers | Super Admin | — |
+| S8 | Manage Map Labels | Super Admin | — |
+| S9 | Manage App Config | Super Admin | — |
+| S10 | View System Analytics | Super Admin | — |
+
+#### System (Automated)
+
+| UC# | Use Case | Trigger |
+|-----|----------|---------|
+| SY1 | Sync Data to IndexedDB | App startup / coming online |
+| SY2 | Auto-Refresh JWT Token | Token expiration (401 response) |
+| SY3 | Upload Offline Queue | Network restored |
+| SY4 | Log Connectivity Events | Online/offline transitions |
+| SY5 | Record Usage Analytics | User interactions |
+| SY6 | Record Audit Trail | Any admin action |
+
+---
+
+## ⚠️ Discrepancies Found
+
+The following inconsistencies, missing relationships, or mismatches were discovered during the comprehensive codebase analysis:
+
+### 1. Serializer–Model Mismatch (`apps.users.serializers`)
+
+> [!WARNING]
+> The `AdminUserSerializer` and `UserMeSerializer` reference fields `user_type` and `get_user_type_display` which **do not exist** on the `AdminUser` model. The model uses `role` (not `user_type`). These serializers are **unused** in the current codebase (views use inline dict construction instead), so this is dead code with an incorrect schema reference.
+
+**File:** `backend_django/apps/users/serializers.py` (lines 5, 9, 14)  
+**Impact:** Low — serializers are not called from any view, but could cause runtime `AttributeError` if ever used.
+
+---
+
+### 2. Notification `is_read` Is Global, Not Per-User
+
+> [!IMPORTANT]
+> The `Notification` model has a single `is_read` boolean field with no user FK. The `MarkAllReadView` sets `is_read=True` globally for **all** users. This means if one user marks notifications as read, they are marked read for **everyone**. This is a significant design flaw for a multi-user system.
+
+**File:** `backend_django/apps/notifications/models.py` (line 40), `views.py` (line 22)  
+**Expected:** A many-to-many relationship (e.g., `NotificationReadStatus` table with `user_id` + `notification_id`).
+
+---
+
+### 3. `analytics` App is Empty
+
+> [!NOTE]
+> The `apps/analytics/` directory exists with `__pycache__` and `migrations/` but has **no models.py, views.py, urls.py, or any functional code**. It is not registered in `INSTALLED_APPS`. All analytics functionality is implemented in `apps.core` instead. This is an orphan directory.
+
+**File:** `backend_django/apps/analytics/`  
+**Impact:** None (dead directory), but should be cleaned up.
+
+---
+
+### 4. Duplicate Feedback Mechanisms
+
+> [!NOTE]
+> The system has **two separate feedback mechanisms**:
+> - `apps.feedback.Feedback` — direct feedback with category, rating, facility/room, and flag fields
+> - `apps.core.Rating` + `apps.core.FeedbackFlag` — star ratings with a moderation workflow
+> 
+> Both serve overlapping purposes. The frontend `FeedbackView.vue` submits to `/api/feedback/` while the Admin panel's `AdminFeedback.vue` manages the `core.Rating` model. There is no clear separation of concerns.
+
+---
+
+### 5. Dean Account Enforcement Not in Code
+
+> [!IMPORTANT]
+> The user's requirement states "every department must have its own Dean account." However, the codebase does **not enforce** a one-dean-per-department constraint. Multiple deans can exist for the same department, or a department can have zero deans. There is no unique constraint on `(role='dean', department)` in the model or any validation in the views.
+
+**File:** `backend_django/apps/users/models.py`  
+**Expected:** Either a DB-level unique constraint or a view-level validation ensuring exactly one dean per department.
+
+---
+
+### 6. Flask `chatbot.db` Has No Timestamps
+
+> [!NOTE]
+> The Flask chatbot's `chat_history` table has no `created_at` timestamp column, making it impossible to query historical chat data by time range. The Django `ai_chat_logs` table does have timestamps, but the Flask service uses its own separate database.
+
+**File:** `chatbot_flask/app.py` (lines 17-22)
+
+---
+
+### 7. Rooms Ownership Filtering Not Enforced at API Level
+
+> [!WARNING]
+> The `RoomListView` and `RoomDetailView` use `permissions.IsAuthenticatedOrReadOnly`, which allows **any authenticated admin** to create/edit/delete **any** room. The "manage own department rooms" restriction is only enforced in the **frontend UI** (AdminView conditionally shows the room tab scoped to `auth.department`), not in the backend API. A determined user could bypass the frontend and modify rooms outside their department via direct API calls.
+
+**File:** `backend_django/apps/rooms/views.py`  
+**Expected:** A custom permission class that checks `request.user.department` against the room's facility department for non-super-admin users.
+
+---
+
+### 8. Missing `apps` App Configurations
+
+> [!NOTE]
+> Several Django apps (`facilities`, `rooms`, `navigation`, `chatbot`, `notifications`, `feedback`) lack proper `apps.py` configuration files with `AppConfig` classes. While Django can auto-discover these, explicit `AppConfig` is best practice for production systems.
+
+---
+
+### 9. Frontend `users` IndexedDB Store References `user_type`
+
+> [!NOTE]
+> The frontend IndexedDB schema in `db.js` defines `users: '++id, username, user_type, is_active'` using `user_type` as an index, but the backend model uses `role` (not `user_type`). This is a schema name mismatch between frontend and backend. However, this store is flagged as "Local only" and not synced from the server, so the practical impact is low.
+
+**File:** `frontend/src/services/db.js` (line 41)
+
+---
+
+### 10. `Announcement.archive()` Method Has No API Endpoint
+
+> [!NOTE]
+> The `Announcement` model has an `archive()` method and `archived_by`/`archived_at` fields, but there is **no API endpoint** to trigger archiving. It can only be called programmatically. The frontend admin panel has no UI for archiving announcements either.
+
+**File:** `backend_django/apps/announcements/models.py` (lines 111-117), `urls.py`

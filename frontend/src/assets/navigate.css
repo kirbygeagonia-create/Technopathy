@@ -1,112 +1,496 @@
-/* NavigateView External Styles */
-.navigate-view {
-  height: 100%;
-  width: 100%;
+/* ============================================================
+   NavigateView — Get Directions (Route Visualization)
+   ============================================================ */
+
+.navview {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  background: var(--color-surface);
+  position: relative;
+  overflow: hidden;
 }
 
-.navigate-top-bar {
+/* ── Header ─────────────────────────────────────────────── */
+
+.navview-header {
   display: flex;
   align-items: center;
-  padding: 16px;
-  background: #FF9800;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  padding-top: calc(var(--space-3) + var(--safe-top));
+  background: var(--color-primary);
   color: white;
+  z-index: 20;
+  flex-shrink: 0;
 }
 
-.navigate-back-btn {
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
+.navview-back-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background: rgba(255,255,255,0.15);
   color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.navview-title {
+  flex: 1;
+  font-size: var(--text-lg);
+  font-weight: 600;
+  font-family: var(--font-primary);
+}
+
+/* ── Location Panel ───────────────────────────────────────── */
+
+.navview-panel {
+  padding: var(--space-4);
+  background: var(--color-bg);
+  box-shadow: var(--shadow-md);
+  z-index: 15;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  position: relative;
+}
+
+.navview-field {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: 0 var(--space-3);
+  border: 1.5px solid var(--color-border);
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.navview-field:focus-within {
+  border-color: var(--color-primary);
+}
+
+.navview-field-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.navview-field-icon.from { color: #388E3C; }
+.navview-field-icon.to { color: #D32F2F; }
+
+.navview-select {
+  flex: 1;
+  min-height: 44px;
+  border: none;
+  background: transparent;
+  font-family: var(--font-primary);
+  font-size: var(--text-base);
+  color: var(--color-text-primary);
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.navview-swap-btn {
+  position: absolute;
+  right: var(--space-6);
+  top: 50%;
+  transform: translateY(-85%);
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background: var(--color-bg);
+  border: 1.5px solid var(--color-border);
+  color: var(--color-text-secondary);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px;
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  transition: background 0.2s;
+  z-index: 2;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--duration-fast) var(--ease-out);
 }
 
-.navigate-back-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
+.navview-swap-btn:hover {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
 }
 
-.navigate-back-btn .material-icons {
-  font-size: 22px;
+.navview-swap-btn .material-icons { font-size: 18px; }
+
+.navview-actions-row {
+  display: flex;
+  gap: var(--space-2);
 }
 
-.navigate-top-bar h1 {
+.navview-find-btn {
   flex: 1;
-  text-align: center;
-  font-size: 18px;
-  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 46px;
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  color: white;
+  font-size: var(--text-base);
+  font-weight: 600;
+  font-family: var(--font-primary);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(255,152,0,0.3);
+  transition: all var(--duration-fast) var(--ease-out);
 }
 
-.navigate-spacer {
-  width: 36px;
+.navview-find-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
 }
 
-.navigate-main-content {
-  padding: 16px;
+.navview-find-btn:not(:disabled):hover {
+  box-shadow: 0 4px 16px rgba(255,152,0,0.4);
+  transform: translateY(-1px);
 }
 
-.navigate-panel {
-  background: white;
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+.navview-clear-btn {
+  width: 46px;
+  height: 46px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.navigate-input-group {
-  margin-bottom: 16px;
+/* ── Map ──────────────────────────────────────────────────── */
+
+.navview-map {
+  flex: 1;
+  overflow: hidden;
+  cursor: grab;
+  position: relative;
+  touch-action: none;
+  background: #e8f5e9;
 }
 
-.navigate-input-group label {
+.navview-map:active { cursor: grabbing; }
+
+.navview-map-transform {
+  position: relative;
+  width: fit-content;
+  height: fit-content;
+  will-change: transform;
+}
+
+.navview-map-img {
   display: block;
-  font-size: 14px;
-  font-weight: 500;
-  margin-bottom: 4px;
+  width: 100%;
+  max-width: 800px;
+  height: auto;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* ── Route SVG Overlay ────────────────────────────────────── */
+
+.navview-route-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.navview-route-line {
+  transition: stroke-dashoffset 0.05s linear;
+}
+
+/* ── Markers on nav map ───────────────────────────────────── */
+
+.navview-marker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.navview-marker-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-full);
+  border: 2px solid white;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+.navview-marker-dot.facility { background: #1976D2; }
+.navview-marker-dot.room { background: #388E3C; }
+
+.navview-marker-name {
+  font-size: 9px;
+  font-weight: 600;
+  font-family: var(--font-primary);
+  color: var(--color-text-primary);
+  background: rgba(255,255,255,0.85);
+  padding: 1px 4px;
+  border-radius: 3px;
+  margin-top: 1px;
+  white-space: nowrap;
+}
+
+body.dark-mode .navview-marker-name {
+  background: rgba(30,30,30,0.85);
+}
+
+/* ── Zoom Controls ────────────────────────────────────────── */
+
+.navview-zoom {
+  position: absolute;
+  right: var(--space-4);
+  bottom: 50%;
+  transform: translateY(50%);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 10;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+.navview-zoom-btn {
+  width: 44px;
+  height: 44px;
+  background: var(--color-bg);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--color-text-primary);
+}
+
+.navview-zoom-btn:first-child {
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* ── Route Info Panel ─────────────────────────────────────── */
+
+.navview-route-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--color-bg);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  padding: var(--space-3) var(--space-4) calc(var(--space-4) + var(--safe-bottom));
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.12);
+  z-index: 20;
+  max-height: 60vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.navview-route-info-handle {
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--color-border);
+  margin: 0 auto var(--space-3);
+}
+
+.navview-route-info-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.navview-route-dest {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-base);
+  color: var(--color-text-primary);
+}
+
+.navview-route-close {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navview-route-close .material-icons { font-size: 18px; }
+
+/* ── Route Stats ──────────────────────────────────────────── */
+
+.navview-route-stats {
+  display: flex;
+  gap: var(--space-4);
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+}
+
+.navview-stat {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
   color: var(--color-text-secondary);
 }
 
-.navigate-input-group select {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
+.navview-stat .material-icons {
   font-size: 16px;
-  background: var(--color-bg);
+  color: var(--color-text-hint);
 }
 
-.navigate-btn-primary {
+/* ── Directions Button ────────────────────────────────────── */
+
+.navview-directions-btn {
   width: 100%;
-  padding: 14px;
-  background: #FF9800;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  font-size: var(--text-sm);
   font-weight: 600;
+  font-family: var(--font-primary);
+  border: none;
   cursor: pointer;
-  transition: all 0.2s;
+  margin-bottom: var(--space-3);
+  transition: background var(--duration-fast) var(--ease-out);
 }
 
-.navigate-btn-primary:hover:not(:disabled) {
-  background: #F57C00;
+.navview-directions-btn:hover {
+  background: rgba(255,152,0,0.15);
 }
 
-.navigate-btn-primary:disabled {
-  background: #ccc;
-  cursor: not-allowed;
+/* ── Turn-by-Turn Steps ───────────────────────────────────── */
+
+.navview-directions {
+  animation: slideDown var(--duration-normal) var(--ease-out);
 }
 
-.navigate-route-result {
-  margin-top: 16px;
-  padding: 16px;
-  background: var(--color-surface);
-  border-radius: 8px;
+.navview-step {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
 }
 
-.navigate-route-result p {
-  margin-bottom: 4px;
+.navview-step:last-child { border-bottom: none; }
+
+.navview-step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: white;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.navview-step-num.start { background: #388E3C; }
+.navview-step-num.end { background: #D32F2F; }
+
+.navview-step-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding-top: 4px;
+}
+
+.navview-step-text {
+  font-size: var(--text-base);
+  color: var(--color-text-primary);
+}
+
+.navview-step-dist {
+  font-size: var(--text-sm);
+  color: var(--color-text-hint);
+  margin-top: 2px;
+}
+
+/* ── Transitions ──────────────────────────────────────────── */
+
+.slide-up-enter-active {
+  animation: slideUpIn 0.35s var(--ease-out);
+}
+.slide-up-leave-active {
+  animation: slideUpIn 0.25s var(--ease-out) reverse;
+}
+
+@keyframes slideUpIn {
+  from { opacity: 0; transform: translateY(100%); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Desktop ──────────────────────────────────────────────── */
+
+@media (min-width: 1024px) {
+  .navview-header {
+    padding-top: var(--space-3);
+  }
+
+  .navview-panel {
+    position: absolute;
+    top: 80px; /* Below the header */
+    left: 24px;
+    width: 360px;
+    border-radius: var(--radius-xl);
+    z-index: 15;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .navview-route-info {
+    left: auto;
+    right: 24px;
+    bottom: 24px;
+    width: 380px;
+    border-radius: var(--radius-xl);
+    max-height: 70vh;
+  }
+
+  .navview-map-img {
+    max-width: 1200px;
+  }
 }

@@ -1,7 +1,9 @@
 /* ============================================================
-   TECHNOPATH PWA — GLOBAL DESIGN SYSTEM
+   TECHNOPATH PWA — GLOBAL DESIGN SYSTEM v2
    Supports: Android (360–430px), iPhone (375–430px),
              Tablet (768–1024px), Desktop (1280px+)
+   Font: Inter (self-hosted via @fontsource)
+   Dark Mode: User toggle + system preference as default
    ============================================================ */
 
 *, *::before, *::after {
@@ -11,6 +13,7 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+/* ── Light Theme (default) ──────────────────────────────────── */
 :root {
   /* Brand colors */
   --color-primary:        #FF9800;
@@ -40,12 +43,12 @@
   --color-info:           #1976D2;
   --color-info-bg:        #E3F2FD;
 
-  /* Typography — ONE font stack for the entire app */
-  --font-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-                  'Helvetica Neue', Arial, sans-serif;
+  /* Typography */
+  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                  Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-mono:    'SF Mono', 'Fira Code', 'Courier New', monospace;
 
-  /* Font sizes — calibrated for real mobile screens */
+  /* Font sizes */
   --text-xs:   11px;
   --text-sm:   13px;
   --text-base: 15px;
@@ -53,6 +56,7 @@
   --text-lg:   18px;
   --text-xl:   20px;
   --text-2xl:  24px;
+  --text-3xl:  30px;
 
   /* Spacing scale */
   --space-1:  4px;
@@ -62,12 +66,14 @@
   --space-5:  20px;
   --space-6:  24px;
   --space-8:  32px;
+  --space-10: 40px;
 
   /* Layout constants */
   --top-bar-height:    56px;
   --bottom-nav-height: 60px;
+  --sidebar-width:     240px;
 
-  /* iOS safe areas — critical for iPhone notch and home indicator */
+  /* iOS safe areas */
   --safe-top:    env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left:   env(safe-area-inset-left, 0px);
@@ -78,12 +84,39 @@
   --radius-md:  10px;
   --radius-lg:  14px;
   --radius-xl:  20px;
+  --radius-2xl: 28px;
   --radius-full: 9999px;
 
   /* Shadows */
+  --shadow-xs:  0 1px 2px rgba(0,0,0,0.06);
   --shadow-sm:  0 1px 3px rgba(0,0,0,0.10);
   --shadow-md:  0 2px 8px rgba(0,0,0,0.12);
   --shadow-lg:  0 4px 16px rgba(0,0,0,0.14);
+  --shadow-xl:  0 8px 30px rgba(0,0,0,0.16);
+
+  /* Transitions */
+  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-fast:   150ms;
+  --duration-normal: 250ms;
+  --duration-slow:   400ms;
+}
+
+/* ── Dark Theme ─────────────────────────────────────────────── */
+body.dark-mode {
+  --color-bg:             #121212;
+  --color-surface:        #1E1E1E;
+  --color-surface-2:      #2C2C2C;
+  --color-border:         #333333;
+  --color-text-primary:   #EEEEEE;
+  --color-text-secondary: #BDBDBD;
+  --color-text-hint:      #757575;
+  --color-primary-light:  #2C1A00;
+  --color-primary-text:   #EEEEEE;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 2px 8px rgba(0,0,0,0.4);
+  --shadow-lg: 0 4px 16px rgba(0,0,0,0.5);
 }
 
 /* ── Base ─────────────────────────────────────────────────── */
@@ -104,6 +137,8 @@ body {
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color var(--duration-normal) var(--ease-out),
+              color var(--duration-normal) var(--ease-out);
 }
 
 #app {
@@ -129,10 +164,17 @@ button, [role="button"], a.btn, .nav-item, .fab {
   font-size: var(--text-base);
   -webkit-tap-highlight-color: transparent;
   user-select: none;
+  transition: transform var(--duration-fast) var(--ease-out),
+              background-color var(--duration-fast) var(--ease-out),
+              opacity var(--duration-fast) var(--ease-out);
+}
+
+button:active:not(:disabled), [role="button"]:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
 button:disabled, [role="button"][disabled] {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
@@ -202,6 +244,8 @@ button:disabled, [role="button"][disabled] {
   justify-content: space-around;
   flex-shrink: 0;
   box-shadow: 0 -1px 6px rgba(0,0,0,0.06);
+  transition: background-color var(--duration-normal) var(--ease-out),
+              border-color var(--duration-normal) var(--ease-out);
 }
 
 .nav-item {
@@ -218,7 +262,7 @@ button:disabled, [role="button"][disabled] {
   border: none;
   background: none;
   color: var(--color-text-hint);
-  transition: color 0.15s;
+  transition: color var(--duration-fast) var(--ease-out);
 }
 
 .nav-item.active {
@@ -265,6 +309,13 @@ button:disabled, [role="button"][disabled] {
   margin: var(--space-2) var(--space-4);
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--color-border);
+  transition: background-color var(--duration-normal) var(--ease-out),
+              border-color var(--duration-normal) var(--ease-out),
+              box-shadow var(--duration-normal) var(--ease-out);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
 }
 
 .card-title {
@@ -290,7 +341,10 @@ button:disabled, [role="button"][disabled] {
   font-weight: 500;
   cursor: pointer;
   border: none;
-  transition: background 0.15s, opacity 0.15s;
+  transition: background var(--duration-fast) var(--ease-out),
+              opacity var(--duration-fast) var(--ease-out),
+              transform var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out);
   text-decoration: none;
 }
 
@@ -298,9 +352,15 @@ button:disabled, [role="button"][disabled] {
   background: var(--color-primary);
   color: var(--color-text-inverse);
   width: 100%;
+  box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
 }
 
-.btn-primary:active { background: var(--color-primary-dark); }
+.btn-primary:hover {
+  box-shadow: 0 4px 16px rgba(255, 152, 0, 0.4);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active { background: var(--color-primary-dark); transform: translateY(0); }
 
 .btn-secondary {
   background: var(--color-surface);
@@ -335,6 +395,13 @@ button:disabled, [role="button"][disabled] {
   justify-content: center;
   font-size: 22px;
   z-index: 50;
+  transition: transform var(--duration-fast) var(--ease-spring),
+              box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.fab:hover {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-xl);
 }
 
 .fab:active { transform: scale(0.95); }
@@ -366,12 +433,16 @@ button:disabled, [role="button"][disabled] {
   color: var(--color-text-primary);
   background: var(--color-bg);
   outline: none;
-  transition: border-color 0.15s;
+  transition: border-color var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out),
+              background-color var(--duration-normal) var(--ease-out);
   -webkit-appearance: none;
+  appearance: none;
 }
 
 .input-field:focus {
   border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.15);
 }
 
 .input-label {
@@ -393,6 +464,7 @@ button:disabled, [role="button"][disabled] {
   min-height: 56px;
   background: var(--color-bg);
   cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out);
 }
 
 .list-item:active { background: var(--color-surface); }
@@ -443,6 +515,7 @@ button:disabled, [role="button"][disabled] {
   color: var(--color-text-primary);
   cursor: pointer;
   white-space: nowrap;
+  transition: all var(--duration-fast) var(--ease-out);
 }
 
 .chip.selected {
@@ -461,6 +534,10 @@ button:disabled, [role="button"][disabled] {
   text-align: center;
   z-index: 200;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
 }
 
 .banner-offline  { background: #424242; color: #fff; }
@@ -525,6 +602,7 @@ button:disabled, [role="button"][disabled] {
   z-index: 300;
   display: flex;
   align-items: flex-end;
+  animation: fadeIn var(--duration-fast) var(--ease-out);
 }
 
 .sheet {
@@ -536,6 +614,7 @@ button:disabled, [role="button"][disabled] {
   max-height: 90vh;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  animation: slideUp var(--duration-normal) var(--ease-out);
 }
 
 .sheet-handle {
@@ -567,6 +646,23 @@ button:disabled, [role="button"][disabled] {
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
 
 /* ── Responsive breakpoints ────────────────────────────────── */
 
@@ -596,19 +692,9 @@ button:disabled, [role="button"][disabled] {
     --top-bar-height: 64px;
     --bottom-nav-height: 68px;
   }
-
-  .card {
-    margin: var(--space-3) var(--space-6);
-  }
-
-  .bottom-nav {
-    justify-content: center;
-    gap: var(--space-8);
-  }
-
-  .nav-item {
-    max-width: 120px;
-  }
+  .card { margin: var(--space-3) var(--space-6); }
+  .bottom-nav { justify-content: center; gap: var(--space-8); }
+  .nav-item { max-width: 120px; }
 }
 
 @media (min-width: 1024px) {
@@ -617,7 +703,6 @@ button:disabled, [role="button"][disabled] {
     --text-md:   16px;
     --top-bar-height: 64px;
   }
-
   .card {
     max-width: 800px;
     margin-left: auto;
@@ -625,23 +710,21 @@ button:disabled, [role="button"][disabled] {
   }
 }
 
-/* ── Dark mode support ─────────────────────────────────────── */
+/* ── Scrollbar styling ─────────────────────────────────────── */
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg:             #121212;
-    --color-surface:        #1E1E1E;
-    --color-surface-2:      #2C2C2C;
-    --color-border:         #333333;
-    --color-text-primary:   #EEEEEE;
-    --color-text-secondary: #BDBDBD;
-    --color-text-hint:      #757575;
-    --color-primary-light:  #2C1A00;
-  }
-
-  .card { border-color: var(--color-border); }
-  .bottom-nav { background: #1A1A1A; border-top-color: #333; }
-  .input-field { background: var(--color-surface); color: var(--color-text-primary); border-color: var(--color-border); }
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-hint);
 }
 
 /* ── Utilities ─────────────────────────────────────────────── */
@@ -682,4 +765,3 @@ button:disabled, [role="button"][disabled] {
 .shadow-sm { box-shadow: var(--shadow-sm); }
 .overflow-hidden { overflow: hidden; }
 .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-

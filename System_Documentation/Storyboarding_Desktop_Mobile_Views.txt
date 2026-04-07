@@ -1,0 +1,745 @@
+TECHNOPATH V4 - STORYBOARDING DOCUMENT
+======================================
+System: SEAIT Campus Guide Map and Navigation
+Version: 4.0
+Date: April 5, 2026
+Format: Text-based Screen Descriptions
+
+
+TABLE OF CONTENTS
+-----------------
+1. Desktop Views (1024px and above)
+2. Mobile Views (below 1024px)
+3. Admin Panel Views (Desktop Only)
+4. Screen Flow Descriptions
+
+
+================================================================================
+1. DESKTOP VIEWS (1024px and above)
+================================================================================
+
+1.1 DESKTOP HOME / MAP VIEW
+---------------------------
+Layout: Three-column responsive layout with header, sidebar, main content area, and footer.
+
+Header Section (Top Bar):
+- Left side: Application logo "TechnoPath" with tagline "SEAIT Campus Guide"
+- Center: Navigation breadcrumb showing current location
+- Right side: User greeting ("Welcome, Guest"), notification bell with badge count, and settings icon
+
+Left Sidebar (Navigation Menu):
+Vertical navigation menu containing:
+- Home button (active state indicator)
+- Map view button
+- Navigate button with compass icon
+- Chatbot button with robot icon
+- Notifications button with bell icon and unread count badge
+- Rate & Feedback button with star icon
+
+Main Content Area (Center):
+- Top: Two dropdown selectors side by side - "Select Facility" and "Select Room"
+- Center: Large interactive campus map displaying SEAIT buildings (MST, JST, RST, Library, Gymnasium)
+  - Map shows building markers with labels
+  - Building shapes rendered as polygons on map canvas
+  - Map markers indicating points of interest
+- Right side of map: Zoom controls (+ and - buttons)
+- Floating action button: "Set Location" for user positioning
+
+Footer Section:
+- Copyright information
+- Quick links to About, Help, Privacy Policy
+- Offline mode indicator when applicable
+
+
+1.2 DESKTOP NAVIGATION VIEW
+---------------------------
+Layout: Split view with controls on left and map on right.
+
+Left Panel (Route Controls):
+Header: "Navigate" with back button
+
+From Section:
+- Label: "From"
+- Input field with placeholder "Select starting point..."
+- Dropdown with building and room options
+- Current location button for quick access
+
+To Section:
+- Label: "To"
+- Input field with placeholder "Select destination..."
+- Dropdown with building and room options
+- Swap button between From and To fields (circular arrow icon)
+
+Action Button:
+- Primary button: "Find Route" - triggers path calculation
+
+Route Summary Card (appears after route found):
+- Distance display (e.g., "150m")
+- Estimated time (e.g., "2 min")
+- Start and end point names
+- Expandable directions list numbered 1 to N
+- Each direction step shows turn instruction and distance
+
+Right Panel (Map Display):
+- Full campus map view
+- Highlighted route path as colored line overlay
+- Start point marker (green)
+- End point marker (red)
+- Turn points marked along route
+- Zoom and pan controls
+
+
+1.3 DESKTOP CHATBOT VIEW
+------------------------
+Layout: Centered chat interface with sidebar elements.
+
+Header:
+- Back button on left
+- Title: "Campus Assistant" with robot emoji
+- Status indicator showing "Online" or "Offline"
+
+Chat Area (Center):
+Message bubbles arranged vertically:
+- Bot messages: Left-aligned, light background, robot avatar
+- User messages: Right-aligned, darker background, user avatar
+- Messages show timestamp below
+- Typing indicator (three dots) when bot is responding
+
+Quick Actions Bar:
+Below chat area, horizontal scrollable buttons:
+- "Where is CL1?"
+- "Library hours?"
+- "Registrar location?"
+- "Cafeteria menu?"
+- "How do I get to...?"
+
+FAQ Section (Right Sidebar):
+- Header: "Frequently Asked Questions"
+- Collapsible list of common questions
+- Each question clickable to auto-fill chat input
+
+Input Area (Bottom):
+- Text input field with placeholder "Ask anything about SEAIT..."
+- Send button (paper plane icon)
+- Voice input button (microphone icon)
+- Attachment button (paperclip icon)
+
+
+1.4 DESKTOP NOTIFICATIONS VIEW
+------------------------------
+Layout: Full-width content area with grouped notification lists.
+
+Header:
+- Title: "Notifications"
+- Left side: Back button
+- Right side: "Mark All Read" button and "Clear All" button
+
+Filter Tabs (Top):
+- All Notifications (default)
+- Urgent
+- General
+- System
+
+Notification Groups:
+
+Urgent Section (Red indicator):
+- Header: "Urgent (X)" where X is count
+- Each notification card shows:
+  - Source icon (department badge)
+  - Source label (e.g., "Safety & Security")
+  - Title (e.g., "Emergency Drill")
+  - Preview text (truncated)
+  - Timestamp (e.g., "2h ago")
+  - Read status indicator (checkmark)
+
+General Section (Green indicator):
+- Header: "General (X)"
+- Same card format as Urgent
+- Examples: College announcements, Dean notices
+
+System Section (Gray indicator):
+- Header: "System (X)"
+- Same card format
+- Examples: Maintenance notices, updates
+
+
+1.5 DESKTOP SETTINGS VIEW
+-------------------------
+Layout: Single column with grouped setting sections.
+
+Header:
+- Title: "Settings"
+- Back button on left
+
+Appearance Section:
+- Header: "Appearance"
+- Toggle switches:
+  - Dark Mode (on/off)
+  - High Contrast (on/off)
+  - Large Text (on/off)
+  - Reduce Animations (on/off)
+
+Language Section:
+- Header: "Language"
+- Current selection display (e.g., "English")
+- Arrow indicating expandable menu
+- Options: English, Filipino
+
+Notifications Section:
+- Header: "Notifications"
+- Toggle switches:
+  - Push Notifications (on/off)
+  - Announcements (on/off)
+  - Emergency Alerts (on/off)
+
+Account Section:
+- Header: "Account"
+- Navigation items:
+  - My Profile (with arrow)
+  - My Favorites (with arrow)
+  - My Feedback (with arrow)
+
+System Section:
+- Header: "System"
+- Read-only info:
+  - Offline Mode status ("Ready" or "Syncing")
+  - Last Sync timestamp (e.g., "2m ago")
+  - App Version (e.g., "4.0.1")
+- Button: "Check Updates"
+
+Action Buttons (Bottom):
+- "Clear Cache" button
+- "Export Data" button
+
+
+================================================================================
+2. MOBILE VIEWS (below 1024px)
+================================================================================
+
+2.1 MOBILE SPLASH SCREEN
+------------------------
+Layout: Full-screen vertical layout, centered content.
+
+Top Area (30% of screen):
+- SEAIT institutional logo centered
+- Sufficient padding above and below
+
+Middle Area (40% of screen):
+- Large app name: "TechnoPath"
+- Tagline below: "Campus Navigation"
+- Motivational quote in quotes: "Find your way around SEAIT"
+
+Bottom Area (30% of screen):
+- Feature carousel indicators (3 dots, third active)
+- Primary CTA button: "Get Started" (full width, prominent)
+- Secondary link: "Skip Tutorial" (text only, below primary button)
+
+Background:
+- Gradient or solid SEAIT brand color
+- Subtle pattern or campus silhouette (optional)
+
+
+2.2 MOBILE HOME / MAP VIEW
+--------------------------
+Layout: Stacked vertical layout with map taking majority of screen.
+
+Top Section (Fixed):
+- Two full-width dropdown buttons stacked:
+  - First: "Select Facility" with building icon and dropdown arrow
+  - Second: "Select Room" with door icon and dropdown arrow
+
+Middle Section (Map Area):
+- Full-screen interactive map showing campus
+- Building labels visible (MST, JST, RST, LIB, GYM)
+- Location markers scattered across map
+- Floating zoom buttons (+ and -) on right edge
+- Optional: User location dot if GPS enabled
+
+Search Bar (Floating, collapsible):
+- Positioned above bottom action bar
+- Search icon on left
+- Placeholder text: "Search..."
+- Expandable to show recent searches
+
+Bottom Action Bar (Fixed):
+- Five equally-spaced icon buttons in horizontal row:
+  1. Menu (hamburger icon)
+  2. Locate (pin/marker icon)
+  3. Rate (star icon)
+  4. Notifications (bell icon with badge count)
+  5. Chatbot (robot icon)
+- Labels below each icon in small text
+
+
+2.3 MOBILE MENU SHEET (Slide-up)
+---------------------------------
+Layout: Bottom sheet that slides up from bottom, covering 60-70% of screen.
+
+Handle Bar (Top of sheet):
+- Drag handle indicator (horizontal line centered)
+- Sheet title: "Menu"
+
+Menu Options (Vertical stack):
+Large touch-friendly buttons with icons:
+1. Building Info (building icon)
+2. Rooms Info (door icon)
+3. Instructor Info (person with chalkboard icon)
+4. Employees (people icon)
+5. Laboratory Info (flask icon)
+
+Close Button:
+- Full-width button at bottom
+- Label: "Close"
+- Tap or drag down to dismiss
+
+Background:
+- Semi-transparent overlay on main content behind sheet
+
+
+2.4 MOBILE NAVIGATION VIEW
+--------------------------
+Layout: Stacked sections with collapsible route panel.
+
+Header:
+- Back arrow on left
+- Title: "Navigate" centered
+
+Input Section:
+- "From" label with dropdown input below
+- Swap button (circular arrows) centered between fields
+- "To" label with dropdown input below
+- Large primary button: "Find Route"
+
+Map Section:
+- Campus map display
+- Route line highlighted when calculated
+- Zoom controls (+/-)
+
+Route Panel (Collapsible, slides up from bottom):
+- Drag handle at top
+- Route summary: "Route: 150m • 2 min"
+- Origin to destination text: "MST → Library"
+- Expandable: "Show Directions" button
+- When expanded, numbered list of turn-by-turn directions
+- Each step shows action and distance
+
+Bottom Navigation Bar:
+- Four icons: Home, Map, Bot, Settings
+- Visual indicator for current tab
+
+
+2.5 MOBILE CHATBOT VIEW
+-----------------------
+Layout: Chat interface optimized for mobile screens.
+
+Header:
+- Back arrow on left
+- Title: "Campus Assistant" with robot emoji
+- Subtitle status: "Online" or "Offline"
+
+Chat Area (Scrollable):
+- Messages stacked vertically
+- Bot messages: Left side, light bubble, avatar
+- User messages: Right side, accent-colored bubble
+- Quick action buttons inline in bot responses:
+  - Map button (shows location on map)
+  - Navigate button (starts navigation to location)
+- Typing indicator appears when processing
+
+FAQ Section (Fixed above input):
+- Header: "FAQ?"
+- Horizontal scrollable cards with common questions
+- Questions like: "Where is CL1?", "Library hours?", "Registrar loc?"
+
+Input Area (Fixed at bottom):
+- Text input field with rounded corners
+- Placeholder: "Ask anything..."
+- Send button (arrow icon) on right
+- Quick question button (question mark icon) on left
+
+
+2.6 MOBILE NOTIFICATIONS VIEW
+-----------------------------
+Layout: Scrollable list with grouped sections.
+
+Header:
+- Back arrow on left
+- Title: "Notifications"
+- "Mark All Read" button on right
+
+Grouped List:
+
+Urgent Section:
+- Header with red dot and count: "Urgent (1)"
+- Cards showing:
+  - Source badge (e.g., "Safety & Security")
+  - Title (e.g., "Emergency Drill")
+  - Preview text (e.g., "Tomorrow 9AM...")
+  - Read checkmark if read
+  - Relative timestamp (e.g., "2h ago")
+
+General Section:
+- Header with green dot and count: "General (2)"
+- Same card format as Urgent
+- Examples from College of ICT, College Dean
+
+System Section:
+- Header with gray dot and count: "System (1)"
+- Same card format
+- Examples: Maintenance notices
+
+Bottom Navigation Bar:
+- Four icons: Home, Map, Bot, Settings
+
+
+2.7 MOBILE SETTINGS VIEW
+------------------------
+Layout: Scrollable single column with grouped settings.
+
+Header:
+- Back arrow on left
+- Title: "Settings"
+
+Appearance Group:
+- Header: "Appearance"
+- Toggle rows:
+  - Dark Mode with moon icon
+  - High Contrast with square icon
+  - Large Text with ruler icon
+  - Reduce Animations with sparkle icon
+- Each toggle shows checkbox on right
+
+Language Group:
+- Header: "Language"
+- Current: "English" with globe icon
+- Arrow indicating more options
+
+Notifications Group:
+- Header: "Notifications"
+- Toggle rows:
+  - Push Notifications with bell icon
+  - Announcements with megaphone icon
+  - Emergency Alerts with alert icon
+
+Account Group:
+- Header: "Account"
+- Navigation rows:
+  - My Profile with person icon and arrow
+  - My Favorites with star icon and arrow
+  - My Feedback with document icon and arrow
+
+System Group:
+- Header: "System"
+- Info rows:
+  - Offline Mode status with signal icon
+  - Last Sync time with refresh icon
+  - Version number with info icon
+- Button: "Check Updates"
+
+Action Buttons:
+- "Clear Cache" destructive button
+- "Export Data" neutral button
+
+Bottom Navigation Bar:
+- Four icons with Settings highlighted
+
+
+================================================================================
+3. ADMIN PANEL VIEWS (Desktop Only)
+================================================================================
+
+3.1 ADMIN DASHBOARD
+-------------------
+Layout: Sidebar navigation with main content dashboard.
+
+Header Bar:
+- Logo: "TechnoPath Admin Panel"
+- Right side: Admin name, role badge (e.g., "Dean"), department, logout button
+- Mobile view toggle button
+
+Left Sidebar (Navigation):
+Grouped menu items:
+
+Dashboard Group:
+- Dashboard (active indicator)
+
+Map Management Group:
+- Facilities
+- Rooms
+- Navigation Graph
+- FAQ
+- QR Codes
+
+Communications Group:
+- Announcements
+- Pending Approvals (with badge count)
+- Send Notification
+
+Administration Group:
+- Admin Accounts
+- Feedback
+- Audit Log
+
+System Group:
+- View Site
+
+Main Content Area (Dashboard):
+Top Stats Cards (4 columns):
+- Facilities count with building icon
+- Rooms count with door icon
+- Markers count with pin icon
+- FAQs count with question icon
+
+Middle Section (Two columns):
+Left: Quick Stats Panel
+- Total Announcements count
+- This Month count
+- Pending Approval count
+- Popular Searches list (top 3)
+- User Feedback summary (average rating, total count)
+
+Right: Pending Actions Panel
+- Pending Approvals list with count badge
+- Unread Feedback count
+- System Notifications count
+- "View All" link
+
+Bottom: Recent Activity Panel
+- Chronological list of recent actions
+- Examples: Published announcement, Approved announcements, Added rooms, System backup
+
+
+3.2 ADMIN FACILITIES MANAGEMENT
+-------------------------------
+Layout: Data table with search and filter controls.
+
+Header:
+- Title: "Facilities Management"
+- "Add New" button (primary action, top right)
+
+Search and Filter Bar:
+- Search input field with placeholder
+- Department filter dropdown ("All Departments")
+- Search button (magnifying glass icon)
+
+Data Table Columns:
+1. Code - Building code (e.g., MST, JST, RST)
+2. Name - Building full name
+3. Department - Associated department
+4. Floors - Number of floors
+5. Rooms - Room count
+6. Status - Active/Inactive indicator
+7. Actions - Edit and Delete buttons
+
+Pagination:
+- "Showing X of Y facilities" text
+- Previous/Next buttons
+- Page number buttons
+
+Sidebar remains same as Dashboard.
+
+
+3.3 ADMIN ANNOUNCEMENT APPROVAL WORKFLOW
+----------------------------------------
+Layout: Card-based approval queue.
+
+Header:
+- Title: "Pending Approvals (X)" where X is count
+
+Approval Cards (Stacked vertically):
+
+Each card contains:
+- Status badge: "Pending Approval" (yellow)
+- Sender info: Avatar, name, role, department
+- Submission timestamp
+- Scope badge (e.g., "College - all college students")
+- Announcement title
+- Full content preview (truncated if long)
+- Reviewer Notes text area (optional)
+- Action buttons row:
+  - "Reject" button (secondary/danger)
+  - "Approve & Publish" button (primary/success)
+
+Multiple cards shown in scrollable list.
+Each card visually distinct with subtle border/shadow.
+
+Sidebar shows "Pending" item as active with count badge.
+
+
+================================================================================
+4. SCREEN FLOW DESCRIPTIONS
+================================================================================
+
+4.1 GUEST USER FLOW (Mobile)
+----------------------------
+
+Entry Point: Splash Screen
+The user first sees the Splash Screen with SEAIT logo, app name, and welcome message.
+From here, two paths exist:
+
+Path A: Tutorial Flow
+1. User taps "Get Started"
+2. App shows onboarding tutorial screens (if implemented)
+3. Tutorial explains features: Map, Navigation, Chatbot
+4. User completes tutorial and lands on Home
+
+Path B: Skip Tutorial
+1. User taps "Skip Tutorial"
+2. App directly navigates to Home screen
+
+Main Navigation Hub: Home Screen
+The Home screen serves as the central hub with multiple navigation options:
+
+Option 1: Menu Exploration
+- User taps Menu button
+- Slide-up menu appears
+- User selects: Building Info, Rooms Info, Instructor Info, Employees, or Laboratory Info
+- System displays selected information view
+
+Option 2: Search
+- User taps search bar
+- Search interface expands
+- User types query
+- Search results displayed
+- User selects result
+- Navigate to location details or Navigation view
+
+Option 3: Map Interaction
+- User interacts with map markers
+- Marker popup appears
+- Popup shows location name and quick actions
+- User can navigate from popup
+
+Option 4: Direct Navigation
+- User taps Navigate button in bottom bar
+- App opens Navigation view
+- User enters start and end points
+- App calculates and displays route
+
+Secondary Features Access:
+From Home, user can access:
+- Chatbot: For AI-assisted queries
+- Notifications: For campus announcements
+- Settings: For app preferences
+- Rate & Feedback: For user input
+
+Navigation Result:
+When route is found:
+- Map shows highlighted path
+- Directions panel slides up
+- Turn-by-turn instructions displayed
+- User can follow directions to destination
+
+
+4.2 ADMIN USER FLOW (Desktop)
+-----------------------------
+
+Entry Point: Admin Login
+- Admin accesses /admin-login URL
+- Login form displayed with username/password fields
+- Authentication via JWT tokens
+- On success, redirected to Admin Dashboard
+
+Main Hub: Admin Dashboard
+The Dashboard provides overview and navigation to all admin functions:
+
+Map Management Branch:
+1. Facilities Management
+   - View all buildings in table
+   - Add new facility
+   - Edit existing facility details
+   - Soft delete facility
+
+2. Rooms Management
+   - View rooms by facility
+   - Add rooms to buildings
+   - Edit room details (floor, type, capacity)
+   - Remove rooms
+
+3. Navigation Graph
+   - View navigation nodes (waypoints, entrances, rooms)
+   - Add/edit navigation nodes with coordinates
+   - Manage edges (connections between nodes)
+   - Set distances and bidirectional flags
+
+4. FAQ Management
+   - View existing FAQ entries
+   - Add new Q&A pairs
+   - Organize by category
+   - Set keywords for search
+
+5. QR Code Generation
+   - Generate QR codes for buildings
+   - Generate QR codes for rooms
+   - Download QR code images
+   - Print batch QR codes
+
+Communications Branch:
+1. Announcements
+   - Create new announcement
+   - Set scope (campus-wide, department, etc.)
+   - Submit for approval (if not Super Admin)
+   - View announcement history
+
+2. Pending Approvals
+   - View announcements awaiting approval
+   - Review content and scope
+   - Add reviewer notes
+   - Approve and publish, or reject
+   - Rejected items returned to sender
+
+3. Send Notifications
+   - Compose notification message
+   - Select target audience
+   - Set priority level
+   - Send immediately or schedule
+
+Administration Branch:
+1. Admin Accounts
+   - View all admin users
+   - Create new admin accounts
+   - Assign roles (Super Admin, Dean, Program Head, Basic Ed Head)
+   - Set department associations
+   - Deactivate accounts
+
+2. Feedback Review
+   - View user feedback submissions
+   - See ratings and comments
+   - Filter by facility or room
+   - Flag inappropriate content
+
+3. Audit Log
+   - View system audit trail
+   - Filter by admin user
+   - Filter by action type
+   - Filter by date range
+   - Export audit data
+
+System Branch:
+1. View Site
+   - Opens main application in new tab
+   - Allows admin to see user view
+
+Workflow: Announcement Approval
+1. Dean/Program Head creates announcement
+2. System flags for approval (if required)
+3. Super Admin sees pending item
+4. Super Admin reviews content
+5. Decision:
+   - Approve: Published immediately, notification sent
+   - Reject: Returned to creator with notes
+6. Audit log records action
+
+Workflow: Facility Management
+1. Super Admin adds new building
+2. Enters: Code, Name, Department, Floors, Coordinates
+3. System creates facility record
+4. Admin adds rooms to facility
+5. Admin creates navigation nodes for building
+6. Admin connects nodes with edges
+7. Facility appears on public map
+
+
+================================================================================
+END OF DOCUMENT
+================================================================================

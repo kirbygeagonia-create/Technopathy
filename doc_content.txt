@@ -1,0 +1,753 @@
+1: CHAPTER 1
+2: THE PROBLEM AND ITS BACKGROUND
+3: Introduction
+4: The TechnoPath: SEAIT Guide Map and Navigation System is a mobile application-based guide map system designed to display the complete layout of the South East Asian Institute of Technology, Inc. (SEAIT) campus, located at Barangay Crossing Rubber, National Highway, Tupi, South Cotabato, 9505, Philippines. The study provides interactive two-dimensional (2D) map of the campus buildings, including the RST, MST, and JST buildings, the Basic Education building, the gymnasium, canteens, playground, and other campus facilities, with each map containing clearly labeled rooms, offices, and key institutional areas organized by floor level. The study further incorporates a QR code access point posted at the main gate of the SEAIT campus, enabling students, faculty, and visitors to immediately load the campus guide map upon arrival by scanning the code with a mobile device, without requiring prior application installation or knowledge of the application URL. The study operates under a structured role-based administrative backend where the Safety and Security Office manage structural building information, the Program Heads of each department manage department-specific data such as classroom assignments and departmental announcements, and the Dean serves as an oversight authority to monitor and validate major departmental updates. An AI Virtual Guide feature is integrated into the study to deliver conversational navigation assistance, allowing users to describe their intended destination in natural language and receive directional guidance based on stored campus navigation data, thereby supporting independent wayfinding across the entire SEAIT campus grounds and buildings.
+5: The current orientation and navigation process at the SEAIT campus is conducted entirely through manual and informal means, with no structured digital wayfinding system in place to assist individuals entering or moving within the campus premises. However, there are printed tarpaulins specifically in each facility. Hence, no clear guide map, posted signage, or digital reference is available at the campus entrance or within the campus grounds to direct new arrivals toward the buildings, classrooms, offices, or facilities they need to locate. Guiding is provided informally through verbal instructions from teachers, staff members, or senior students encountered along the way, and the accuracy of the directions received depends entirely on the personal knowledge and availability of the individual being asked. Informational dissemination regarding facility locations, room assignments, and office designations is performed by physically visiting the relevant offices or by relying on word-of-mouth communication among students and faculty, a process that is inherently prone to outdated information, inconsistency, and miscommunication. When classroom assignments are changed at the beginning of each semester or during the academic year, no centralized announcement platform or updated reference material is distributed to inform students and faculty of the new room designations, leaving individuals to discover the changes only upon arriving at the previously assigned classroom and finding the assignment altered. The absence of a formalized navigation process places the burden of campus orientation entirely on the individual, requiring each student, faculty member, or visitor to independently seek out directions through repeated inquiries, trial-and-error exploration, or reliance on the uncertain availability of knowledgeable campus personnel.
+6: The absence of a campus guide map and a centralized digital navigation reference have produced recurring orientation challenges among SEAIT students, faculty, and visitors that directly affect academic punctuality, institutional efficiency, and the overall campus experience. [1] No centralized digital guide exists that presents a clear and visual path from the main gate to the different buildings and facilities of the SEAIT campus, causing delays, missed classes, and unnecessary confusion for individuals who are unfamiliar with the campus layout. [2] No updated digital reference or announcement platform exists to broadcast changes in room labels and classroom assignments when modifications occur each semester, leaving students and faculty without a reliable and current source of room designation information and causing repeated instances of students arriving at incorrect classrooms. [3] New students, transferees, and visitors are unable to locate the offices and inquiry desks within the SEAIT campus buildings when seeking academic assistance, administrative transactions, or institutional inquiries, resulting in repeated misdirection, wasted time, and frustration as individuals are directed from one location to another without a definitive reference. [4] Freshmen, transferees, and visitors frequently become confused and disoriented upon entering the SEAIT campus due to unfamiliarity with the campus buildings, classroom locations, and facility layouts, with no immediately accessible and accurate guide map available to orient new arrivals upon entry. [5] Students, faculty, and visitors frequently hesitate to ask for directions from teachers, staff, or senior students due to social reluctance or the unavailability of campus personnel at the moment of need, and when directions are obtained, the information received is often outdated, incomplete, or inaccurate, which compounds the confusion and delays experienced by the individual seeking guidance.
+7: TechnoPath: SEAIT Guide Map and Navigation System delivers immediate and practical benefits to students, faculty, visitors, and the institution as a whole by providing a centralized, accurate, and readily accessible digital navigation reference that eliminates the confusion, delays, and misdirection caused by the absence of a formalized campus wayfinding system. Students and visitors gain the access of a guide map to independently locate classrooms, offices, and facilities without relying on verbal directions, while the institution benefits from a structured, updatable platform that reduces repeated inquiries and ensures that navigational information remains current throughout the academic year. These benefits are realized through five core features: an interactive 2D campus ground layout and building floor maps with clearly labeled rooms and highlighted offices; a QR code access point at the main gate for immediate system access upon arrival; a building room update module that allows the Safety and Security Office administrator to add, modify, and delete room labels and classroom assignments; and an AI Virtual Guide that responds to natural language queries with conversational directional guidance based on stored campus navigation data.
+8: Objectives of the Study
+9: General Objective
+10: The study aims to design and develop the TechnoPath: SEAIT Guide Map and Navigation System for the students, faculty, visitors, and the Safety and Security Office of South East Asian Institute of Technology, Inc. (SEAIT), Barangay Crossing Rubber, National Highway, Tupi, South Cotabato, to provide a centralized, interactive, and digitalized guide map and navigation platform that addresses campus orientation and wayfinding challenges.
+11: Special Objectives
+12: To be able to display a visual route from the main gate to the different buildings and facilities of SEAIT campus and to show interactive 2D floor maps of the SEAIT buildings with labeled rooms to guide students, faculty, and visitors in locating classrooms, offices, and facilities within the SEAIT campus.
+13: To be able to provide a digital platform where SEAIT departmental program head, dean, and Safety and Security Office can make announcements and can add, modify, and delete room labels, office designations, and classroom assignments through the administrative backend for accurate and current student, faculty, and visitor reference.
+14: To be able to display labeled building maps that highlight the offices, inquiry desks, and key rooms within the SEAIT campus buildings to help students, faculty, and visitors locate them quickly.
+15: To be able to provide a scannable QR code posted at the main gate of the SEAIT campus that allows students, faculty, and visitors to immediately access the TechnoPath Guide Map and Navigation System.
+16: To be able to provide an AI-powered virtual assistant that answers location-related questions and gives route directions to help students, faculty, and visitors find classrooms, offices, and facilities independently.
+17: Scope and Limitations of the Study
+18: Scope of the Study
+19: The study is developed to address the campus navigation and orientation challenges experienced by students, faculty, visitors, and the Safety and Security Office of South East Asian Institute of Technology, Inc. (SEAIT), Barangay Crossing Rubber, National Highway, Tupi, South Cotabato. The institution currently lacks a centralized and digitalized campus guide, leaving freshmen, transferees, and visitors without a reliable reference for locating buildings, classrooms, offices, and facilities. The TechnoPath: SEAIT Guide Map and Navigation System was developed to provide an accessible, accurate, and updatable digital guide that serves the entire SEAIT campus grounds and buildings, enabling all user groups to navigate the campus independently and efficiently.
+20: Campus Navigation Guide with 2D Building Floor Maps 
+21: The study provides an interactive 2D campus ground layout and 2D floor maps of the SEAIT campus buildings. The feature allows users to view and interact the main gate, campus walkways, and the locations of all buildings, and to navigate individual building floors with labeled rooms, highlighted offices, and key facility markers. The navigation guide also displays visual routes from the main gate to the target buildings to assist users who are visiting the campus for the first time.
+22: Building Classroom and Room Updates 
+23: The study allows authorized department program head and dean and the Safety and Security Office to add, modify, and delete room labels, office designations, and classroom assignments within the digital building maps through the administrative backend. The feature ensures that the navigational information displayed to users remains accurate and reflects current institutional arrangements, particularly when room assignments are changed during the academic year.
+24: SEAIT Building Room Maps with Highlighted Offices 
+25: The study displays labeled maps of the SEAIT campus buildings with highlighted offices, inquiry desks, and key institutional rooms. The feature allows users to retrieve the location of specific offices within the building floors, enabling faster and more accurate navigation to administrative and academic service areas without requiring verbal directions from campus personnel.
+26: QR Code Access Point (Main Gate) 
+27: The study provides a scannable QR code posted at the main gate of the SEAIT campus. The feature allows any user — students, faculty, or visitors — to retrieve and load the campus guide map immediately upon arrival by scanning the code with a mobile device, without requiring a prior application installation or knowledge of the URL.
+28: AI Chatbot / Virtual Guide
+29:  The study provides an AI-powered conversational assistant that responds to location-related queries submitted by users. The feature allows students, faculty, and visitors to describe their destination in natural language and receive a guided route or directional instruction based on the stored campus navigation data, enabling independent wayfinding without requiring assistance from campus personnel.
+30: Limitations of the Study
+31: The TechnoPath: SEAIT Guide Map and Navigation System is limited to the campus premises of South East Asian Institute of Technology, Inc. (SEAIT) and does not extend to off-campus locations or external facilities. The study operates as a 2D visual map and navigation guide and does not incorporate real-time GPS tracking, augmented reality overlays, or three-dimensional building visualization. Navigation through the AI Virtual Guide feature is limited to responses based on the stored campus map and location data, and the study is unable to provide answers outside the scope of campus-related queries. The building room update module restricts data modification access to authorized administrators only, and the study does not allow public users to add, edit, or delete any campus information. The study does not include real-time event scheduling, emergency alerts, or integration with any external institutional management system. The accuracy of map information is dependent on the timely updating of room labels and office designations by the authorized administrators, and the study does not automatically reflect physical changes to the campus that are not entered through the administrative backend.
+32: Significance of the Study
+33: The TechnoPath: SEAIT Guide Map and Navigation System holds practical and academic significance for the different groups who are directly and indirectly connected to the South East Asian Institute of Technology, Inc. (SEAIT). The following are the groups that benefit from the conduct of the study:
+34: Students 
+35: The study enables SEAIT students, particularly freshmen and transferees, to locate classrooms, offices, and facilities within the campus through an interactive digital guide. The study reduces confusion and prevents late attendance by providing accurate and updated navigation references before and during class days. Students are encouraged to navigate between buildings and campus areas independently, without relying on verbal directions from others.
+36: Faculty 
+37: The study serves as a centralized digital reference platform for SEAIT faculty by providing updated classroom labels and departmental announcements. Each Program Head is granted department-level administrative access to manage classroom labeling and departmental announcements, while the Dean serves as an oversight authority to monitor and validate major departmental updates and ensure information integrity.
+38: Safety and Security Office 
+39: The study serves as a digital management tool that allows the Safety and Security Office to oversee structural building information, including room creation, deletion, and layout configuration. The study ensures that students, faculty, and visitors receive accurate and updated navigational information, reducing repeated inquiries and miscommunication at the institutional level. The Safety and Security Office, which manages campus safety and gate security operations, holds the appropriate authority to administer the QR code access point posted at the main gate and to maintain the accuracy of the campus navigation data within the system.
+40: Visitors 
+41: Visitors to the SEAIT campus are among the primary beneficiaries of the study, as they have no prior familiarity with the campus layout. The QR code access point at the main gate allows visitors to immediately load the guide map upon arrival and independently locate offices, facilities, and key campus areas without requiring assistance from campus personnel. The study reduces the inconvenience of seeking verbal directions and ensures that visitors are guided efficiently throughout the campus.
+42: Researchers 
+43: The researchers involved in the study gain practical experience in system analysis, design, and implementation within an actual educational environment. The study allows the researchers to apply acquired knowledge in developing a real-world solution that addresses an institutional navigation challenge, particularly for freshmen, transferees, and visitors finding and navigating classrooms and facilities within the SEAIT campus.
+44: Future Researchers 
+45: The study provides future researchers with a reference model for developing campus navigation and digital mapping systems in different institutions. The study can serve as a foundation for further investigations related to campus digital solutions, user experience in educational systems, and location-based information systems within Philippine academic settings.
+46: Flow of the Study
+47: The conceptual framework of the TechnoPath: SEAIT Guide Map and Navigation System follows the Input-Process-Output (IPO) model, which illustrates the data requirements, operational procedures, and expected output of the study. 
+48: INPUT
+49: PROCESS
+50: OUTPUT
+51: Insert destination routes and current location
+52: Insert Admin announcements, add, modify and delete room labels, office designations, and classroom assignments through the administrative backend
+53: Interact with labeled rooms, highlighted buildings
+54: Scan QR code for access point
+55: Converse with AI Chatbot Virtual Guide
+56: ➡
+57: • Rendering the interactive 2D campus ground layout and building floor maps, computing the shortest navigation route to the selected destination 
+58: • Validating and storing the submitted room labels, office designations, and classroom assignments in the database, and updating the building floor maps to reflect the current institutional arrangements.
+59: • Validating, Updating and storing the submitted highlighted room labels, office designations, and classroom assignments in the map layout, reflecting the current institutional arrangements.
+60: • Validating the scanned QR code and loading the campus guide map interface on the user’s mobile device.
+61: • Detecting internet connectivity and processing the submitted natural language query through the AI Virtual Guide in online mode, or matching it against the local FAQ database in offline fallback mode, and generating a directional response.
+62: ➡
+63: Technopath: SEAIT Guide Map and Navigation System
+64: Figure 1.1 The Input-Process-Output (IPO) framework of TechnoPath: SEAIT Guide Map and Navigation System
+65: Definition of Terms
+66: SEAIT — South East Asian Institute of Technology, Inc., the educational institution located at Barangay Crossing Rubber, National Highway, Tupi, South Cotabato, 9505, Philippines, where the TechnoPath Guide Map and Navigation System is developed and implemented.
+67: Navigation System — The wayfinding component of the TechnoPath study that computes and displays visual routes from a starting point to a target destination within the SEAIT campus, using stored map data and pathfinding algorithms to generate step-by-step directional guidance.
+68: Guide Map — A visual reference tool presented within the TechnoPath system that displays the layout of the SEAIT campus grounds and building floors, including labeled rooms, highlighted offices, walkways, and facility markers, to assist users in locating their intended destinations.
+69: 2D Map — A two-dimensional visual representation of the SEAIT campus layout used in the study to display buildings, rooms, offices, and facilities in a flat, top-down perspective that allows users to identify and locate specific areas within the campus grounds and building floors.
+70: QR Code Access Point — A Quick Response (QR) code posted at the main gate of the SEAIT campus that, when scanned by a mobile device, immediately loads the TechnoPath Guide Map and Navigation System interface, providing instant access to the campus guide map without requiring prior application installation or URL knowledge.
+71: Role-Based Access — A system design approach used in the TechnoPath administrative backend that assigns different levels of data management authority to different user roles, including the Safety and Security Office for structural building data, Program Heads for department-specific data, and the Dean for oversight and validation of major updates.
+72: Safety and Security Office — The institutional office at South East Asian Institute of Technology, Inc. (SEAIT) responsible for campus safety, gate security operations, and structural building information management within the TechnoPath system, including room creation, deletion, layout configuration, and administration of the QR code access point at the main gate.
+73: Classroom Assignment — The designated room or location within a campus building where a specific class section is scheduled to meet, which may change per semester or during the academic year and is updated within the TechnoPath system through the administrative backend.
+74: AI Virtual Guide — An artificial intelligence-powered conversational assistant integrated into the TechnoPath system that processes natural language queries submitted by users and generates directional responses based on stored campus navigation data to guide students, faculty, and visitors toward their intended destinations within the SEAIT campus.
+75: Wayfinding — The process by which students, faculty, and visitors orient themselves within the SEAIT campus and navigate from one location to another, which the TechnoPath system supports through interactive 2D maps, visual route displays, and AI-powered directional assistance.
+76: Administrative Backend — The restricted portion of the TechnoPath system accessible only to authorized administrators, including the Safety and Security Office, Program Heads, and the Dean, through which building structural information, room labels, office designations, and classroom assignments are added, modified, or deleted to maintain accurate campus navigation data.
+77: Dijkstra’s Algorithm — A shortest-path computation algorithm implemented in the TechnoPath system to calculate the most efficient navigation route between two locations on the campus map, using stored room coordinates and pathway distance data.
+78: CRUD — An acronym for Create, Read, Update, and Delete, representing the four basic operations performed on data within the TechnoPath administrative backend for managing room labels, office designations, classroom assignments, and other campus navigation information.
+79: Flutter — An open-source mobile application development framework created by Google, used as the front-end technology of the TechnoPath system to build the cross-platform mobile application interface using the Dart programming language.
+80: Flask — A lightweight Python web framework used as the back-end technology of the TechnoPath system to handle the online AI chatbot service, processing user queries and returning AI-generated directional responses when internet connectivity is available.
+81: Soft Delete — A data management technique used in the TechnoPath system where deleted records are marked as inactive using a flag rather than being permanently removed from the database, preserving data integrity and allowing administrators to restore previously deleted entries.
+82: SQLite — A lightweight, serverless, and self-contained relational database engine used as the local on-device database of the TechnoPath system to store campus navigation data, room information, facility details, FAQ entries, and administrative records without requiring an external database server.
+83: Application Programming Interface (API). A set of protocols and definitions that allows two software applications to communicate with each other. In TechnoPath, the online AI chatbot mode uses an external AI API to process user queries and return conversational directional responses when internet connectivity is available.
+84: Connectivity Detection. The process by which TechnoPath automatically determines whether the mobile device has an active internet connection. Based on the result of this detection, the AI chatbot switches between online mode—which uses the external AI API—and offline mode—which uses the local FAQ database—to ensure continuous navigation assistance regardless of network availability.
+85: Dart. An object-oriented, compiled programming language developed by Google, used as the primary programming language for writing the Flutter mobile application frontend of TechnoPath. Dart enables the development of high-performance, cross-platform mobile applications from a single codebase.
+86: Database. An organized, structured collection of data stored electronically and managed by a database engine. In TechnoPath, the SQLite database stores all campus navigation data, room and facility information, FAQ entries, feedback records, and administrative user accounts locally on the mobile device, enabling the system to function without an active internet connection.
+87: FAQ (Frequently Asked Questions) Database. A local database stored on the mobile device that contains pre-written question-and-answer pairs covering common campus navigation queries. In TechnoPath, the FAQ database serves as the fallback knowledge source for the AI chatbot when the device does not have an active internet connection, enabling offline navigation assistance through keyword-based matching.
+88: Feedback. Information submitted anonymously by users—students, faculty, or visitors—regarding their experience with TechnoPath, including star ratings and written comments about map accuracy, AI chatbot performance, navigation results, or specific rooms and facilities. Feedback records are stored in the database and reviewed by administrators to identify areas for system improvement.
+89: Floor Map. A two-dimensional, top-down graphical representation of a single floor within a campus building, displayed within TechnoPath to show the layout of rooms, offices, corridors, and key facilities on that specific floor level. Floor maps in TechnoPath are rendered using SVG assets and include labeled rooms, highlighted offices, and floor-switching controls to enable users to navigate between building levels.
+90: Interactive Map. A digital map displayed within TechnoPath that responds to user input, allowing users to tap on buildings or rooms to view details, zoom in and out of the campus layout, switch between building floors, and initiate navigation to a selected destination. The interactive map is the primary interface through which students, faculty, and visitors navigate the SEAIT campus within the system.
+91: Keyword Matching. A text-processing technique used in the offline mode of the TechnoPath AI chatbot wherein the user’s submitted query is compared against pre-defined keywords associated with FAQ entries in the local database. The FAQ entry with the highest number of matching keywords is returned as the chatbot’s response when internet access is unavailable.
+92: Label. A text annotation displayed on a room, office, corridor, or facility marker within the TechnoPath 2D floor maps and campus ground layout map. Labels identify specific locations by name and room type, enabling users to visually recognize and distinguish individual spaces within the campus buildings and grounds. Room labels are managed by authorized administrators through the Building Classroom and Room Updates module.
+93: Layout. The spatial arrangement of rooms, offices, corridors, stairwells, and other physical spaces within a campus building or across the campus grounds, as represented in the TechnoPath 2D floor maps and campus ground layout map. The layout data is stored in the system database and reflects the actual physical configuration of SEAIT’s buildings and campus grounds as maintained by the Safety and Security Office.
+94: Module. A self-contained functional component of TechnoPath that performs a specific set of related tasks within the system. Each module—such as the Building Classroom and Room Updates module, the AI chatbot module, the QR code access module, and the administrative backend module—operates as a distinct part of the overall system while integrating with the other modules to deliver the complete campus navigation platform.
+95: Natural Language. Ordinary human language as used in everyday conversation, as opposed to formal programming or command-based syntax. TechnoPath’s AI Virtual Guide accepts queries submitted in natural language, allowing users to describe their intended destination in conversational terms rather than requiring specific commands or search codes.
+96: Navigation Graph. A mathematical data structure composed of nodes (representing navigable locations such as rooms, corridors, and stairwells) and edges (representing the pathways between those locations with associated distance weights) used by TechnoPath to compute and display campus navigation routes through Dijkstra’s Algorithm.
+97: Navigation System. The wayfinding component of TechnoPath that computes and displays visual routes from a starting point to a target destination within the SEAIT campus, using stored map data and the navigation graph to generate step-by-step directional guidance for users.
+98: Node. In the context of the TechnoPath navigation graph, a node is a stored data point representing a specific navigable location within the SEAIT campus, such as a room, corridor junction, stairwell, entrance, or building exit. Each node stores X and Y coordinates on the 2D map and is linked to adjacent nodes through navigation edges.
+99: Notification. A system-generated alert or informational message delivered within the TechnoPath mobile application to inform users of relevant campus updates, connectivity status changes, facility availability changes, or system maintenance events. Notifications are stored in the database and displayed through the notification bell interface, classified by type and priority level.
+100: Offline Mode. The operational state of TechnoPath in which the mobile application functions without an active internet connection, relying exclusively on locally stored data—including the SQLite campus navigation database and the local FAQ database—to provide navigation services and AI chatbot responses. In offline mode, the AI chatbot uses keyword matching against the local FAQ database instead of the external AI API.
+101: Offline-First Architecture. A system design approach wherein the application is designed to function fully without an active internet connection by storing all essential data locally on the mobile device. TechnoPath follows an offline-first architecture, storing campus map data, room information, and FAQ entries in a local SQLite database so that navigation features remain available even when the device has no network access.
+102: Online Mode. The operational state of TechnoPath in which the mobile application is connected to the internet, enabling the AI chatbot to send user queries to the external AI API through the Python Flask backend and receive AI-generated conversational directional responses. The system automatically switches to online mode when connectivity is detected and reverts to offline mode when connectivity is lost.
+103: QR Code (Quick Response Code). A type of two-dimensional matrix barcode that can be scanned by a mobile device camera to instantly retrieve encoded information. In TechnoPath, a QR code is posted at the main gate of the SEAIT campus; when scanned, it loads the TechnoPath campus guide map interface directly on the user’s mobile device without requiring prior application installation or knowledge of the URL.
+104: Role-Based Access Control (RBAC). A security and data governance approach used in the TechnoPath administrative backend that assigns specific data management permissions to different user roles. The Safety and Security Office is authorized to manage structural building data; Program Heads are authorized to manage department-specific classroom and announcement data; and the Dean is authorized to oversee and validate major departmental updates. Public users have no data modification access.
+105: Route. A computed navigational path displayed within TechnoPath that connects a user’s starting point—such as the main gate or current position—to a selected destination room, office, or facility within the SEAIT campus. Routes are calculated using Dijkstra’s Algorithm applied to the navigation graph and are displayed as a highlighted overlay on the 2D campus ground layout map.
+106: Scrum. An Agile project management framework used in the development of TechnoPath that organizes work into fixed-length iterations called Sprints. Each Sprint follows the phases of Planning, Analysis, Design, Implementation, Testing, and Review, allowing the development team to deliver incremental, working system components while continuously gathering and incorporating feedback from stakeholders.
+107: SHA-256 (Secure Hash Algorithm 256-bit). A cryptographic hash function used in TechnoPath to secure administrator account passwords within the system database. When an administrator sets or changes a password, it is converted into a fixed-length SHA-256 hash value before being stored, ensuring that plaintext passwords are never directly saved in the database.
+108: Soft Delete. A data management technique used in TechnoPath wherein a deleted record is not permanently removed from the database but is instead marked as inactive using a boolean flag (is_deleted). This approach preserves data integrity and audit trail history while hiding the record from the active campus map, and allows authorized administrators to restore previously deactivated entries if needed.
+109: Sprint. A fixed-length development iteration within the Scrum framework, typically lasting two to three weeks, during which a defined set of system features is planned, designed, built, tested, and reviewed. TechnoPath was developed across four Sprints, each targeting a specific set of system components.
+110: SVG (Scalable Vector Graphics). An XML-based vector image format used in TechnoPath to render the 2D campus ground layout map and building floor maps within the mobile application. SVG assets are stored locally on the device and rendered at any zoom level without loss of quality, making them well-suited for interactive campus map displays.
+111: User Acceptance Testing (UAT). A phase of software testing in which representative end-users—in this study, sample students, faculty members, and visitors—interact with the fully developed TechnoPath system and evaluate whether it meets the functional requirements and navigational needs identified during the study. UAT results are used to validate the overall effectiveness and usability of the system prior to institutional deployment.
+112: CHAPTER 3
+113: RESEARCH METHODOLOGY AND DESIGN
+114: This chapter presents the research methodology, development environment, software engineering model, system development phases, project timeline, functional decomposition, use case analysis, storyboard design, database design, entity relationship diagram, and data dictionary employed in the development of TechnoPath: SEAIT Guide Map and Navigation System.
+115: Environment
+116: TechnoPath: SEAIT Guide Map and Navigation System was developed and implemented at South East Asian Institute of Technology, Inc. (SEAIT), Barangay Crossing Rubber, National Highway, Tupi, South Cotabato 9505, Philippines. The study was conducted within the SEAIT campus premises, covering the RST, MST, and JST buildings, the Basic Education building, the gymnasium, canteens, playground, and other campus facilities and grounds. System development and testing took place during the Second Semester of Academic Year 2025–2026, with the campus environment serving as both the development context and the deployment location for the mobile application.
+117: Software Engineering Methodology
+118: The development of TechnoPath: SEAIT Guide Map and Navigation System adheres to the Agile Software Development Life Cycle (SDLC) using the Scrum framework. The Agile methodology was selected because the study requires iterative development, continuous stakeholder feedback, and the flexibility to accommodate requirement changes and panel corrections throughout the development cycle. Stakeholders involved in the iterative review process include the panel of evaluators, the Safety and Security Office, and representative end-users.
+119: The Scrum framework organizes the development process into time-boxed iterations called Sprints, each lasting two to three weeks, during which a defined set of features is planned, designed, implemented, tested, and reviewed before proceeding to the next Sprint. The iterative nature of Agile enables the delivery of working system increments at the end of each Sprint, facilitating early detection of issues, continuous improvement, and sustained alignment with stakeholder expectations.
+120: Figure 3.3. The Agile Scrum Software Development Life Cycle (SDLC) model adopted for the development of TechnoPath: SEAIT Guide Map and Navigation System, illustrating the iterative Sprint cycles of Planning, Analysis, Design, Implementation, Testing, and Review.
+121: System Development Phases
+122: The development of TechnoPath: SEAIT Guide Map and Navigation System is organized into four Sprints, each containing the standard Agile phases of Planning, Analysis, Design, Implementation, Testing, and Review.
+123: Sprint 1 — Core Foundation and Campus Map (Weeks 1–3)
+124: Phase 1: Planning — The researchers define the project scope, identify the cited problems, establish the system requirements, and create the product backlog. The Sprint 1 backlog prioritizes the core campus map display, building floor maps, and room labeling features as the foundational components of the system.
+125: Phase 2: Analysis — The researchers analyze the campus layout of SEAIT, gather floor plan data for the RST, MST, JST, and Basic Education buildings, identify all rooms, offices, and facilities to be included in the digital map, and define the data structure for storing room coordinates, building information, and navigation paths.
+126: Phase 3: Design — The researchers design the 2D campus ground layout map and building floor map interfaces, create the database schema for buildings, facilities, rooms, and navigation nodes, and design user interface wireframes for the home screen, map display, and room directory.
+127: Phase 4: Implementation — The researchers develop the Flutter mobile application shell, implement the interactive 2D campus map display using local SVG assets, build the SQLite database with room and facility data, and implement the building floor map viewer with labeled rooms and highlighted offices.
+128: Phase 5: Testing — The researchers conduct unit testing on map rendering, room data retrieval, and floor-switching functionality, and perform initial usability testing with sample users to validate map accuracy and interface clarity.
+129: Phase 6: Review — The researchers present the Sprint 1 increment to the thesis adviser and panel evaluators, gather feedback on map accuracy, room labeling, and interface design, and document the corrections and improvements to be addressed in the succeeding Sprint.
+130: Sprint 2 — Navigation Engine and QR Code Access (Weeks 4–6)
+131: Phase 1: Planning — The researchers define the Sprint 2 backlog, prioritizing campus navigation route computation, visual route overlay on the map, the QR code access point feature, and the campus ground navigation guide from the main gate to the buildings.
+132: Phase 2: Analysis — The researchers analyze the pathway connections between buildings, rooms, and campus areas; define the navigation graph (nodes and edges) with distance weights; and determine the QR code content and scanning workflow for the main gate access point.
+133: Phase 3: Design — The researchers design the navigation route overlay interface, the step-by-step direction display panel, the QR code generation and scanning workflow, and the visual route from the main gate to each campus building.
+134: Phase 4: Implementation — The researchers implement Dijkstra’s shortest-path algorithm in Dart for offline route computation, develop the navigation route overlay on the 2D map, build the QR code access point feature that loads the campus guide map upon scanning, and implement the campus ground navigation guide.
+135: Phase 5: Testing — The researchers conduct unit testing on the pathfinding algorithm, validate route accuracy across multiple origin-destination pairs, test the QR code scanning workflow on multiple mobile devices, and perform integration testing between the navigation engine and the campus map display.
+136: Phase 6: Review — The researchers present the Sprint 2 increment, gather feedback on navigation accuracy, QR code usability, and route display clarity, and document the refinements for the next Sprint.
+137: Sprint 3 — Administrative Backend and Room Updates (Weeks 7–9)
+138: Phase 1: Planning — The researchers define the Sprint 3 backlog, prioritizing the role-based administrative backend, the building classroom and room update module, and admin login and session management features.
+139: Phase 2: Analysis — The researchers analyze the administrative workflow for the Safety and Security Office, Program Heads, and the Dean; define role-based access permissions; and determine the CRUD operations required for room labels, office designations, and classroom assignments.
+140: Phase 3: Design — The researchers design the admin login interface, the admin dashboard, CRUD management screens for facilities and rooms, and the role-based access control logic.
+141: Phase 4: Implementation — The researchers develop the admin authentication module with SHA-256 password hashing, implement CRUD operations for room labels and office designations, build the role-based access control system, and implement the admin audit log.
+142: Phase 5: Testing — The researchers conduct unit testing on the authentication module, validate CRUD operations for data integrity, test role-based access restrictions, and perform security testing on the admin login system.
+143: Phase 6: Review — The researchers present the Sprint 3 increment, gather feedback on the administrative workflow, data management interface, and access control logic, and document the final refinements.
+144: Sprint 4 — AI Chatbot, Polish, and Deployment (Weeks 10–12)
+145: Phase 1: Planning — The researchers define the Sprint 4 backlog, prioritizing the AI chatbot/virtual guide feature, the offline FAQ fallback mode, the notification system, the feedback and ratings module, and final UI polish and deployment preparation.
+146: Phase 2: Analysis — The researchers analyze the AI chatbot requirements, define the FAQ database for offline fallback, determine the connectivity detection logic for switching between online and offline AI modes, and identify final UI improvements needed based on accumulated feedback.
+147: Phase 3: Design — The researchers design the AI chatbot conversational interface, the offline FAQ keyword matching logic, the notification bell and alert system, the feedback submission form, and final UI refinements for all screens.
+148: Phase 4: Implementation — The researchers develop the AI chatbot module with online mode (Python/Flask backend with AI API integration) and offline fallback mode (local FAQ keyword matching), implement the notification system, build the anonymous feedback and ratings module, and apply final UI polish across all screens.
+149: Phase 5: Testing — The researchers conduct comprehensive system testing, perform User Acceptance Testing (UAT) with sample students, faculty, and visitors, validate AI chatbot response accuracy, and conduct performance testing on low-end Android devices.
+150: Phase 6: Review — The researchers present the final system to the thesis adviser and panel evaluators, conduct the final defense presentation, gather evaluation scores, and prepare the system for institutional deployment.
+151: Figure 3.4. Gantt chart of TechnoPath: SEAIT Guide Map and Navigation System development timeline, covering January 5, 2026 to March 29, 2026.
+152: Functional Decomposition Diagram (FDD)
+153: The Functional Decomposition Diagram (FDD) illustrates the main features and sub-functions of TechnoPath: SEAIT Guide Map and Navigation System, organized hierarchically from the system level down to individual functional components. The system is decomposed into six primary functional modules: QR Code Access Point, Campus Navigation Guide with 2D Floor Maps, Building Room Maps with Highlighted Offices, Building Classroom and Room Updates Module, AI Chatbot / Virtual Guide, and the Admin Panel.
+154: Figure 3.5. Functional Decomposition Diagram of TechnoPath: SEAIT Guide Map and Navigation System.
+155: Use Case Matrix
+156: The Use Case Matrix identifies the primary and secondary actors of TechnoPath: SEAIT Guide Map and Navigation System and maps each actor to the system functions they interact with.
+157: Primary Actors
+158: Actor
+159: Description
+160: System Functions
+161: Student
+162: SEAIT students (freshmen, transferees, regular) who use the system to navigate the campus and locate classrooms, offices, and facilities.
+163: Scan QR code at main gate; View campus ground layout map; View building floor maps; Search for rooms and facilities; Navigate to a destination; Use AI chatbot for location queries; Submit anonymous feedback and ratings; View notifications.
+164: Faculty
+165: SEAIT faculty members who use the system for campus navigation reference and classroom location verification.
+166: Scan QR code at main gate; View campus ground layout map; View building floor maps; Search for rooms and facilities; Navigate to a destination; Use AI chatbot for location queries; Submit anonymous feedback and ratings; View notifications.
+167: Visitor
+168: External individuals visiting the SEAIT campus who use the system to locate offices, facilities, or persons of concern.
+169: Scan QR code at main gate; View campus ground layout map; View building floor maps; Search for rooms and facilities; Navigate to a destination; Use AI chatbot for location queries; Submit anonymous feedback and ratings.
+170: Secondary Actors
+171: Actor
+172: Description
+173: System Functions
+174: Safety and Security Office
+175: The institutional office responsible for campus safety, gate security, and structural building information management within the system.
+176: Log in to admin panel; Add, modify, and delete building structural data (rooms, facilities, floor layouts); Manage QR code access point; View admin dashboard and reports; Manage map labels and navigation paths; View audit log.
+177: Program Head
+178: The head of each academic department, managing department-specific data within the system.
+179: Log in to admin panel; Add, modify, and delete department-specific classroom assignments and announcements; View department-level reports; View admin dashboard.
+180: Dean
+181: The institutional oversight authority who monitors and validates major departmental updates within the system.
+182: Log in to admin panel; Review and validate major departmental updates; View all reports; View audit log; Monitor data integrity across departments.
+183: Storyboard
+184: The storyboard presents the conceptual visualization of TechnoPath: SEAIT Guide Map and Navigation System interface, illustrating the expected screen flow and user interaction sequence for each primary screen of the application.
+185: Screen 1: Splash Screen. The application displays the TechnoPath logo and SEAIT institutional branding during the initial loading sequence. The system loads the local SQLite database and campus map assets in the background.
+186: Screen 2: Home Screen (Campus Map). The main screen displays the interactive 2D campus ground layout map with all buildings, walkways, and facilities labeled. Zoom controls, a GPS location button, and a color hue adjustment button are positioned on the side of the map. A search bar is displayed at the top, and a bottom navigation bar provides access to the Facilities, Rooms, AI Chatbot, Information, and Settings tabs.
+187: Screen 3: QR Code Scan Result. When a user scans the QR code posted at the main gate, the application loads and immediately displays the campus ground layout map centered on the main gate entrance, with building labels visible.
+188: Screen 4: Building Floor Map. When a user selects a building from the campus map or the facilities list, the screen displays the 2D floor map of the selected building with labeled rooms, highlighted offices, and floor-switching controls (Ground Floor, 1st Floor, 2nd Floor, 3rd Floor).
+189: Screen 5: Navigation Route Display. When a user initiates navigation to a destination, the screen displays the computed shortest-path route as a highlighted overlay on the campus map, with a bottom panel showing the destination name, estimated distance, walking time, and step-by-step directions.
+190: Screen 6: AI Chatbot. The AI chatbot screen displays a conversational interface with message bubbles, a text input field, and quick suggestion chips. When online, the chatbot responds with AI-generated directional guidance. When offline, the chatbot matches the query against the local FAQ database and displays the closest answer.
+191: Screen 7: Admin Login. The admin login screen displays username and password fields, a login button, and an error message area. Successful login redirects the administrator to the Admin Dashboard.
+192: Screen 8: Admin Dashboard. The admin dashboard displays summary statistics (total facilities, total rooms, total feedback, recent activity), quick action buttons (Add Facility, Add Room, View Reports), and navigation to CRUD management and reports screens.
+193: Screen 9: Admin CRUD — Room Management. The room management screen displays a list of all rooms with search and filter options. Each room entry has Edit and Delete (soft delete) buttons. An “Add Room” button opens a form to create a new room with fields for name, type, floor, coordinates, description, and parent facility.
+194: Database Design
+195: The database design of TechnoPath: SEAIT Guide Map and Navigation System employs SQLite as the local on-device database engine, managed through the sqflite Flutter package. The database stores all campus navigation data, room and facility information, FAQ entries, feedback records, administrative user accounts, and system configuration locally on the mobile device to support offline-first operation.
+196: Figure 3.6. The database design of TechnoPath: SEAIT Guide Map and Navigation System, illustrating the table structure, column definitions, data types, and relationships.
+197: The database consists of 21 tables organized into the following functional groups:
+198: Campus Structure Tables: buildings, facilities, rooms, facility_images — Store the physical campus layout data, including buildings, facilities within buildings, individual rooms with map coordinates, and facility image galleries.
+199: Navigation Tables: navigation_nodes, navigation_edges — Store the navigation graph used by Dijkstra’s algorithm, consisting of navigable points (nodes) and pathway connections (edges) with distance weights.
+200: AI and FAQ Tables: faq_entries, ai_chat_logs — Store FAQ question-and-answer pairs for offline AI fallback and log all AI chatbot interactions for performance monitoring.
+201: User Interaction Tables: feedback, feedback_flags, search_history, usage_analytics — Store anonymous user feedback and ratings, feedback moderation flags, search query history, and anonymous usage events.
+202: Administration Tables: users, admin_audit_log — Store admin user accounts with SHA-256 hashed passwords and track all administrative actions for audit trail purposes.
+203: Notification Tables: notifications, notification_types, notification_preferences — Store in-app notifications, notification type configurations, and user notification preference settings.
+204: Configuration Tables: device_preferences, map_labels, app_config, connectivity_log — Store device-level user preferences, custom map labels, system-wide configuration settings, and internet connectivity tracking records.
+205: Entity Relationship Diagram
+206: The Entity Relationship Diagram (ERD) illustrates the data entities and their relationships within the TechnoPath: SEAIT Guide Map and Navigation System database.
+207: Figure 3.7. Entity Relationship Diagram of TechnoPath: SEAIT Guide Map and Navigation System.
+208: Key Relationships
+209: Relationship
+210: Type
+211: Description
+212: buildings → facilities
+213: One-to-Many (1:N)
+214: A building contains multiple facilities.
+215: facilities → rooms
+216: One-to-Many (1:N)
+217: A facility contains multiple rooms.
+218: facilities → facility_images
+219: One-to-Many (1:N)
+220: A facility has multiple images.
+221: facilities → navigation_nodes
+222: One-to-Many (1:N)
+223: A facility maps to multiple navigation nodes.
+224: rooms → navigation_nodes
+225: One-to-Many (1:N)
+226: A room maps to multiple navigation nodes.
+227: navigation_nodes → navigation_edges
+228: One-to-Many (1:N)
+229: A node has multiple outgoing/incoming edges.
+230: facilities → feedback
+231: One-to-Many (1:N)
+232: A facility receives multiple feedback entries.
+233: rooms → feedback
+234: One-to-Many (1:N)
+235: A room receives multiple feedback entries.
+236: feedback → feedback_flags
+237: One-to-Many (1:N)
+238: A feedback entry can have multiple moderation flags.
+239: faq_entries → ai_chat_logs
+240: One-to-Many (1:N)
+241: A FAQ entry can be matched in multiple chat logs.
+242: users → admin_audit_log
+243: One-to-Many (1:N)
+244: An admin user performs multiple audited actions.
+245: Data Dictionary
+246: The Data Dictionary defines the database tables, columns, data types, constraints, and descriptions for TechnoPath: SEAIT Guide Map and Navigation System.
+247: Table: buildings
+248: Column
+249: Data Type
+250: Constraints
+251: Description
+252: id
+253: INTEGER
+254: PRIMARY KEY, AUTOINCREMENT
+255: Unique building identifier
+256: name
+257: TEXT
+258: NOT NULL, UNIQUE
+259: Building name (e.g., RST Building, MST Building)
+260: description
+261: TEXT
+262: —
+263: Description of the building
+264: latitude
+265: REAL
+266: —
+267: GPS latitude of building center
+268: longitude
+269: REAL
+270: —
+271: GPS longitude of building center
+272: image_url
+273: TEXT
+274: —
+275: Path to building image asset
+276: is_deleted
+277: BOOLEAN
+278: DEFAULT 0
+279: Soft delete flag
+280: created_at
+281: TEXT
+282: NOT NULL, DEFAULT CURRENT_TIMESTAMP
+283: Record creation timestamp
+284: updated_at
+285: TEXT
+286: NOT NULL, DEFAULT CURRENT_TIMESTAMP
+287: Last update timestamp
+288: Table: facilities
+289: Column
+290: Data Type
+291: Constraints
+292: Description
+293: id
+294: INTEGER
+295: PRIMARY KEY, AUTOINCREMENT
+296: Unique facility identifier
+297: name
+298: TEXT
+299: NOT NULL
+300: Facility name (e.g., Computer Laboratory 1)
+301: type
+302: TEXT
+303: NOT NULL
+304: Facility type (classroom, laboratory, office, library, canteen, restroom, auditorium, entrance, parking, medical, security, sports)
+305: floor
+306: TEXT
+307: NOT NULL
+308: Floor label (e.g., Ground, 1st, 2nd)
+309: building_id
+310: INTEGER
+311: FOREIGN KEY → buildings(id)
+312: Parent building reference
+313: latitude
+314: REAL
+315: —
+316: GPS latitude
+317: longitude
+318: REAL
+319: —
+320: GPS longitude
+321: available
+322: BOOLEAN
+323: DEFAULT 1
+324: Whether the facility is currently available
+325: description
+326: TEXT
+327: —
+328: Detailed description
+329: capacity
+330: INTEGER
+331: DEFAULT 0
+332: Maximum capacity
+333: operating_hours
+334: TEXT
+335: —
+336: Operating hours string
+337: contact_info
+338: TEXT
+339: —
+340: Contact email or phone
+341: image_url
+342: TEXT
+343: —
+344: Path to primary image asset
+345: is_deleted
+346: BOOLEAN
+347: DEFAULT 0
+348: Soft delete flag
+349: created_at
+350: TEXT
+351: NOT NULL, DEFAULT CURRENT_TIMESTAMP
+352: Record creation timestamp
+353: updated_at
+354: TEXT
+355: NOT NULL, DEFAULT CURRENT_TIMESTAMP
+356: Last update timestamp
+357: Table: rooms
+358: Column
+359: Data Type
+360: Constraints
+361: Description
+362: id
+363: INTEGER
+364: PRIMARY KEY, AUTOINCREMENT
+365: Unique room identifier
+366: name
+367: TEXT
+368: NOT NULL
+369: Room name (e.g., Room 101, Library)
+370: type
+371: TEXT
+372: NOT NULL
+373: Room type (classroom, laboratory, office, library, canteen, restroom, auditorium, entrance, parking)
+374: floor
+375: INTEGER
+376: NOT NULL
+377: Floor number (0 = ground, 1 = 1st, etc.)
+378: x
+379: REAL
+380: NOT NULL
+381: X coordinate on the 2D map (pixels)
+382: y
+383: REAL
+384: NOT NULL
+385: Y coordinate on the 2D map (pixels)
+386: description
+387: TEXT
+388: DEFAULT ''
+389: Room description
+390: facility_id
+391: INTEGER
+392: FOREIGN KEY → facilities(id), NULLABLE
+393: Parent facility reference
+394: is_crucial
+395: BOOLEAN
+396: DEFAULT 0
+397: Whether the room appears in the default crucial rooms list
+398: search_count
+399: INTEGER
+400: DEFAULT 0
+401: Number of times the room has been searched
+402: is_deleted
+403: BOOLEAN
+404: DEFAULT 0
+405: Soft delete flag
+406: created_at
+407: TEXT
+408: NOT NULL, DEFAULT CURRENT_TIMESTAMP
+409: Record creation timestamp
+410: updated_at
+411: TEXT
+412: NOT NULL, DEFAULT CURRENT_TIMESTAMP
+413: Last update timestamp
+414: Table: navigation_nodes
+415: Column
+416: Data Type
+417: Constraints
+418: Description
+419: id
+420: INTEGER
+421: PRIMARY KEY, AUTOINCREMENT
+422: Unique node identifier
+423: name
+424: TEXT
+425: NOT NULL
+426: Node name
+427: node_type
+428: TEXT
+429: NOT NULL
+430: Type (room, facility, waypoint, entrance, staircase, elevator, junction)
+431: facility_id
+432: INTEGER
+433: FOREIGN KEY → facilities(id), NULLABLE
+434: Linked facility
+435: room_id
+436: INTEGER
+437: FOREIGN KEY → rooms(id), NULLABLE
+438: Linked room
+439: x
+440: REAL
+441: NOT NULL
+442: X coordinate on the 2D map
+443: y
+444: REAL
+445: NOT NULL
+446: Y coordinate on the 2D map
+447: floor
+448: INTEGER
+449: NOT NULL, DEFAULT 1
+450: Floor number
+451: is_deleted
+452: BOOLEAN
+453: DEFAULT 0
+454: Soft delete flag
+455: created_at
+456: TEXT
+457: NOT NULL, DEFAULT CURRENT_TIMESTAMP
+458: Record creation timestamp
+459: updated_at
+460: TEXT
+461: NOT NULL, DEFAULT CURRENT_TIMESTAMP
+462: Last update timestamp
+463: Table: navigation_edges
+464: Column
+465: Data Type
+466: Constraints
+467: Description
+468: id
+469: INTEGER
+470: PRIMARY KEY, AUTOINCREMENT
+471: Unique edge identifier
+472: from_node_id
+473: INTEGER
+474: NOT NULL, FOREIGN KEY → navigation_nodes(id)
+475: Starting node
+476: to_node_id
+477: INTEGER
+478: NOT NULL, FOREIGN KEY → navigation_nodes(id)
+479: Ending node
+480: distance
+481: INTEGER
+482: NOT NULL
+483: Distance weight for Dijkstra’s algorithm
+484: is_bidirectional
+485: BOOLEAN
+486: DEFAULT 1
+487: Whether the path works both ways
+488: is_deleted
+489: BOOLEAN
+490: DEFAULT 0
+491: Soft delete flag
+492: created_at
+493: TEXT
+494: NOT NULL, DEFAULT CURRENT_TIMESTAMP
+495: Record creation timestamp
+496: updated_at
+497: TEXT
+498: NOT NULL, DEFAULT CURRENT_TIMESTAMP
+499: Last update timestamp
+500: Table: faq_entries
+501: Column
+502: Data Type
+503: Constraints
+504: Description
+505: id
+506: INTEGER
+507: PRIMARY KEY, AUTOINCREMENT
+508: Unique FAQ identifier
+509: question
+510: TEXT
+511: NOT NULL
+512: The FAQ question
+513: answer
+514: TEXT
+515: NOT NULL
+516: The FAQ answer
+517: category
+518: TEXT
+519: DEFAULT 'general'
+520: Category (location, schedule, academic, services, general)
+521: keywords
+522: TEXT
+523: DEFAULT ''
+524: Comma-separated keywords for fuzzy matching
+525: usage_count
+526: INTEGER
+527: DEFAULT 0
+528: Number of times the FAQ was matched in offline mode
+529: is_deleted
+530: BOOLEAN
+531: DEFAULT 0
+532: Soft delete flag
+533: created_at
+534: TEXT
+535: NOT NULL, DEFAULT CURRENT_TIMESTAMP
+536: Record creation timestamp
+537: updated_at
+538: TEXT
+539: NOT NULL, DEFAULT CURRENT_TIMESTAMP
+540: Last update timestamp
+541: Table: feedback
+542: Column
+543: Data Type
+544: Constraints
+545: Description
+546: id
+547: INTEGER
+548: PRIMARY KEY, AUTOINCREMENT
+549: Unique feedback identifier
+550: rating
+551: INTEGER
+552: CHECK (rating >= 1 AND rating <= 5), NULLABLE
+553: Star rating (1–5)
+554: comment
+555: TEXT
+556: —
+557: Text feedback comment
+558: category
+559: TEXT
+560: DEFAULT 'general'
+561: Category (map_accuracy, ai_chatbot, navigation, general, bug_report, facility, room)
+562: facility_id
+563: INTEGER
+564: FOREIGN KEY → facilities(id), NULLABLE
+565: Related facility
+566: room_id
+567: INTEGER
+568: FOREIGN KEY → rooms(id), NULLABLE
+569: Related room
+570: is_flagged
+571: BOOLEAN
+572: DEFAULT 0
+573: Whether the feedback has been flagged
+574: flag_reason
+575: TEXT
+576: —
+577: Reason for flagging
+578: created_at
+579: TEXT
+580: NOT NULL, DEFAULT CURRENT_TIMESTAMP
+581: Submission timestamp
+582: Table: ai_chat_logs
+583: Column
+584: Data Type
+585: Constraints
+586: Description
+587: id
+588: INTEGER
+589: PRIMARY KEY, AUTOINCREMENT
+590: Unique log identifier
+591: user_query
+592: TEXT
+593: NOT NULL
+594: The user’s question
+595: ai_response
+596: TEXT
+597: —
+598: The AI’s response
+599: mode
+600: TEXT
+601: NOT NULL
+602: Mode: online (AI API) or offline (FAQ fallback)
+603: response_time_ms
+604: INTEGER
+605: —
+606: Response time in milliseconds
+607: is_successful
+608: BOOLEAN
+609: DEFAULT 1
+610: Whether the AI provided a valid response
+611: error_message
+612: TEXT
+613: —
+614: Error message if the request failed
+615: faq_id
+616: INTEGER
+617: FOREIGN KEY → faq_entries(id), NULLABLE
+618: Matched FAQ entry (offline mode)
+619: session_id
+620: TEXT
+621: —
+622: Chat session identifier
+623: created_at
+624: TEXT
+625: NOT NULL, DEFAULT CURRENT_TIMESTAMP
+626: Interaction timestamp
+627: Table: users
+628: Column
+629: Data Type
+630: Constraints
+631: Description
+632: id
+633: INTEGER
+634: PRIMARY KEY, AUTOINCREMENT
+635: Unique user identifier
+636: username
+637: TEXT
+638: NOT NULL, UNIQUE
+639: Admin username
+640: email
+641: TEXT
+642: —
+643: Admin email address
+644: password_hash
+645: TEXT
+646: NOT NULL
+647: SHA-256 hashed password
+648: user_type
+649: TEXT
+650: NOT NULL, DEFAULT 'admin'
+651: User type (admin)
+652: last_login
+653: TEXT
+654: —
+655: Last login timestamp
+656: login_attempts
+657: INTEGER
+658: DEFAULT 0
+659: Failed login attempt counter
+660: locked_until
+661: TEXT
+662: —
+663: Lockout expiry timestamp
+664: created_at
+665: TEXT
+666: NOT NULL, DEFAULT CURRENT_TIMESTAMP
+667: Account creation timestamp
+668: updated_at
+669: TEXT
+670: NOT NULL, DEFAULT CURRENT_TIMESTAMP
+671: Last update timestamp
+672: Table: admin_audit_log
+673: Column
+674: Data Type
+675: Constraints
+676: Description
+677: id
+678: INTEGER
+679: PRIMARY KEY, AUTOINCREMENT
+680: Unique log identifier
+681: user_id
+682: INTEGER
+683: NOT NULL, FOREIGN KEY → users(id)
+684: Admin who performed the action
+685: action
+686: TEXT
+687: NOT NULL
+688: Action type (create, update, soft_delete, restore, login, logout)
+689: entity_type
+690: TEXT
+691: —
+692: Entity type affected (facility, room, faq, map_label, user)
+693: entity_id
+694: INTEGER
+695: —
+696: ID of the affected entity
+697: old_value_json
+698: TEXT
+699: —
+700: JSON snapshot before the change
+701: new_value_json
+702: TEXT
+703: —
+704: JSON snapshot after the change
+705: created_at
+706: TEXT
+707: NOT NULL, DEFAULT CURRENT_TIMESTAMP
+708: Action timestamp
+709: Table: notifications
+710: Column
+711: Data Type
+712: Constraints
+713: Description
+714: id
+715: INTEGER
+716: PRIMARY KEY, AUTOINCREMENT
+717: Unique notification identifier
+718: title
+719: TEXT
+720: NOT NULL
+721: Notification title
+722: message
+723: TEXT
+724: NOT NULL
+725: Notification body message
+726: type
+727: TEXT
+728: NOT NULL
+729: Type (info, success, warning, error, emergency, facility_update, navigation_update, system_maintenance, connectivity_alert, app_update)
+730: data_json
+731: TEXT
+732: DEFAULT '{}'
+733: Additional JSON data
+734: priority
+735: INTEGER
+736: DEFAULT 1
+737: Priority level (1=low, 2=medium, 3=high, 4=urgent)
+738: is_read
+739: BOOLEAN
+740: DEFAULT 0
+741: Whether the notification has been read
+742: action_url
+743: TEXT
+744: —
+745: Deep link or action URL
+746: expires_at
+747: TEXT
+748: —
+749: Expiry timestamp
+750: created_at
+751: TEXT
+752: NOT NULL, DEFAULT CURRENT_TIMESTAMP
+753: Creation timestamp

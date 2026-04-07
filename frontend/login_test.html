@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Debug</title>
+</head>
+<body>
+    <h1>Login API Test</h1>
+    <div id="result"></div>
+    <script>
+        async function testLogin() {
+            const result = document.getElementById('result');
+            result.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/users/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: 'safety_admin',
+                        password: 'TechnoPath@Safety2024!'
+                    })
+                });
+                
+                const data = await response.json();
+                result.innerHTML = '<pre>' + JSON.stringify({
+                    status: response.status,
+                    data: data
+                }, null, 2) + '</pre>';
+                
+                if (response.ok) {
+                    result.innerHTML += '<br><b style="color:green">LOGIN SUCCESS!</b>';
+                } else {
+                    result.innerHTML += '<br><b style="color:red">LOGIN FAILED</b>';
+                }
+            } catch (e) {
+                result.innerHTML = '<b style="color:red">ERROR: ' + e.message + '</b><br>Is Django running on http://127.0.0.1:8000?';
+            }
+        }
+        
+        testLogin();
+    </script>
+</body>
+</html>

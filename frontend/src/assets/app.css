@@ -1,5 +1,7 @@
-/* App.vue External Styles */
-/* This file contains all styles for App.vue to avoid Vue scoped CSS conflicts */
+/* ============================================================
+   App.vue External Styles — Desktop & Mobile Layouts
+   Dark mode aware (uses CSS custom properties from main.css)
+   ============================================================ */
 
 /* Global styles */
 * {
@@ -10,12 +12,12 @@ body {
   margin: 0;
   padding: 0;
   font-family: var(--font-primary);
-  background: var(--color-surface);
   overflow-x: hidden;
 }
 
 #app {
   height: 100vh;
+  height: 100dvh;
   width: 100vw;
 }
 
@@ -29,31 +31,44 @@ html, body {
   width: 100%;
 }
 
-/* Desktop Layout */
+/* ── Desktop Layout ───────────────────────────────────────── */
+
 #app-root.app-desktop {
   display: flex;
 }
 
-/* Side Navigation */
+/* ── Side Navigation ──────────────────────────────────────── */
+
 .app-side-nav {
-  width: 260px;
+  width: var(--sidebar-width, 240px);
   height: 100vh;
-  background: white;
-  border-right: 1px solid #e0e0e0;
+  background: var(--color-bg);
+  border-right: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
   position: fixed;
   left: 0;
   top: 0;
   z-index: 100;
+  transition: background-color var(--duration-normal) var(--ease-out),
+              border-color var(--duration-normal) var(--ease-out);
 }
 
 .app-side-nav-header {
-  padding: 24px 20px;
+  padding: 20px;
   display: flex;
   align-items: center;
   gap: 12px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.app-logo-img {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  object-fit: contain;
+  background: var(--color-primary-light);
+  padding: 4px;
 }
 
 .app-logo-fallback {
@@ -62,9 +77,9 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #FFF3E0;
-  border-radius: 8px;
-  color: #FF9800;
+  background: var(--color-primary-light);
+  border-radius: var(--radius-md);
+  color: var(--color-primary);
 }
 
 .app-logo-fallback .material-icons {
@@ -74,15 +89,16 @@ html, body {
 .app-logo-text {
   font-size: 18px;
   font-weight: 700;
-  color: #FF9800;
+  color: var(--color-primary);
+  letter-spacing: -0.3px;
 }
 
 .app-side-nav-menu {
   flex: 1;
-  padding: 16px 12px;
+  padding: 12px 10px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   overflow-y: auto;
 }
 
@@ -90,113 +106,103 @@ html, body {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 16px;
-  border-radius: 10px;
+  padding: 11px 16px;
+  border-radius: var(--radius-md);
   text-decoration: none;
-  color: #666;
-  transition: all 0.15s;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  transition: all var(--duration-fast) var(--ease-out);
+  position: relative;
 }
 
 .app-side-nav-item:hover {
-  background: #f5f5f5;
-  color: #333;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  transform: translateX(2px);
 }
 
 .app-side-nav-item.app-active {
-  background: #FFF3E0;
-  color: #FF9800;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.app-side-nav-item.app-active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--color-primary);
 }
 
 .app-side-nav-item .material-icons {
-  font-size: 22px;
+  font-size: 21px;
 }
 
 .app-nav-text {
   font-size: 14px;
-  font-weight: 500;
+  font-weight: inherit;
 }
 
-/* Add transitions to nav items */
-.app-side-nav-item {
-  transition: all 0.2s ease;
-}
+/* ── Info Dropdown Section ─────────────────────────────────── */
 
-.app-nav-item {
-  transition: all 0.2s ease;
-}
-
-.app-side-nav-item:hover {
-  transform: translateX(4px);
-}
-
-.app-nav-item:active {
-  transform: scale(0.95);
-}
-
-/* Info Dropdown Section */
 .app-info-section {
-  border-top: 1px solid #f0f0f0;
-  padding: 8px 12px;
+  border-top: 1px solid var(--color-border);
+  padding: 6px 10px;
 }
 
 .app-info-dropdown-header {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 16px;
-  border-radius: 10px;
+  padding: 11px 16px;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  color: #666;
-  transition: all 0.2s ease;
+  color: var(--color-text-secondary);
+  transition: all var(--duration-fast) var(--ease-out);
   user-select: none;
 }
 
 .app-info-dropdown-header:hover {
-  background: #f5f5f5;
-  color: #333;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
 }
 
 .app-info-dropdown-header .material-icons {
-  font-size: 22px;
+  font-size: 21px;
 }
 
 .app-info-dropdown-header .app-dropdown-chevron {
   margin-left: auto;
   font-size: 18px;
-  transition: transform 0.2s ease;
+  transition: transform var(--duration-fast) var(--ease-out);
 }
 
 .app-info-dropdown-content {
-  padding: 4px 0;
-  animation: slideDown 0.2s ease;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  padding: 2px 0;
+  animation: slideDown var(--duration-fast) var(--ease-out);
 }
 
 .app-info-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 16px 10px 50px;
-  border-radius: 8px;
+  gap: 10px;
+  padding: 9px 16px 9px 48px;
+  border-radius: var(--radius-sm);
   text-decoration: none;
-  color: #666;
+  color: var(--color-text-secondary);
   font-size: 13px;
-  transition: all 0.2s ease;
+  font-weight: 500;
+  transition: all var(--duration-fast) var(--ease-out);
 }
 
 .app-info-item:hover {
-  background: #f5f5f5;
-  color: #333;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
 }
 
 .app-info-item .material-icons {
@@ -204,13 +210,44 @@ html, body {
 }
 
 .app-info-item.router-link-active {
-  background: #FFF3E0;
-  color: #FF9800;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
 }
 
+/* ── Admin Section ─────────────────────────────────────────── */
+
+.app-admin-section {
+  padding: 6px 10px;
+  border-top: 1px solid var(--color-border);
+}
+
+.app-admin-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.app-admin-link:hover {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+.app-admin-link .material-icons {
+  font-size: 21px;
+}
+
+/* ── Sidebar Footer ───────────────────────────────────────── */
+
 .app-side-nav-footer {
-  padding: 16px;
-  border-top: 1px solid #f0f0f0;
+  padding: 12px 10px;
+  border-top: 1px solid var(--color-border);
 }
 
 .app-user-info {
@@ -218,22 +255,24 @@ html, body {
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  background: #f8f9fa;
-  border-radius: 8px;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  transition: background-color var(--duration-normal) var(--ease-out);
 }
 
 .app-user-info .material-icons {
   font-size: 20px;
-  color: #888;
+  color: var(--color-text-hint);
 }
 
 .app-username {
   font-size: 13px;
-  color: #555;
+  color: var(--color-text-secondary);
   font-weight: 500;
 }
 
-/* Main Area (Desktop) */
+/* ── Main Area (Desktop) ──────────────────────────────────── */
+
 .app-main-area {
   flex: 1;
   display: flex;
@@ -245,7 +284,7 @@ html, body {
 }
 
 .app-main-area.app-with-sidebar {
-  margin-left: 260px;
+  margin-left: var(--sidebar-width, 240px);
 }
 
 .app-main-area.app-full-width {
@@ -257,11 +296,13 @@ html, body {
   overflow-y: auto;
   overflow-x: hidden;
   padding: 0;
-  background: #f5f5f5;
+  background: var(--color-surface);
   display: block;
+  transition: background-color var(--duration-normal) var(--ease-out);
 }
 
-/* Status Banners */
+/* ── Status Banners ───────────────────────────────────────── */
+
 .app-status-banner {
   display: flex;
   align-items: center;
@@ -269,16 +310,18 @@ html, body {
   gap: 8px;
   padding: 10px 16px;
   font-size: 13px;
+  font-weight: 500;
   flex-shrink: 0;
+  animation: slideDown var(--duration-normal) var(--ease-out);
 }
 
 .app-status-banner.app-offline {
-  background: #616161;
+  background: #424242;
   color: white;
 }
 
 .app-status-banner.app-syncing {
-  background: #FF9800;
+  background: var(--color-primary);
   color: white;
 }
 
@@ -286,7 +329,8 @@ html, body {
   font-size: 16px;
 }
 
-/* Mobile Layout */
+/* ── Mobile Layout ────────────────────────────────────────── */
+
 #app-root.app-mobile {
   display: flex;
   flex-direction: column;
@@ -300,24 +344,28 @@ html, body {
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: 80px;
+  padding-bottom: 72px;
   display: block;
 }
 
-/* Bottom Navigation */
+/* ── Bottom Navigation ────────────────────────────────────── */
+
 .app-bottom-nav {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 70px;
-  background: white;
-  border-top: 1px solid #e0e0e0;
+  height: calc(64px + env(safe-area-inset-bottom));
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-border);
   display: flex;
   justify-content: space-around;
   align-items: center;
   padding-bottom: env(safe-area-inset-bottom);
   z-index: 100;
+  box-shadow: 0 -1px 8px rgba(0,0,0,0.06);
+  transition: background-color var(--duration-normal) var(--ease-out),
+              border-color var(--duration-normal) var(--ease-out);
 }
 
 .app-nav-item {
@@ -325,12 +373,12 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 3px;
   flex: 1;
   height: 100%;
   text-decoration: none;
-  color: #888;
-  transition: color 0.15s;
+  color: var(--color-text-hint);
+  transition: color var(--duration-fast) var(--ease-out);
 }
 
 .app-nav-item .material-icons {
@@ -340,18 +388,23 @@ html, body {
 .app-nav-label {
   font-size: 11px;
   font-weight: 500;
+  font-family: var(--font-primary);
 }
 
 .app-nav-item.app-active {
-  color: #FF9800;
+  color: var(--color-primary);
 }
 
-/* Responsive */
+.app-nav-item:active {
+  transform: scale(0.93);
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+
 @media (max-width: 1023px) {
   .app-side-nav {
     display: none;
   }
-  
   .app-main-area {
     margin-left: 0;
   }
@@ -360,5 +413,18 @@ html, body {
 @media (min-width: 1024px) {
   .app-bottom-nav {
     display: none;
+  }
+}
+
+/* ── Keyframes ────────────────────────────────────────────── */
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

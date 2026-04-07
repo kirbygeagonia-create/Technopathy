@@ -1,0 +1,155 @@
+@startuml
+!define actor actor
+!define usecase usecase
+
+skinparam backgroundColor #FEFEFE
+skinparam usecase {
+    BackgroundColor<<SuperAdmin>> LightCoral
+    BackgroundColor<<Dean>> LightGreen
+    BackgroundColor<<ProgramHead>> LightBlue
+    BackgroundColor<<BasicEdHead>> LightYellow
+    BackgroundColor<<Guest>> LightGray
+    BorderColor Black
+}
+
+skinparam actor {
+    BackgroundColor<<SuperAdmin>> Red
+    BackgroundColor<<Dean>> Green
+    BackgroundColor<<ProgramHead>> Blue
+    BackgroundColor<<BasicEdHead>> Orange
+    BackgroundColor<<Guest>> Gray
+}
+
+title TechnoPath: SEAIT Guide Map - Use Case Diagram (UCD)
+
+left to right direction
+
+' ACTORS
+actor "Admin User\n(Abstract)" as AdminUser <<AdminUser>>
+actor "Super Admin\n(Safety & Security)" as SuperAdmin <<SuperAdmin>>
+actor "Dean\n(College Dean)" as Dean <<Dean>>
+actor "Program Head\n(College Program)" as ProgramHead <<ProgramHead>>
+actor "Basic Ed Head\n(Basic Education)" as BasicEdHead <<BasicEdHead>>
+actor "Guest User\n(Students, Visitors, Faculty)" as Guest <<Guest>>
+
+' GENERALIZATION RELATIONSHIPS (Actor Hierarchy)
+SuperAdmin --|> AdminUser : <<general>>
+Dean --|> AdminUser : <<general>>
+ProgramHead --|> AdminUser : <<general>>
+BasicEdHead --|> AdminUser : <<general>>
+
+' USE CASES - System Core
+rectangle "TechnoPath System" {
+    
+    ' MAP MANAGEMENT USE CASES
+    package "Map Management" {
+        usecase "Manage Facilities" as UC_ManageFacilities <<SuperAdmin>>
+        usecase "Manage All Rooms" as UC_ManageAllRooms <<SuperAdmin>>
+        usecase "Manage Own Dept Rooms" as UC_ManageOwnRooms <<Dean>>
+        usecase "Manage Navigation Graph" as UC_ManageNav <<SuperAdmin>>
+        usecase "Manage FAQ/Chatbot" as UC_ManageFAQ <<SuperAdmin>>
+        usecase "Generate QR Codes" as UC_QRCode <<SuperAdmin>>
+    }
+    
+    ' COMMUNICATIONS USE CASES
+    package "Communications" {
+        usecase "Post Campus Announcement" as UC_CampusAnnounce <<SuperAdmin>>
+        usecase "Post Dept Announcement" as UC_DeptAnnounce <<Dean>>
+        usecase "Approve Announcements" as UC_Approve <<SuperAdmin>>
+        usecase "Send Notifications" as UC_SendNotif <<SuperAdmin>>
+    }
+    
+    ' ADMINISTRATION USE CASES
+    package "Administration" {
+        usecase "Manage Admin Accounts" as UC_ManageAdmins <<SuperAdmin>>
+        usecase "View All Feedback" as UC_ViewAllFeedback <<SuperAdmin>>
+        usecase "View Dept Feedback" as UC_ViewDeptFeedback <<Dean>>
+        usecase "View Audit Log" as UC_ViewAudit <<SuperAdmin>>
+    }
+    
+    ' MOBILE USER USE CASES
+    package "Mobile User Features" {
+        usecase "View Campus Map" as UC_ViewMap <<Guest>>
+        usecase "Search Locations" as UC_Search <<Guest>>
+        usecase "Navigate Campus" as UC_Navigate <<Guest>>
+        usecase "Use Chatbot" as UC_Chatbot <<Guest>>
+        usecase "View Notifications" as UC_ViewNotif <<Guest>>
+        usecase "Submit Feedback" as UC_Feedback <<Guest>>
+        usecase "Add Favorites" as UC_Favorites <<Guest>>
+        usecase "Rate App" as UC_Rate <<Guest>>
+        usecase "View Building Info" as UC_BuildingInfo <<Guest>>
+        usecase "View Room Info" as UC_RoomInfo <<Guest>>
+        usecase "View Directory" as UC_Directory <<Guest>>
+    }
+    
+    ' INCLUDE AND EXTEND RELATIONSHIPS
+    UC_Navigate ..> UC_ViewMap : <<include>>
+    UC_Navigate ..> UC_Search : <<include>>
+    UC_CampusAnnounce ..> UC_Approve : <<extend>>
+    UC_DeptAnnounce ..> UC_Approve : <<extend>>
+}
+
+' SUPER ADMIN RELATIONSHIPS
+SuperAdmin --> UC_ManageFacilities
+SuperAdmin --> UC_ManageAllRooms
+SuperAdmin --> UC_ManageNav
+SuperAdmin --> UC_ManageFAQ
+SuperAdmin --> UC_QRCode
+SuperAdmin --> UC_CampusAnnounce
+SuperAdmin --> UC_Approve
+SuperAdmin --> UC_SendNotif
+SuperAdmin --> UC_ManageAdmins
+SuperAdmin --> UC_ViewAllFeedback
+SuperAdmin --> UC_ViewAudit
+SuperAdmin --> UC_ViewMap
+SuperAdmin --> UC_Search
+SuperAdmin --> UC_Navigate
+
+' DEAN RELATIONSHIPS
+Dean --> UC_ManageOwnRooms
+Dean --> UC_DeptAnnounce
+Dean --> UC_ViewDeptFeedback
+Dean --> UC_ViewMap
+Dean --> UC_Search
+Dean --> UC_Navigate
+
+' PROGRAM HEAD RELATIONSHIPS
+ProgramHead --> UC_ManageOwnRooms
+ProgramHead --> UC_CampusAnnounce
+ProgramHead --> UC_ViewMap
+ProgramHead --> UC_Search
+ProgramHead --> UC_Navigate
+
+' BASIC ED HEAD RELATIONSHIPS
+BasicEdHead --> UC_ManageOwnRooms
+BasicEdHead --> UC_CampusAnnounce
+BasicEdHead --> UC_ViewMap
+BasicEdHead --> UC_Search
+BasicEdHead --> UC_Navigate
+
+' GUEST USER RELATIONSHIPS
+Guest --> UC_ViewMap
+Guest --> UC_Search
+Guest --> UC_Navigate
+Guest --> UC_Chatbot
+Guest --> UC_ViewNotif
+Guest --> UC_Feedback
+Guest --> UC_Favorites
+Guest --> UC_Rate
+Guest --> UC_BuildingInfo
+Guest --> UC_RoomInfo
+Guest --> UC_Directory
+
+note right of UC_Approve
+  Campus-wide announcements
+  require Super Admin approval
+  for non-Super Admin users
+end note
+
+note bottom of Guest
+  Students, Visitors, and
+  Faculty share the same
+  Guest access level
+end note
+
+@enduml

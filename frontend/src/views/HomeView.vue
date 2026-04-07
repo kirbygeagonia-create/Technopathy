@@ -1,54 +1,58 @@
 <template>
   <div class="home-view">
+    <!-- Onboarding Tutorial -->
+    <OnboardingTutorial ref="onboardingRef" @complete="onOnboardingComplete" @skip="onOnboardingSkip" />
+
     <!-- Top bar with facility/room selectors - MOBILE ONLY -->
     <div class="top-selectors mobile-only">
-      <div class="selector-container">
-        <!-- Facilities Dropdown Wrapper -->
-        <div class="homeview-dropdown-wrapper homeview-facilities-wrapper" @click.stop>
-          <div 
-            class="homeview-facilities-dropdown"
-            :class="{ 'homeview-expanded': isFacilitiesExpanded }"
-          >
-            <button class="homeview-dropdown-header" @click.prevent="toggleFacilities">
-              <span>Facilities</span>
-              <span class="homeview-chevron material-icons">{{ isFacilitiesExpanded ? 'expand_less' : 'expand_more' }}</span>
-            </button>
-            <div v-if="isFacilitiesExpanded" class="homeview-dropdown-content" @click.stop>
-              <div
-                v-for="facility in facilities"
-                :key="facility.id"
-                class="homeview-dropdown-item"
-                :class="{ 'homeview-selected': selectedFacility === facility.name }"
-                @click.stop="selectFacility(facility.name)"
-              >
-                {{ facility.name }}
-                <span v-if="selectedFacility === facility.name" class="homeview-check material-icons">check</span>
-              </div>
+      <!-- Facilities Dropdown Wrapper -->
+      <div class="homeview-dropdown-wrapper homeview-facilities-wrapper" @click.stop>
+        <div 
+          class="homeview-facilities-dropdown"
+          :class="{ 'homeview-expanded': isFacilitiesExpanded }"
+        >
+          <button class="homeview-dropdown-header" @click.prevent="toggleFacilities">
+            <span class="dropdown-label">{{ selectedFacility || 'Select Facility' }}</span>
+            <span class="homeview-chevron material-icons">{{ isFacilitiesExpanded ? 'expand_less' : 'expand_more' }}</span>
+          </button>
+          <div v-if="isFacilitiesExpanded" class="homeview-dropdown-content" @click.stop>
+            <div
+              v-for="facility in facilities"
+              :key="facility.id"
+              class="homeview-dropdown-item"
+              :class="{ 'homeview-selected': selectedFacility === facility.name }"
+              @click.stop="selectFacility(facility.name)"
+            >
+              {{ facility.name }}
+              <span v-if="selectedFacility === facility.name" class="homeview-check material-icons">check</span>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Rooms Dropdown Wrapper -->
-        <div class="homeview-dropdown-wrapper homeview-rooms-wrapper" @click.stop>
-          <div 
-            class="homeview-rooms-dropdown"
-            :class="{ 'homeview-expanded': isRoomsExpanded }"
-          >
-            <button class="homeview-dropdown-header" @click.prevent="toggleRooms">
-              <span>Rooms</span>
-              <span class="homeview-chevron material-icons">{{ isRoomsExpanded ? 'expand_less' : 'expand_more' }}</span>
-            </button>
-            <div v-if="isRoomsExpanded" class="homeview-dropdown-content" @click.stop>
-              <div
-                v-for="room in rooms"
-                :key="room.id"
-                class="homeview-dropdown-item"
-                :class="{ 'homeview-selected': selectedRoom === room.name }"
-                @click.stop="selectRoom(room.name)"
-              >
-                {{ room.name }}
-                <span v-if="selectedRoom === room.name" class="homeview-check material-icons">check</span>
-              </div>
+      <!-- Rooms Dropdown Wrapper -->
+      <div class="homeview-dropdown-wrapper homeview-rooms-wrapper" @click.stop>
+        <div 
+          class="homeview-rooms-dropdown"
+          :class="{ 'homeview-expanded': isRoomsExpanded }"
+        >
+          <button class="homeview-dropdown-header" @click.prevent="toggleRooms">
+            <span class="dropdown-label">{{ selectedRoom || 'Select Room' }}</span>
+            <span class="homeview-chevron material-icons">{{ isRoomsExpanded ? 'expand_less' : 'expand_more' }}</span>
+          </button>
+          <div v-if="isRoomsExpanded" class="homeview-dropdown-content" @click.stop>
+            <div
+              v-for="room in filteredRooms"
+              :key="room.id"
+              class="homeview-dropdown-item"
+              :class="{ 'homeview-selected': selectedRoom === room.name }"
+              @click.stop="selectRoom(room.name)"
+            >
+              {{ room.name }}
+              <span v-if="selectedRoom === room.name" class="homeview-check material-icons">check</span>
+            </div>
+            <div v-if="filteredRooms.length === 0" class="homeview-dropdown-item homeview-empty">
+              No rooms in this facility
             </div>
           </div>
         </div>
@@ -61,51 +65,35 @@
         class="map-container"
         ref="mapContainer"
         @wheel.prevent="handleZoom"
+        @mousedown="startPan"
+        @mousemove="handlePan"
+        @mouseup="endPan"
+        @mouseleave="endPan"
+        @touchstart="startTouchPan"
+        @touchmove="handleTouchPan"
+        @touchend="endPan"
       >
         <div 
           class="map-content"
           :style="mapTransformStyle"
         >
-          <div class="map-fallback">
-            <div class="campus-map-placeholder">
-              <h2>SEAIT Campus Map</h2>
-              <p>Interactive Campus Guide</p>
-              <div class="buildings-legend">
-                <div class="legend-item">
-                  <div class="building-marker rst">
-                    <span class="material-icons">business</span>
-                  </div>
-                  <span>RST Building</span>
-                </div>
-                <div class="legend-item">
-                  <div class="building-marker jst">
-                    <span class="material-icons">business</span>
-                  </div>
-                  <span>JST Building</span>
-                </div>
-                <div class="legend-item">
-                  <div class="building-marker mst">
-                    <span class="material-icons">business</span>
-                  </div>
-                  <span>MST Building</span>
-                </div>
-                <div class="legend-item">
-                  <div class="building-marker lib">
-                    <span class="material-icons">library_books</span>
-                  </div>
-                  <span>Library</span>
-                </div>
-              </div>
-            </div>
+          <!-- SEAIT Campus Map SVG -->
+          <div class="seait-map-wrapper">
+            <img 
+              src="../assets/SEAIT_Map.svg" 
+              class="seait-map-image"
+              alt="SEAIT Campus Map"
+              draggable="false"
+            />
           </div>
           
-          <!-- Map markers -->
+          <!-- Map markers overlay -->
           <div
             v-for="marker in filteredMarkers"
             :key="marker.id"
             class="map-marker"
             :style="getMarkerStyle(marker)"
-            @click="showMarkerInfo(marker)"
+            @click.stop="showMarkerInfo(marker)"
           >
             <div class="marker-icon">
               <span class="material-icons">
@@ -123,6 +111,34 @@
         <button @click="zoomOut" class="zoom-btn" title="Zoom Out">−</button>
       </div>
 
+      <!-- Marker Info Popup -->
+      <div v-if="isMarkerInfoVisible && selectedMarker" class="marker-info-popup" @click.stop>
+        <div class="marker-info-header">
+          <div class="marker-info-icon" :class="selectedMarker.marker_type">
+            <span class="material-icons">
+              {{ selectedMarker.marker_type === 'facility' ? 'business' : 'meeting_room' }}
+            </span>
+          </div>
+          <div class="marker-info-text">
+            <h3>{{ selectedMarker.name }}</h3>
+            <span class="marker-info-type">{{ selectedMarker.marker_type }}</span>
+          </div>
+          <button class="marker-info-close" @click="closeMarkerInfo">
+            <span class="material-icons">close</span>
+          </button>
+        </div>
+        <div class="marker-info-actions">
+          <button class="marker-info-btn marker-info-btn-favorite" @click="addToFavorites">
+            <span class="material-icons">favorite</span>
+            Add to Favorites
+          </button>
+          <button class="marker-info-btn marker-info-btn-navigate" @click="navigateToMarker">
+            <span class="material-icons">directions</span>
+            Navigate
+          </button>
+        </div>
+      </div>
+
       <!-- Desktop Search Bar -->
       <div class="desktop-search">
         <span class="material-icons">search</span>
@@ -131,6 +147,7 @@
           type="text"
           placeholder="Search location, building, room..."
           @keyup.enter="performSearch"
+          @input="debouncedSearch"
         />
         <button v-if="searchText" class="clear-btn" @click="searchText = ''">
           <span class="material-icons">close</span>
@@ -138,6 +155,43 @@
         <button class="search-btn" @click="performSearch">
           <span class="material-icons">arrow_forward</span>
         </button>
+      </div>
+
+      <!-- Search Autocomplete Suggestions -->
+      <div v-if="searchSuggestions.length > 0 && searchText" class="search-suggestions">
+        <div
+          v-for="suggestion in searchSuggestions.slice(0, 6)"
+          :key="suggestion.name"
+          class="suggestion-item"
+          @click="selectSuggestion(suggestion)"
+        >
+          <span class="material-icons">
+            {{ suggestion.type === 'Facility' ? 'business' : 'meeting_room' }}
+          </span>
+          <div class="suggestion-info">
+            <span class="suggestion-name">{{ suggestion.name }}</span>
+            <span class="suggestion-type">{{ suggestion.info }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Searches -->
+      <div v-if="recentSearches.length > 0 && !searchText" class="recent-searches">
+        <div class="recent-searches-header">
+          <span class="recent-searches-title">Recent Searches</span>
+          <button class="clear-recent" @click="clearRecentSearches">Clear</button>
+        </div>
+        <div class="recent-searches-list">
+          <div
+            v-for="search in recentSearches.slice(0, 5)"
+            :key="search.id"
+            class="recent-search-item"
+            @click="selectRecentSearch(search.query)"
+          >
+            <span class="material-icons">history</span>
+            <span class="recent-search-text">{{ search.query }}</span>
+          </div>
+        </div>
       </div>
 
       <!-- Desktop Location Button -->
@@ -182,10 +236,6 @@
           <button class="action-btn" @click="goToChatbot">
             <span class="material-icons">smart_toy</span>
           </button>
-          
-          <button class="action-btn" @click="goToQRScanner">
-            <span class="material-icons">photo_camera</span>
-          </button>
         </div>
       </div>
 
@@ -198,6 +248,7 @@
             type="text"
             placeholder="Search location, building, room..."
             @keyup.enter="performSearch"
+            @input="debouncedSearch"
           />
           <button v-if="searchText" class="clear-btn" @click="searchText = ''">
             <span class="material-icons">close</span>
@@ -228,18 +279,6 @@
               <span class="material-icons">meeting_room</span>
             </div>
             <span>Rooms Info</span>
-          </div>
-          <div class="menu-item" @click="goToInstructorInfo">
-            <div class="menu-item-icon">
-              <span class="material-icons">school</span>
-            </div>
-            <span>Instructor Info</span>
-          </div>
-          <div class="menu-item" @click="goToEmployees">
-            <div class="menu-item-icon">
-              <span class="material-icons">people</span>
-            </div>
-            <span>Employees</span>
           </div>
         </div>
         <div class="menu-sheet-footer">
@@ -323,12 +362,17 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import offlineData from '../services/offlineData.js'
 import { useSyncStore } from '../stores/syncStore.js'
+import { showToast } from '../services/toast.js'
+import OnboardingTutorial from '../components/OnboardingTutorial.vue'
+import { isOnline } from '../services/sync.js'
 import api from '../services/api.js'
 
 const router = useRouter()
+const route = useRoute()
 const syncStore = useSyncStore()
 
 // Data
@@ -349,11 +393,22 @@ const locateInput = ref('')
 const rating = ref(5)
 const ratingComment = ref('')
 const searchResults = ref([])
+const recentSearches = ref([])
+const searchSuggestions = ref([])
+let searchDebounceTimer = null
+const selectedMarker = ref(null)
+const isMarkerInfoVisible = ref(false)
 
 // Map zoom and pan
 const scale = ref(1)
+const translateX = ref(0)
+const translateY = ref(0)
+const isPanning = ref(false)
+const startX = ref(0)
+const startY = ref(0)
+
 const mapTransformStyle = computed(() => ({
-  transform: `scale(${scale.value})`,
+  transform: `translate(${translateX.value}px, ${translateY.value}px) scale(${scale.value})`,
   transformOrigin: 'center center'
 }))
 
@@ -376,49 +431,113 @@ const filteredMarkers = computed(() => {
 // Methods
 const loadData = async () => {
   try {
-    const [facRes, roomRes, markerRes] = await Promise.all([
-      api.get('/facilities/'),
-      api.get('/rooms/'),
-      api.get('/core/map-markers/')
+    // Use offline-aware data service
+    const [facilitiesRes, roomsRes, markerRes] = await Promise.all([
+      offlineData.getFacilities(),
+      offlineData.getRooms(),
+      offlineData.getMapMarkers()
     ])
-    facilities.value = facRes.data
-    rooms.value = roomRes.data
+    
+    facilities.value = facilitiesRes.data
+    rooms.value = roomsRes.data
     mapMarkers.value = markerRes.data
-    if (facilities.value.length > 0) selectedFacility.value = facilities.value[0].name
-    if (rooms.value.length > 0) selectedRoom.value = rooms.value[0].name
+    
+    // Log data source for debugging
+    console.log(`[HomeView] Data loaded - Facilities: ${facilitiesRes.source}, Rooms: ${roomsRes.source}, Markers: ${markerRes.source}`)
+    
+    // If any data came from cache and is stale, show a subtle notification
+    if (facilitiesRes.stale || roomsRes.stale || markerRes.stale) {
+      console.log('[HomeView] Using cached data - will sync when connection is available')
+    }
+    
+    // Try to load search history from API if online
+    if (isOnline()) {
+      try {
+        const searchRes = await api.get('/core/search-history/')
+        recentSearches.value = searchRes.data.slice(0, 10)
+      } catch {
+        // Silently fail for search history
+      }
+    }
   } catch (error) {
     console.error('Error loading data:', error)
-    // Fallback mock data when backend fails
-    facilities.value = [
-      { id: 1, name: 'MST Building', description: 'Main Science and Technology Building' },
-      { id: 2, name: 'JST Building', description: 'Junior Science and Technology Building' },
-      { id: 3, name: 'RST Building', description: 'Research Science and Technology Building' },
-      { id: 4, name: 'Library', description: 'Main Campus Library' },
-      { id: 5, name: 'Gymnasium', description: 'School Sports and Recreation Center' },
-      { id: 6, name: 'Cafeteria', description: 'Main Campus Dining Hall' },
-      { id: 7, name: 'Registrar Office', description: 'Student Services and Records' },
-    ]
-    rooms.value = [
-      { id: 1, name: 'CL1', description: 'Computer Lab 1', facility: 'MST Building' },
-      { id: 2, name: 'CL2', description: 'Computer Lab 2', facility: 'MST Building' },
-      { id: 3, name: 'CL5', description: 'Computer Lab 5', facility: 'MST Building' },
-      { id: 4, name: 'CL6', description: 'Computer Lab 6', facility: 'MST Building' },
-      { id: 5, name: 'CR1', description: 'Classroom 1', facility: 'MST Building' },
-      { id: 6, name: 'CR2', description: 'Classroom 2', facility: 'MST Building' },
-      { id: 7, name: 'JST101', description: 'Lecture Room', facility: 'JST Building' },
-      { id: 8, name: 'JST201', description: 'Laboratory', facility: 'JST Building' },
-    ]
-    mapMarkers.value = [
-      { id: 1, name: 'MST Building', marker_type: 'facility', x_position: 0.3, y_position: 0.4 },
-      { id: 2, name: 'JST Building', marker_type: 'facility', x_position: 0.6, y_position: 0.3 },
-      { id: 3, name: 'RST Building', marker_type: 'facility', x_position: 0.5, y_position: 0.6 },
-      { id: 4, name: 'Library', marker_type: 'facility', x_position: 0.2, y_position: 0.5 },
-      { id: 5, name: 'CL1', marker_type: 'room', x_position: 0.32, y_position: 0.42 },
-    ]
-    if (facilities.value.length > 0) selectedFacility.value = facilities.value[0].name
-    if (rooms.value.length > 0) selectedRoom.value = rooms.value[0].name
+    // Final fallback mock data
+    useFallbackData()
   }
 }
+
+const useFallbackData = () => {
+  facilities.value = [
+    { id: 1, name: 'MST Building', description: 'Main Science and Technology Building' },
+    { id: 2, name: 'JST Building', description: 'Junior Science and Technology Building' },
+    { id: 3, name: 'RST Building', description: 'Research Science and Technology Building' },
+    { id: 4, name: 'Library', description: 'Main Campus Library' },
+    { id: 5, name: 'Gymnasium', description: 'School Sports and Recreation Center' },
+    { id: 6, name: 'Cafeteria', description: 'Main Campus Dining Hall' },
+    { id: 7, name: 'Registrar Office', description: 'Student Services and Records' },
+  ]
+  rooms.value = [
+    { id: 1, name: 'CL1', description: 'Computer Lab 1', facility: 'MST Building' },
+    { id: 2, name: 'CL2', description: 'Computer Lab 2', facility: 'MST Building' },
+    { id: 3, name: 'CL5', description: 'Computer Lab 5', facility: 'MST Building' },
+    { id: 4, name: 'CL6', description: 'Computer Lab 6', facility: 'MST Building' },
+    { id: 5, name: 'Registrar', description: 'Registrar Office', facility: 'RST Building' },
+    { id: 6, name: 'IT Office', description: 'IT Office', facility: 'RST Building' },
+    { id: 7, name: 'JST101', description: 'Lecture Room', facility: 'JST Building' },
+    { id: 8, name: 'JST201', description: 'Laboratory', facility: 'JST Building' },
+  ]
+  mapMarkers.value = [
+    { id: 1, name: 'MST Building', marker_type: 'facility', x_position: 0.3, y_position: 0.4 },
+    { id: 2, name: 'JST Building', marker_type: 'facility', x_position: 0.6, y_position: 0.3 },
+    { id: 3, name: 'RST Building', marker_type: 'facility', x_position: 0.5, y_position: 0.6 },
+    { id: 4, name: 'Library', marker_type: 'facility', x_position: 0.2, y_position: 0.5 },
+    { id: 5, name: 'CL1', marker_type: 'room', x_position: 0.32, y_position: 0.42 },
+  ]
+}
+
+const handleDeepLink = () => {
+  const source = route.query.source
+  const location = route.query.location
+  const welcome = route.query.welcome
+  
+  // Handle main gate QR code scan
+  if (source === 'maingate' || welcome === 'true') {
+    showToast('Welcome to SEAIT Campus! Use the map to find your way around.', 'success', 5000)
+    // Default to first facility
+    if (facilities.value.length > 0 && !selectedFacility.value) {
+      selectedFacility.value = facilities.value[0].name
+    }
+    return
+  }
+  
+  if (source === 'qr' && location) {
+    const [type, strId] = location.split('_')
+    const id = parseInt(strId)
+    
+    if (type === 'facility') {
+      const fac = facilities.value.find(f => f.id === id)
+      if (fac) {
+        selectFacility(fac.name)
+        const marker = mapMarkers.value.find(m => m.name === fac.name)
+        if (marker) showMarkerInfo(marker)
+      }
+    } else if (type === 'room') {
+      const rm = rooms.value.find(r => r.id === id)
+      if (rm) {
+        selectRoom(rm.name)
+        const marker = mapMarkers.value.find(m => m.name === rm.name)
+        if (marker) showMarkerInfo(marker)
+      }
+    }
+  } else {
+    if (facilities.value.length > 0 && !selectedFacility.value) selectedFacility.value = facilities.value[0].name
+    if (rooms.value.length > 0 && !selectedRoom.value) selectedRoom.value = rooms.value[0].name
+  }
+}
+
+watch(() => route.query, () => {
+  handleDeepLink()
+})
 
 const loadNotificationCount = async () => {
   try {
@@ -431,43 +550,102 @@ const loadNotificationCount = async () => {
 
 const toggleFacilities = () => {
   isFacilitiesExpanded.value = !isFacilitiesExpanded.value
-  // Close rooms when facilities opens
-  if (isFacilitiesExpanded.value) {
-    isRoomsExpanded.value = false
-  }
-  console.log('Facilities toggled:', isFacilitiesExpanded.value, 'Rooms:', isRoomsExpanded.value)
+  if (isFacilitiesExpanded.value) isRoomsExpanded.value = false
 }
 
 const toggleRooms = () => {
   isRoomsExpanded.value = !isRoomsExpanded.value
-  // Close facilities when rooms opens
-  if (isRoomsExpanded.value) {
-    isFacilitiesExpanded.value = false
-  }
-  console.log('Rooms toggled:', isRoomsExpanded.value, 'Facilities:', isFacilitiesExpanded.value)
+  if (isRoomsExpanded.value) isFacilitiesExpanded.value = false
 }
+
+// Filtered rooms based on selected facility
+const filteredRooms = computed(() => {
+  if (!selectedFacility.value) {
+    return rooms.value
+  }
+  return rooms.value.filter(room => {
+    // Support both facility name and facility_id matching
+    const roomFacility = room.facility || room.facility_name
+    const roomFacilityId = room.facility_id
+    
+    // Check if room belongs to selected facility by name
+    if (roomFacility === selectedFacility.value) return true
+    
+    // Check if room belongs by facility_id - find facility ID
+    const facility = facilities.value.find(f => f.name === selectedFacility.value)
+    if (facility && roomFacilityId === facility.id) return true
+    
+    return false
+  })
+})
 
 const selectFacility = (name) => {
   selectedFacility.value = name
   isFacilitiesExpanded.value = false
+  // Reset room selection if current room is not in this facility
+  if (selectedRoom.value) {
+    const roomInFacility = filteredRooms.value.find(r => r.name === selectedRoom.value)
+    if (!roomInFacility) {
+      selectedRoom.value = ''
+    }
+  }
 }
 
 const selectRoom = (name) => {
   selectedRoom.value = name
   isRoomsExpanded.value = false
+  // Auto-select the parent facility
+  const room = rooms.value.find(r => r.name === name)
+  if (room && room.facility) {
+    selectedFacility.value = room.facility
+  }
 }
 
 const zoomIn = () => {
-  scale.value = Math.min(scale.value * 1.2, 4)
+  scale.value = Math.min(scale.value * 1.2, 5)
 }
 
 const zoomOut = () => {
-  scale.value = Math.max(scale.value / 1.2, 0.8)
+  scale.value = Math.max(scale.value / 1.2, 0.5)
 }
 
 const handleZoom = (e) => {
   if (e.deltaY < 0) zoomIn()
   else zoomOut()
+}
+
+// Pan functionality
+const startPan = (e) => {
+  isPanning.value = true
+  startX.value = e.clientX - translateX.value
+  startY.value = e.clientY - translateY.value
+}
+
+const handlePan = (e) => {
+  if (!isPanning.value) return
+  e.preventDefault()
+  translateX.value = e.clientX - startX.value
+  translateY.value = e.clientY - startY.value
+}
+
+const endPan = () => {
+  isPanning.value = false
+}
+
+// Touch pan for mobile
+const startTouchPan = (e) => {
+  if (e.touches.length === 1) {
+    isPanning.value = true
+    startX.value = e.touches[0].clientX - translateX.value
+    startY.value = e.touches[0].clientY - translateY.value
+  }
+}
+
+const handleTouchPan = (e) => {
+  if (!isPanning.value || e.touches.length !== 1) return
+  e.preventDefault()
+  translateX.value = e.touches[0].clientX - startX.value
+  translateY.value = e.touches[0].clientY - startY.value
 }
 
 const getMarkerStyle = (marker) => ({
@@ -477,7 +655,51 @@ const getMarkerStyle = (marker) => ({
 })
 
 const showMarkerInfo = (marker) => {
-  alert(marker.name)
+  selectedMarker.value = marker
+  isMarkerInfoVisible.value = true
+}
+
+const closeMarkerInfo = () => {
+  isMarkerInfoVisible.value = false
+  selectedMarker.value = null
+}
+
+const addToFavorites = () => {
+  if (!selectedMarker.value) return
+  
+  const marker = selectedMarker.value
+  const favorites = JSON.parse(localStorage.getItem('tp_favorites') || '[]')
+  
+  // Check if already in favorites
+  if (favorites.some(f => f.id === marker.id)) {
+    showToast('This location is already in your favorites!', 'info')
+    return
+  }
+  
+  // Add to favorites
+  favorites.push({
+    id: marker.id,
+    name: marker.name,
+    type: marker.marker_type,
+    description: marker.description || marker.marker_type,
+    addedAt: new Date().toISOString()
+  })
+  
+  localStorage.setItem('tp_favorites', JSON.stringify(favorites))
+  showToast(`${marker.name} added to favorites!`, 'success')
+}
+
+const navigateToMarker = () => {
+  if (!selectedMarker.value) return
+  
+  // Store destination for navigation
+  sessionStorage.setItem('tp_navigate_to', JSON.stringify({
+    id: selectedMarker.value.id,
+    name: selectedMarker.value.name
+  }))
+  
+  closeMarkerInfo()
+  router.push('/navigate')
 }
 
 const showLocateDialog = () => {
@@ -504,13 +726,43 @@ const submitRating = async () => {
       category: 'app'
     })
     showRating.value = false
-    alert('Thank you for your rating!')
+    showToast('Thank you for your rating!', 'success')
   } catch (error) {
     console.error('Error submitting rating:', error)
   }
 }
 
-const performSearch = () => {
+// Search suggestions with debouncing
+const updateSearchSuggestions = () => {
+  if (!searchText.value) {
+    searchSuggestions.value = []
+    return
+  }
+  
+  const query = searchText.value.toLowerCase()
+  const allLocations = [
+    ...facilities.value.map(f => ({ name: f.name, type: 'Facility', info: f.description || 'Campus facility' })),
+    ...rooms.value.map(r => ({ name: r.name, type: 'Room', info: r.description || 'Classroom/Lab' }))
+  ]
+  
+  searchSuggestions.value = allLocations.filter(loc => {
+    return loc.name.toLowerCase().includes(query) || 
+           loc.info.toLowerCase().includes(query)
+  })
+}
+
+const debouncedSearch = () => {
+  clearTimeout(searchDebounceTimer)
+  searchDebounceTimer = setTimeout(updateSearchSuggestions, 200) // 200ms debounce
+}
+
+const selectSuggestion = (suggestion) => {
+  searchText.value = suggestion.name
+  searchSuggestions.value = []
+  performSearch()
+}
+
+const performSearch = async () => {
   if (!searchText.value) return
   
   const query = searchText.value.toLowerCase()
@@ -524,8 +776,42 @@ const performSearch = () => {
            loc.info.toLowerCase().includes(query)
   })
   
+  // Save search to history if results found
+  if (searchResults.value.length > 0) {
+    try {
+      await api.post('/core/search-history/', {
+        query: searchText.value,
+        results_count: searchResults.value.length,
+        was_clicked: false
+      })
+      // Refresh recent searches
+      const res = await api.get('/core/search-history/')
+      recentSearches.value = res.data.slice(0, 10)
+    } catch (error) {
+      console.log('Failed to save search history')
+    }
+  }
+  
   if (searchResults.value.length === 0) {
-    alert(`No locations found for "${searchText.value}"\n\nTry searching for:\n• CL1, CL2, CL3, CL4, CL5, CL6\n• CR1, CR2, CR3, CR4\n• MST Building, JST Building, RST Building\n• Library, Registrar, Cafeteria`)
+    showToast(`No locations found for "${searchText.value}"`, 'warning')
+  }
+}
+
+const selectRecentSearch = (query) => {
+  searchText.value = query
+  performSearch()
+}
+
+const clearRecentSearches = async () => {
+  try {
+    // Delete each search history entry
+    await Promise.all(recentSearches.value.map(search => 
+      api.delete(`/core/search-history/${search.id}/`).catch(() => {})
+    ))
+    recentSearches.value = []
+  } catch (error) {
+    console.error('Error clearing search history:', error)
+    recentSearches.value = []
   }
 }
 
@@ -542,17 +828,27 @@ const selectSearchResult = (result) => {
 // Navigation
 const goToNotifications = () => router.push('/notifications')
 const goToChatbot = () => router.push('/chatbot')
-const goToQRScanner = () => router.push('/qr-scanner')
 const goToBuildingInfo = () => { showMenu.value = false; router.push('/building-info') }
 const goToRoomsInfo = () => { showMenu.value = false; router.push('/rooms-info') }
 const goToInstructorInfo = () => { showMenu.value = false; router.push('/instructor-info') }
 const goToEmployees = () => { showMenu.value = false; router.push('/employees') }
 
+const onboardingRef = ref(null)
+
+const onOnboardingComplete = () => {
+  console.log('Onboarding completed')
+}
+
+const onOnboardingSkip = () => {
+  console.log('Onboarding skipped')
+}
+
 // Lifecycle
 let notificationTimer
 
-onMounted(() => {
-  loadData()
+onMounted(async () => {
+  await loadData()
+  handleDeepLink()
   loadNotificationCount()
   if (!syncStore.lastSyncedAt) {
     syncStore.sync()

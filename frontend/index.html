@@ -4,7 +4,14 @@
     <meta charset="UTF-8" />
 
     <!-- Mobile viewport — critical for all phones -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="TechnoPath — SEAIT Campus Guide Map and Navigation System. Find buildings, rooms, and get directions across the SEAIT campus." />
+    <meta name="keywords" content="SEAIT, campus, guide, map, navigation, TechnoPath, university" />
+    <meta property="og:title" content="TechnoPath — SEAIT Campus Guide" />
+    <meta property="og:description" content="Interactive campus map and navigation for SEAIT students and visitors." />
+    <meta property="og:type" content="website" />
 
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#FF9800" />
@@ -22,11 +29,21 @@
     <link rel="icon" type="image/png" href="/icons/icon-192.png" />
     <link rel="manifest" href="/manifest.json" />
 
-    <!-- Google Material Icons -->
+    <!-- Google Material Icons (self-hosted via npm, CDN fallback) -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <title>TechnoPath — SEAIT Campus Guide</title>
+
+    <!-- Dark mode init — prevent FOUC by setting class before first paint -->
+    <script>
+      (function() {
+        var pref = localStorage.getItem('tp_dark_mode');
+        if (pref === 'true' || (pref === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark-mode-preload');
+        }
+      })();
+    </script>
+    <style>html.dark-mode-preload body { background: #121212; color: #EEE; }</style>
   </head>
   <body>
     <div id="app"></div>

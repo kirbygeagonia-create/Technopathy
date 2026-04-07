@@ -2,8 +2,8 @@ import Dexie from 'dexie'
 
 const db = new Dexie('TechnoPathDB')
 
-// Version 2: Full schema matching all 22 Flutter tables
-db.version(2).stores({
+// Version 3: Fix user nomenclature to match backend
+db.version(3).stores({
   // Core entities
   facilities:        '++id, code, map_svg_id, is_deleted, is_active',
   rooms:             '++id, facility_id, code, map_svg_id, floor, is_deleted, is_active',
@@ -22,7 +22,7 @@ db.version(2).stores({
   ai_chat_logs:      '++id, mode, created_at',
   
   // Notifications
-  notifications:     '++id, type, is_read, created_at',
+  notifications:     '++id, type, is_read, source_color, created_at',
   notification_types: '++id, name, is_active',
   notification_preferences: '++id, user_id, notification_type_id',
   
@@ -38,7 +38,7 @@ db.version(2).stores({
   admin_audit_log:   '++id, action, entity_type, created_at',
   
   // User & Device
-  users:             '++id, username, user_type, is_active',
+  users:             '++id, username, role, is_active',
   device_preferences: '++id, user_id, device_id',
   
   // Config & Connectivity

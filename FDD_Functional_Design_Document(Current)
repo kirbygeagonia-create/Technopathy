@@ -1,0 +1,269 @@
+# 📄 Functional Design Document (FDD)
+
+## TechnoPath — SEAIT Campus Guide System
+
+**Version:** 4.0 (PWA + Django Backend)  
+**Institution:** South East Asian Institute of Technology (SEAIT), Tupi, South Cotabato  
+**Date:** April 3, 2026  
+
+---
+
+## 1. System Title & Overview
+
+**TechnoPath** is a Progressive Web Application (PWA) that serves as an interactive campus navigation and information system for SEAIT. It allows students, faculty, and visitors to explore campus buildings, view interactive floor plans, get turn-by-turn navigation routes, interact with an AI chatbot for campus queries, receive department announcements, and submit feedback — all from a mobile browser with full offline support.
+
+The system is composed of three tiers:
+
+| Tier | Technology | Purpose |
+|------|-----------|---------|
+| **Frontend PWA** | Vue 3 + Vite + Pinia + IndexedDB (Dexie) | Mobile-first guest interface & Desktop admin panel |
+| **Primary Backend** | Django 4 + Django REST Framework + SQLite | REST API, authentication (JWT), RBAC, CRUD operations |
+| **Chatbot Service** | Flask (Python) + SQLite | Rule-based campus Q&A chatbot |
+
+### Architecture
+
+```
+┌──────────────────────────────────────┐
+│  Vue 3 PWA (Mobile Guest + Admin)    │
+│  IndexedDB for offline caching       │
+└──────────┬───────────────────────────┘
+           │  REST / JWT
+┌──────────▼───────────────────────────┐
+│  Django REST Framework Backend       │
+│  SQLite: technopath.db               │
+│  Apps: users, facilities, rooms,     │
+│        navigation, chatbot, notifs,  │
+│        feedback, announcements, core │
+└──────────┬───────────────────────────┘
+           │
+┌──────────▼───────────────────────────┐
+│  Flask Chatbot Microservice          │
+│  SQLite: chatbot.db                  │
+│  Port 5000                           │
+└──────────────────────────────────────┘
+```
+
+---
+
+## 2. User Roles
+
+| Role Key | Display Name | Scope |
+|----------|-------------|-------|
+| `super_admin` | Safety and Security Office | Full system access — single account |
+| `dean` | College Dean | Per-department account — approves announcements, views audits/feedback |
+| `program_head` | College Program Head | Per-program account — manages own rooms, posts announcements |
+| `basic_ed_head` | Basic Education Head | Basic Ed department — manages own rooms, posts announcements |
+| *Guest* | Student / Faculty / Visitor | Unauthenticated — browse map, navigate, use chatbot, view notifications |
+
+---
+
+## 3. Modules
+
+---
+
+### Module 1: Users & Authentication (`apps.users`)
+
+Manages admin user accounts, login/logout with JWT, role-based permissions, account lockout, and audit logging.
+
+| # | Function | Description | Input(s) | Output(s) | Roles |
+|---|----------|-------------|----------|-----------|-------|
+| 1.1 | **Login** (`POST /api/users/login/`) | Authenticate admin user, issue JWT tokens, record login audit | `username`, `password` | `access` token, `refresh` token, user profile + permissions dict | All admin roles |
+| 1.2 | **Logout** (`POST /api/users/logout/`) | Record logout audit event | JWT token (header) | Success message | All authenticated admins |
+| 1.3 | **Get Current User** (`GET /api/users/me/`) | Return profile and permissions of logged-in admin | JWT token (header) | User object with role, department, all permission flags | All authenticated admins |
+| 1.4 | **List Admin Accounts** (`GET /api/users/admins/`) | List all active admin accounts sorted by role/department | JWT token (header) | Array of admin user objects | Super Admin only |
+| 1.5 | **Create Admin Account** (`POST /api/users/admins/`) | Create a new admin user with role and department | `username`, `password`, `role`, `department`, optional `display_name`, `email`, `department_label` | New user `id` and `username` | Super Admin only |
+| 1.6 | **Update Admin Account** (`PUT /api/users/admins/<pk>/`) | Update admin profile, role, department, or password | `pk` (URL), optional fields: `display_name`, `role`, `department`, `email`, `password` | Success message | Super Admin only |
+| 1.7 | **Deactivate Admin** (`DELETE /api/users/admins/<pk>/`) | Soft-delete (deactivate) admin account. Cannot deactivate Super Admin. | `pk` (URL) | Success message | Super Admin only |
+| 1.8 | **View Audit Log** (`GET /api/users/audit-log/`) | Retrieve admin activity audit trail (up to 300 entries) | Optional query params: `entity_type`, `action` | Array of audit log entries | Super Admin, Dean |
+| 1.9 | **Account Lockout** (internal) | Lock account for 30 min after 5 failed login attempts | Failed login event | `locked_until` timestamp set | System (automatic) |
+| 1.10 | **Record Audit Entry** (`write_audit()`) | Write a row to `AdminAuditLog` with action details and IP | `admin`, `action`, `entity_type`, `entity_id`, etc. | Database row created | System (internal) |
+
+---
+
+### Module 2: Facilities Management (`apps.facilities`)
+
+CRUD for campus buildings/facilities with soft-delete support.
+
+| # | Function | Description | Input(s) | Output(s) | Roles |
+|---|----------|-------------|----------|-----------|-------|
+| 2.1 | **List Facilities** (`GET /api/facilities/`) | List all non-deleted facilities | None (public) | Array of facility objects | All (read), Super Admin (write) |
+| 2.2 | **Create Facility** (`POST /api/facilities/`) | Add a new building/facility to the system | `name`, `code`, `description`, `building_code`, `department`, `latitude`, `longitude`, `image_path`, `map_svg_id`, `total_floors` | New facility object | Super Admin only |
+| 2.3 | **Get Facility Detail** (`GET /api/facilities/<pk>/`) | Retrieve a single facility by ID | `pk` (URL) | Facility object | All (read) |
+| 2.4 | **Update Facility** (`PUT /api/facilities/<pk>/`) | Update facility information | `pk` (URL) + updated fields | Updated facility object | Super Admin only |
+| 2.5 | **Delete Facility** (`DELETE /api/facilities/<pk>/`) | Soft-delete facility (`is_deleted = True`) | `pk` (URL) | No content | Super Admin only |
+
+---
+
+### Module 3: Rooms Management (`apps.rooms`)
+
+CRUD for rooms/classrooms within facilities, with role-scoped access.
+
+| # | Function | Description | Input(s) | Output(s) | Roles |
+|---|----------|-------------|----------|-----------|-------|
+| 3.1 | **List Rooms** (`GET /api/rooms/`) | List all non-deleted rooms | None (public) | Array of room objects | All (read) |
+| 3.2 | **Create Room** (`POST /api/rooms/`) | Add a room to a facility | `facility`, `name`, `code`, `room_number`, `description`, `floor`, `map_svg_id`, `room_type`, `capacity` | New room object | Super Admin (all), Dean/PH/BEH (own dept) |
+| 3.3 | **Get Room Detail** (`GET /api/rooms/<pk>/`) | Retrieve a single room by ID | `pk` (URL) | Room object | All (read) |
+| 3.4 | **Update Room** (`PUT /api/rooms/<pk>/`) | Update room details | `pk` (URL) + updated fields | Updated room object | Super Admin (all), Dean/PH/BEH (own dept) |
+| 3.5 | **Delete Room** (`DELETE /api/rooms/<pk>/`) | Soft-delete room (`is_deleted = True`) | `pk` (URL) | No content | Super Admin (all), Dean/PH/BEH (own dept) |
+
+---
+
+### Module 4: Navigation & Pathfinding (`apps.navigation`)
+
+Graph-based campus navigation with nodes and edges for path calculation.
+
+| # | Function | Description | Input(s) | Output(s) | Roles |
+|---|----------|-------------|----------|-----------|-------|
+| 4.1 | **List Navigation Nodes** (`GET /api/navigation/nodes/`) | Get all non-deleted nodes (rooms, waypoints, entrances, etc.) | None (public) | Array of node objects with x, y, floor, type | All (read) |
+| 4.2 | **Create Navigation Node** (`POST /api/navigation/nodes/`) | Add a navigable point on the campus graph | `name`, `node_type`, `facility`, `room`, `map_svg_id`, `x`, `y`, `floor` | New node object | Super Admin only |
+| 4.3 | **Update Navigation Node** (`PUT /api/navigation/nodes/<pk>/`) | Modify node position or metadata | `pk` (URL) + updated fields | Updated node object | Super Admin only |
+| 4.4 | **Delete Navigation Node** (`DELETE /api/navigation/nodes/<pk>/`) | Remove node from graph | `pk` (URL) | No content | Super Admin only |
+| 4.5 | **List Navigation Edges** (`GET /api/navigation/edges/`) | Get all non-deleted edges connecting nodes | None (public) | Array of edge objects | All (read) |
+| 4.6 | **Create Navigation Edge** (`POST /api/navigation/edges/`) | Connect two nodes with a weighted edge | `from_node`, `to_node`, `distance`, `is_bidirectional` | New edge object | Super Admin only |
+| 4.7 | **Update Navigation Edge** (`PUT /api/navigation/edges/<pk>/`) | Modify edge properties | `pk` (URL) + updated fields | Updated edge object | Super Admin only |
+| 4.8 | **Delete Navigation Edge** (`DELETE /api/navigation/edges/<pk>/`) | Remove edge from graph | `pk` (URL) | No content | Super Admin only |
+| 4.9 | **Dijkstra Pathfinding** (frontend `pathfinder.js`) | Calculate shortest path between two nodes using Dijkstra's algorithm | `startId`, `endId`, nodes array, edges array | Path (node ID sequence) + total distance | Guest (client-side) |
+| 4.10 | **GPS-to-Map Projection** (frontend `geolocation.js`) | Convert real GPS coordinates to SVG pixel coordinates | `lat`, `lng`, `mapBounds` | `{ x, y }` pixel position | Guest (client-side) |
+
+---
+
+### Module 5: Chatbot & FAQ (`apps.chatbot` + `chatbot_flask`)
+
+AI chatbot with a Django-managed FAQ knowledge base and a Flask rule-based reply service.
+
+| # | Function | Description | Input(s) | Output(s) | Roles |
+|---|----------|-------------|----------|-----------|-------|
+| 5.1 | **List FAQ Entries** (`GET /api/chatbot/faq/`) | Get all non-deleted FAQ entries for offline matching | None (public) | Array of FAQ objects | All (read) |
+| 5.2 | **Create FAQ Entry** (`POST /api/chatbot/faq/`) | Add a new question/answer pair to the chatbot knowledge base | `question`, `answer`, `category`, `keywords` | New FAQ object | Super Admin only |
+| 5.3 | **Update FAQ Entry** (`PUT /api/chatbot/faq/<pk>/`) | Edit an existing FAQ entry | `pk` (URL) + updated fields | Updated FAQ object | Super Admin only |
+| 5.4 | **Delete FAQ Entry** (`DELETE /api/chatbot/faq/<pk>/`) | Remove FAQ entry | `pk` (URL) | No content | Super Admin only |
+| 5.5 | **Chat (Flask)** (`POST /chat` on port 5000) | Send a user message, receive a rule-based reply. Logs to `chatbot.db` | `{ "message": "..." }` | `{ "reply": "..." }` | Guest |
+| 5.6 | **Health Check (Flask)** (`GET /health` on port 5000) | Check chatbot service status | None | `{ "status": "ok" }` | System |
+| 5.7 | **Generate Reply** (`generate_reply()` in Flask) | Match user message against campus knowledge base patterns | `message` string | Reply string | System (internal) |
+
+---
+
+### Module 6: Notifications (`apps.notifications`)
+
+System-wide notifications displayed on the mobile/guest interface, with mark-as-read support.
+
+| # | Function | Description | Input(s) | Output(s) | Roles |
+|---|----------|-------------|----------|-----------|-------|
+| 6.1 | **List Notifications** (`GET /api/notifications/`) | Get all notifications (ordered by creation date) | None (public) | Array of notification objects | All (read) |
+| 6.2 | **Create Notification** (`POST /api/notifications/`) | Create a new notification | `title`, `message`, `type`, `source_label`, `source_color`, `priority`, `expires_at` | New notification object | Super Admin, Dean |
+| 6.3 | **Get Notification Detail** (`GET /api/notifications/<pk>/`) | Retrieve a single notification | `pk` (URL) | Notification object | All (read) |
+| 6.4 | **Update Notification** (`PUT /api/notifications/<pk>/`) | Modify notification content or status | `pk` (URL) + updated fields | Updated notification object | Super Admin, Dean |
+| 6.5 | **Delete Notification** (`DELETE /api/notifications/<pk>/`) | Permanently remove notification | `pk` (URL) | No content | Super Admin, Dean |
+| 6.6 | **Mark All Read** (`POST /api/notifications/read-all/`) | Set `is_read = True` for all unread notifications | None | Success status | All (public endpoint) |
+
+---
+
+### Module 7: Announcements (`apps.announcements`)
+
+Department announcements with an approval workflow — Program Heads/Basic Ed Heads submit, Deans/Super Admin approve.
+
+| # | Function | Description | Input(s) | Output(s) | Roles |
+|---|----------|-------------|----------|-----------|-------|
+| 7.1 | **List Published** (`GET /api/announcements/`) | Get all published announcements for the mobile app | None (public) | Array of published announcement objects | Guest |
+| 7.2 | **Create Announcement** (`POST /api/announcements/create/`) | Submit a new announcement. Auto-publishes for Dean/Super Admin; queued for approval otherwise | `title`, `content`, `scope`, optional `target_department` | `{ id, status, message }` | All admin roles |
+| 7.3 | **Update Announcement** (`PUT /api/announcements/<pk>/`) | Edit announcement content. Published items restricted to Super Admin | `pk` (URL), `title`, `content` | Success message | Creator or Super Admin |
+| 7.4 | **Delete Announcement** (`DELETE /api/announcements/<pk>/`) | Soft-delete announcement | `pk` (URL) | Success message | Creator or Super Admin |
+| 7.5 | **Approve Announcement** (`POST /api/announcements/<pk>/approve/`) | Publish a pending announcement and auto-create a mobile notification | `pk` (URL) | Success message | Super Admin, Dean |
+| 7.6 | **Reject Announcement** (`POST /api/announcements/<pk>/reject/`) | Reject with optional note visible to submitter | `pk` (URL), optional `note` | Success message + note | Super Admin, Dean |
+| 7.7 | **List Pending Approvals** (`GET /api/announcements/pending/`) | View all announcements awaiting approval | None | Array of pending announcement objects | Super Admin, Dean |
+| 7.8 | **My Announcements** (`GET /api/announcements/mine/`) | View own submitted announcements with status | None | Array of own announcements | All authenticated admins |
+| 7.9 | **Publish (model method)** (`Announcement.publish()`) | Sets status to published, saves approval details, creates Notification | `approved_by_user` | Side-effect: Notification created | System (internal) |
+| 7.10 | **Archive (model method)** (`Announcement.archive()`) | Archive a published announcement | `archived_by_user` | Side-effect: status → archived | System (internal) |
+
+---
+
+### Module 8: Feedback & Ratings (`apps.feedback` + `apps.core`)
+
+User feedback submissions and star ratings with flag/review workflow.
+
+| # | Function | Description | Input(s) | Output(s) | Roles |
+|---|----------|-------------|----------|-----------|-------|
+| 8.1 | **List Feedback** (`GET /api/feedback/`) | Get all feedback entries | None (public read) | Array of feedback objects | All (read), Super Admin/Dean (manage) |
+| 8.2 | **Submit Feedback** (`POST /api/feedback/`) | Submit anonymous feedback with category and optional facility/room | `rating`, `comment`, `category`, optional `facility`, `room` | New feedback object | Guest |
+| 8.3 | **Get Feedback Detail** (`GET /api/feedback/<pk>/`) | Retrieve single feedback entry | `pk` (URL) | Feedback object | Authenticated |
+| 8.4 | **List Ratings** (`GET /api/core/ratings/`) | Get all active ratings, filterable by category/facility/room | Optional query: `category`, `facility`, `room` | Array of rating objects | All (read) |
+| 8.5 | **Submit Rating** (`POST /api/core/ratings/`) | Submit a star rating for a facility, room, or general category | `rating`, `comment`, `category`, optional `facility`, `room`, `is_anonymous` | New rating object | Guest / Authenticated |
+| 8.6 | **List Feedback Flags** (`GET /api/core/feedback-flags/`) | View flagged/problematic feedback entries | Optional query: `status` | Array of flag objects | Authenticated admins |
+| 8.7 | **Create Feedback Flag** (`POST /api/core/feedback-flags/`) | Flag a rating for review | `rating` (FK), `reason` | New flag object | Authenticated admins |
+| 8.8 | **Resolve Flag** (`PUT /api/core/feedback-flags/<pk>/`) | Update flag status (reviewed/resolved/dismissed) | `pk` (URL), `status`, `resolved_by` | Updated flag object | Authenticated admins |
+
+---
+
+### Module 9: Core, Analytics & Configuration (`apps.core`)
+
+Supporting entities: departments, map elements, analytics, device preferences, app config, and audit.
+
+| # | Function | Description | Input(s) | Output(s) | Roles |
+|---|----------|-------------|----------|-----------|-------|
+| 9.1 | **List Departments** (`GET /api/core/departments/`) | Get all active departments | None (public) | Array of department objects | All (read) |
+| 9.2 | **Create Department** (`POST /api/core/departments/`) | Add a department | `name`, `code`, `description`, `head_user` | New department object | Authenticated |
+| 9.3 | **List Map Markers** (`GET /api/core/map-markers/`) | Get active map markers, filterable by type/facility | Optional: `marker_type`, `facility` | Array of marker objects | All (read) |
+| 9.4 | **Create/Update Map Marker** (`POST/PUT /api/core/map-markers/`) | Add or edit a map marker | `name`, `x_position`, `y_position`, `marker_type`, `icon_name`, `color_hex`, etc. | Marker object | Super Admin |
+| 9.5 | **List Map Labels** (`GET /api/core/map-labels/`) | Get active text labels for the SVG map | None (public) | Array of label objects | All (read) |
+| 9.6 | **Create/Update Map Label** (`POST/PUT /api/core/map-labels/`) | Add or edit a map label | `label_text`, `x_position`, `y_position`, `font_size`, `color_hex`, `rotation` | Label object | Super Admin |
+| 9.7 | **List Notification Types** (`GET /api/core/notification-types/`) | Get configurable notification categories | None (public) | Array of type objects | All (read) |
+| 9.8 | **Manage Notification Preferences** (`GET/POST /api/core/notification-preferences/`) | Get or set user notification preferences | `notification_type`, `is_enabled` | Preference objects | Authenticated |
+| 9.9 | **View Audit Logs** (`GET /api/core/admin-audit-logs/`) | List all admin audit log entries | Optional: `action`, `entity_type` | Array of audit entries | Authenticated |
+| 9.10 | **Record Search History** (`POST /api/core/search-history/`) | Log a search query with result count | `query`, `results_count`, `was_clicked` | Search history entry | Guest / Authenticated |
+| 9.11 | **Record App Usage** (`POST /api/core/app-usage/`) | Log session data: date, duration, screen views | `session_date`, `session_duration`, `screen_views` | App usage entry | Authenticated |
+| 9.12 | **Record Usage Analytics** (`POST /api/core/usage-analytics/`) | Log granular events (screen views, searches, ratings, shares, etc.) | `event_type`, `event_data`, `screen_name`, `session_id` | Analytics entry | Guest / Authenticated |
+| 9.13 | **Manage Device Preferences** (`GET/POST /api/core/device-preferences/`) | Store device-specific settings (dark mode, language, font scale, etc.) | `device_id`, `dark_mode`, `language`, `font_scale`, `high_contrast`, `reduce_animations` | Preference object | Authenticated |
+| 9.14 | **App Config** (`GET/POST/PUT /api/core/app-config/`) | Key-value configuration store | `config_key`, `config_value`, `description` | Config object | All (read), Super Admin (write) |
+| 9.15 | **Log Connectivity** (`POST /api/core/connectivity-logs/`) | Record device online/offline events | `is_online`, `connection_type`, `latency_ms`, `error_message` | Log entry | Guest / Authenticated |
+| 9.16 | **Dashboard Stats** (`GET /api/core/dashboard/stats/`) | Aggregate statistics for admin dashboard | None | `{ total_facilities, total_rooms, total_users, total_notifications, unread_notifications, total_feedback, recent_ratings, audit_logs_count }` | Authenticated admins |
+
+---
+
+### Module 10: Frontend PWA (Vue 3)
+
+The mobile-first Progressive Web App providing the guest-facing and admin-facing interfaces.
+
+| # | Function / View | Description | Input(s) | Output(s) | Roles |
+|---|----------------|-------------|----------|-----------|-------|
+| 10.1 | **Splash Screen** (`/splash`) | Animated SEAIT logo splash on first visit per session | Session flag | Redirect to Home | Guest |
+| 10.2 | **Home Screen** (`/`) | Campus info, quick-access cards for buildings/rooms/instructors, announcements carousel | API data + IndexedDB cache | Rendered UI | Guest |
+| 10.3 | **Map View** (`/map`) | Interactive SVG campus map with zoom/pan, building tap, floor selector, marker overlays | Facilities, rooms, markers, labels from IndexedDB | Interactive map | Guest |
+| 10.4 | **Navigate View** (`/navigate`) | Select start/end locations, compute shortest path via Dijkstra, show step-by-step route | Nodes, edges, user GPS | Visual path overlay | Guest |
+| 10.5 | **Chatbot View** (`/chatbot`) | Chat interface sending messages to Flask chatbot, offline FAQ fallback | User message | Bot reply | Guest |
+| 10.6 | **Notifications View** (`/notifications`) | View system and department notifications, mark as read | Notifications from API/IndexedDB | Notification list | Guest |
+| 10.7 | **Settings View** (`/settings`) | Dark mode toggle, language, font scale, accessibility, about info | User preferences | Saved settings | Guest |
+| 10.8 | **Profile View** (`/profile`) | View/edit guest profile info | Profile data | Updated profile | Guest |
+| 10.9 | **Favorites View** (`/favorites`) | View bookmarked/favorite locations | Saved favorites from IndexedDB | Favorites list | Guest |
+| 10.10 | **Feedback View** (`/feedback`) | Submit feedback with star rating, category, and comment | `rating`, `comment`, `category` | Submitted to API or queued offline | Guest |
+| 10.11 | **Info View** (`/building-info`, `/rooms-info`, `/instructor-info`, `/employees`) | Browse building info, room directory, instructor lookup, employee directory | Type prop + API/IndexedDB data | Info cards | Guest |
+| 10.12 | **QR Scanner View** (legacy, Flutter) | Scan QR codes on campus to jump to location info | Camera feed | Location data | Guest |
+| 10.13 | **Admin Login View** (`/admin/login`) | Admin authentication form | `username`, `password` | JWT token → redirect to admin panel | Admin roles |
+| 10.14 | **Admin Panel** (`/admin`) | Desktop-only admin shell with sidebar navigation to all management sections | JWT token | Admin dashboard + management views | All authenticated admins |
+| 10.15 | **Data Sync** (service) | On app startup, sync all server data to IndexedDB for offline use | Online status | IndexedDB populated | System (automatic) |
+| 10.16 | **Offline Queue** (service) | Queue feedback/ratings while offline, upload when online | Pending items | Synced items | System (automatic) |
+| 10.17 | **JWT Auto-Refresh** (interceptor) | Automatically refresh expired access tokens using refresh token | Expired token | New access token | System (automatic) |
+| 10.18 | **Onboarding Tutorial** (component) | First-time user tutorial overlay | First-visit flag | Tutorial steps | Guest |
+| 10.19 | **Toast Notifications** (component) | App-wide toast notification system replacing alert() dialogs | Toast events | Visual toast messages | All |
+
+---
+
+## 4. Permission Matrix Summary
+
+| Capability | Super Admin | Dean | Program Head | Basic Ed Head | Guest |
+|-----------|:-----------:|:----:|:------------:|:-------------:|:-----:|
+| Manage Facilities | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Manage All Rooms | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Manage Own Dept Rooms | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Manage Navigation Graph | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Manage FAQ / Chatbot | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Manage Admin Accounts | ✅ | ❌ | ❌ | ❌ | ❌ |
+| View Audit Log | ✅ | ✅ | ❌ | ❌ | ❌ |
+| View All Feedback | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Post Announcement | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Approve/Reject Announcements | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Publish Directly (skip approval) | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Send Campus Notification | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Browse Map / Navigate | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Use Chatbot | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Submit Feedback / Ratings | ✅ | ✅ | ✅ | ✅ | ✅ |
+| View Notifications | ✅ | ✅ | ✅ | ✅ | ✅ |

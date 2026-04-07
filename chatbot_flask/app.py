@@ -17,7 +17,8 @@ def init_db() -> None:
             CREATE TABLE IF NOT EXISTS chat_history (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_message TEXT NOT NULL,
-                bot_reply TEXT NOT NULL
+                bot_reply TEXT NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
             """
         )
@@ -87,11 +88,11 @@ def generate_reply(message: str) -> str:
 
 
 CAMPUS_KNOWLEDGE = {
-    'rst': {'name': 'RST Building', 'location': 'right side of campus from the main gate', 'floors': 3},
-    'mst': {'name': 'MST Building', 'location': 'center of SEAIT campus — the main academic building', 'floors': 3},
-    'jst': {'name': 'JST Building', 'location': 'left side of the campus', 'floors': 3},
+    'rst': {'name': 'RST Building', 'location': 'left-bottom of campus from the main gate', 'floors': 3},
+    'mst': {'name': 'MST Building', 'location': 'center of SEAIT campus — the main academic building', 'floors': 4},
+    'jst': {'name': 'JST Building', 'location': 'back of the campus', 'floors': 4},
     'library': {'name': 'Library', 'location': 'ground floor of the main building, left wing'},
-    'registrar': {'name': "Registrar's Office", 'location': 'ground floor of the main building near the main entrance'},
+    'registrar': {'name': "Registrar's Office", 'location': '1st floor of the RST Building'},
     'gymnasium': {'name': 'Gymnasium', 'location': 'back of the campus'},
     'canteen': {'name': 'Canteen', 'location': 'center grounds area between the main buildings'},
     'cafeteria': {'name': 'Canteen', 'location': 'center grounds area between the main buildings'},
@@ -113,8 +114,10 @@ CAMPUS_KNOWLEDGE = {
 
 CLASSROOM_BUILDINGS = {
     'cl1': 'MST Building', 'cl2': 'MST Building',
-    'cl3': 'RST Building', 'cl4': 'RST Building',
-    'cl5': 'JST Building', 'cl6': 'JST Building',
+    'cl3': 'MST Building', 'cl4': 'MST Building',
+    'cl5': 'MST Building', 'cl6': 'MST Building',
+    'cl7': 'MST Building', 'cl8': 'MST Building',
+    'cl9': 'MST Building', 'cl10': 'MST Building',
 }
 
 

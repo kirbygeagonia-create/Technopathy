@@ -11,7 +11,7 @@ let refreshSubscribers = []
 
 // Attach JWT token to every request automatically
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('technopath_token')
+  const token = localStorage.getItem('tp_token')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
@@ -44,14 +44,14 @@ api.interceptors.response.use(
     isRefreshing = true
     
     try {
-      const refresh = localStorage.getItem('technopath_refresh')
+      const refresh = localStorage.getItem('tp_refresh')
       if (!refresh) {
         throw new Error('No refresh token')
       }
       
       const res = await axios.post('/api/auth/refresh/', { refresh })
       const newToken = res.data.access
-      localStorage.setItem('technopath_token', newToken)
+      localStorage.setItem('tp_token', newToken)
       
       // Notify subscribers
       refreshSubscribers.forEach((callback) => callback(newToken))
@@ -61,8 +61,8 @@ api.interceptors.response.use(
       return api(original)
     } catch (refreshError) {
       // Clear tokens but don't redirect on public pages
-      localStorage.removeItem('technopath_token')
-      localStorage.removeItem('technopath_refresh')
+      localStorage.removeItem('tp_token')
+      localStorage.removeItem('tp_refresh')
       
       // Only redirect to login if on admin page
       if (window.location.pathname.startsWith('/admin')) {

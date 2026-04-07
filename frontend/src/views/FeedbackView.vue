@@ -53,7 +53,30 @@
             class="feedback-input-field feedback-comment-field"
             placeholder="Tell us more about your experience..."
             rows="4"
+            @focus="scrollIntoView"
           ></textarea>
+        </div>
+
+        <!-- Location Selector -->
+        <div class="feedback-location-section" v-if="category === 'Map Accuracy' || category === 'Navigation'">
+          <h3 class="feedback-section-label">Related Facility/Room (Optional)</h3>
+          <div class="feedback-select-wrapper">
+            <select v-model="selectedLocation" class="feedback-input-field">
+              <option value="">Select a location (optional)</option>
+              <option v-for="loc in locations" :key="loc" :value="loc">{{ loc }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Anonymous Toggle -->
+        <div class="feedback-toggle-section">
+          <label class="feedback-toggle-label">
+            <span>Submit Anonymously</span>
+            <div class="toggle-switch">
+              <input type="checkbox" v-model="isAnonymous" />
+              <span class="toggle-slider"></span>
+            </div>
+          </label>
         </div>
 
         <!-- Submit Button -->
@@ -102,6 +125,10 @@ const comment = ref('')
 const isSubmitting = ref(false)
 const submitted = ref(false)
 const error = ref('')
+const isAnonymous = ref(false)
+const selectedLocation = ref('')
+
+const locations = ['Main Gate', 'MST Building', 'JST Building', 'RST Building', 'Library', 'Registrar Office', 'Cafeteria', 'Gymnasium', 'CL1', 'CL2', 'CL3', 'CL4', 'CL5', 'CL6', 'CR1', 'CR2', 'CR3', 'CR4']
 
 const categories = ['General', 'Map Accuracy', 'Navigation', 'AI Chatbot', 'Bug Report']
 
@@ -112,7 +139,7 @@ const ratingText = computed(() => {
 
 // Methods
 const goBack = () => {
-  router.push('/')
+  router.replace('/')
 }
 
 const submitFeedback = async () => {
@@ -125,6 +152,8 @@ const submitFeedback = async () => {
     rating: rating.value,
     category: category.value,
     comment: comment.value,
+    is_anonymous: isAnonymous.value,
+    location: selectedLocation.value,
     created_at: new Date().toISOString()
   }
 
@@ -147,6 +176,13 @@ const submitFeedback = async () => {
   } finally {
     isSubmitting.value = false
   }
+}
+
+// Fix keyboard overlap (Discrepancy E9)
+const scrollIntoView = (e) => {
+  setTimeout(() => {
+    e.target.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, 300) // Wait for keyboard to appear
 }
 </script>
 

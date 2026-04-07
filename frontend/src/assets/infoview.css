@@ -141,6 +141,11 @@
 .infoview-item-arrow {
   color: #ccc;
   font-size: 20px;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .infoview-modal-overlay {
@@ -188,6 +193,8 @@
   align-items: center;
   justify-content: center;
   padding: 4px;
+  min-width: 44px;
+  min-height: 44px;
 }
 
 .infoview-close-btn .material-icons {
@@ -222,6 +229,7 @@
 .infoview-navigate-btn {
   width: 100%;
   padding: 12px;
+  min-height: 44px;
   background: #FF9800;
   color: white;
   border: none;

@@ -1,0 +1,418 @@
+# 🗃️ Entity-Relationship Diagram (ERD)
+
+## TechnoPath — SEAIT Campus Guide System
+
+### Database 1: `technopath.db` (Django Backend) — Full ERD
+
+```mermaid
+erDiagram
+    admin_users {
+        INTEGER id PK
+        VARCHAR username UK "UNIQUE, NOT NULL"
+        VARCHAR password "NOT NULL"
+        VARCHAR email "NULL"
+        VARCHAR display_name "NULL"
+        VARCHAR role "NOT NULL, DEFAULT program_head"
+        VARCHAR department "NULL"
+        VARCHAR department_label "NULL"
+        BOOLEAN is_active "DEFAULT True"
+        BOOLEAN is_staff "DEFAULT False"
+        BOOLEAN is_superuser "DEFAULT False"
+        INTEGER login_attempts "DEFAULT 0"
+        DATETIME locked_until "NULL"
+        DATETIME last_login "NULL"
+        DATETIME created_at "AUTO"
+        DATETIME updated_at "AUTO"
+    }
+
+    departments {
+        INTEGER id PK
+        VARCHAR name "NOT NULL"
+        VARCHAR code UK "UNIQUE, NOT NULL"
+        TEXT description "NULL"
+        INTEGER head_user_id FK "NULL -> admin_users"
+        BOOLEAN is_active "DEFAULT True"
+        DATETIME created_at "AUTO"
+    }
+
+    facilities {
+        INTEGER id PK
+        VARCHAR name "NOT NULL"
+        VARCHAR code UK "UNIQUE, NOT NULL"
+        TEXT description "NULL"
+        VARCHAR building_code "NULL"
+        INTEGER department_id FK "NULL -> departments"
+        FLOAT latitude "NULL"
+        FLOAT longitude "NULL"
+        VARCHAR image_path "NULL"
+        VARCHAR map_svg_id "NULL"
+        INTEGER total_floors "DEFAULT 1"
+        BOOLEAN is_deleted "DEFAULT False"
+        BOOLEAN is_active "DEFAULT True"
+        DATETIME created_at "AUTO"
+        DATETIME updated_at "AUTO"
+    }
+
+    rooms {
+        INTEGER id PK
+        INTEGER facility_id FK "NOT NULL -> facilities"
+        VARCHAR name "NOT NULL"
+        VARCHAR code "NOT NULL"
+        VARCHAR room_number "NULL"
+        TEXT description "NULL"
+        INTEGER floor "DEFAULT 1"
+        VARCHAR map_svg_id "NULL"
+        VARCHAR room_type "DEFAULT classroom"
+        INTEGER capacity "DEFAULT 30"
+        BOOLEAN is_office "DEFAULT False"
+        BOOLEAN is_crucial "DEFAULT False"
+        INTEGER search_count "DEFAULT 0"
+        BOOLEAN is_deleted "DEFAULT False"
+        BOOLEAN is_active "DEFAULT True"
+        DATETIME created_at "AUTO"
+        DATETIME updated_at "AUTO"
+    }
+
+    navigation_nodes {
+        INTEGER id PK
+        VARCHAR name "NOT NULL"
+        VARCHAR node_type "NOT NULL"
+        INTEGER facility_id FK "NULL -> facilities"
+        INTEGER room_id FK "NULL -> rooms"
+        VARCHAR map_svg_id "NULL"
+        FLOAT x "NOT NULL"
+        FLOAT y "NOT NULL"
+        INTEGER floor "DEFAULT 1"
+        BOOLEAN is_deleted "DEFAULT False"
+        DATETIME created_at "AUTO"
+        DATETIME updated_at "AUTO"
+    }
+
+    navigation_edges {
+        INTEGER id PK
+        INTEGER from_node_id FK "NOT NULL -> navigation_nodes"
+        INTEGER to_node_id FK "NOT NULL -> navigation_nodes"
+        INTEGER distance "NOT NULL"
+        BOOLEAN is_bidirectional "DEFAULT True"
+        BOOLEAN is_deleted "DEFAULT False"
+        DATETIME created_at "AUTO"
+        DATETIME updated_at "AUTO"
+    }
+
+    faq_entries {
+        INTEGER id PK
+        TEXT question "NOT NULL"
+        TEXT answer "NOT NULL"
+        VARCHAR category "DEFAULT general"
+        TEXT keywords "DEFAULT empty"
+        INTEGER usage_count "DEFAULT 0"
+        BOOLEAN is_deleted "DEFAULT False"
+        DATETIME created_at "AUTO"
+        DATETIME updated_at "AUTO"
+    }
+
+    ai_chat_logs {
+        INTEGER id PK
+        TEXT user_query "NOT NULL"
+        TEXT ai_response "NULL"
+        VARCHAR mode "NOT NULL"
+        INTEGER response_time_ms "NULL"
+        BOOLEAN is_successful "DEFAULT True"
+        TEXT error_message "NULL"
+        INTEGER faq_entry_id FK "NULL -> faq_entries"
+        VARCHAR session_id "NULL"
+        DATETIME created_at "AUTO"
+    }
+
+    notifications {
+        INTEGER id PK
+        VARCHAR title "NOT NULL"
+        TEXT message "NOT NULL"
+        VARCHAR type "DEFAULT info"
+        VARCHAR source_label "DEFAULT empty"
+        VARCHAR source_color "DEFAULT orange"
+        INTEGER announcement_id FK "NULL -> announcements"
+        INTEGER priority "DEFAULT 1"
+        BOOLEAN is_read "DEFAULT False"
+        DATETIME expires_at "NULL"
+        INTEGER created_by_id FK "NULL -> admin_users"
+        DATETIME created_at "AUTO"
+    }
+
+    announcements {
+        INTEGER id PK
+        VARCHAR title "NOT NULL"
+        TEXT content "NOT NULL"
+        INTEGER created_by_id FK "NULL -> admin_users"
+        VARCHAR source_label "NOT NULL"
+        VARCHAR source_color "DEFAULT orange"
+        VARCHAR scope "DEFAULT campus_wide"
+        VARCHAR target_department "NULL"
+        VARCHAR status "DEFAULT pending_approval"
+        BOOLEAN requires_approval "DEFAULT True"
+        INTEGER approved_by_id FK "NULL -> admin_users"
+        INTEGER rejected_by_id FK "NULL -> admin_users"
+        TEXT rejection_note "NULL"
+        DATETIME approved_at "NULL"
+        INTEGER archived_by_id FK "NULL -> admin_users"
+        DATETIME archived_at "NULL"
+        BOOLEAN is_deleted "DEFAULT False"
+        DATETIME created_at "AUTO"
+        DATETIME updated_at "AUTO"
+    }
+
+    feedback {
+        INTEGER id PK
+        INTEGER rating "NULL"
+        TEXT comment "NULL"
+        VARCHAR category "DEFAULT general"
+        INTEGER facility_id FK "NULL -> facilities"
+        INTEGER room_id FK "NULL -> rooms"
+        BOOLEAN is_flagged "DEFAULT False"
+        TEXT flag_reason "NULL"
+        DATETIME created_at "AUTO"
+    }
+
+    ratings {
+        INTEGER id PK
+        INTEGER user_id FK "NULL -> admin_users"
+        INTEGER facility_id FK "NULL -> facilities"
+        INTEGER room_id FK "NULL -> rooms"
+        INTEGER rating "NOT NULL"
+        TEXT comment "NULL"
+        VARCHAR category "DEFAULT general"
+        BOOLEAN is_anonymous "DEFAULT True"
+        BOOLEAN is_active "DEFAULT True"
+        DATETIME created_at "AUTO"
+    }
+
+    feedback_flags {
+        INTEGER id PK
+        INTEGER user_id FK "NULL -> admin_users"
+        INTEGER rating_id FK "NOT NULL -> ratings"
+        TEXT reason "NOT NULL"
+        VARCHAR status "DEFAULT pending"
+        INTEGER resolved_by_id FK "NULL -> admin_users"
+        DATETIME resolved_at "NULL"
+        DATETIME created_at "AUTO"
+    }
+
+    map_markers {
+        INTEGER id PK
+        INTEGER facility_id FK "NULL -> facilities"
+        INTEGER room_id FK "NULL -> rooms"
+        VARCHAR name "NOT NULL"
+        FLOAT x_position "NOT NULL"
+        FLOAT y_position "NOT NULL"
+        VARCHAR marker_type "DEFAULT facility"
+        VARCHAR icon_name "DEFAULT location_on"
+        VARCHAR color_hex "DEFAULT FF9800"
+        BOOLEAN is_active "DEFAULT True"
+        DATETIME created_at "AUTO"
+    }
+
+    map_labels {
+        INTEGER id PK
+        VARCHAR label_text "NOT NULL"
+        FLOAT x_position "NOT NULL"
+        FLOAT y_position "NOT NULL"
+        INTEGER font_size "DEFAULT 14"
+        VARCHAR color_hex "DEFAULT 000000"
+        FLOAT rotation "DEFAULT 0"
+        BOOLEAN is_active "DEFAULT True"
+        DATETIME created_at "AUTO"
+    }
+
+    notification_types {
+        INTEGER id PK
+        VARCHAR name UK "UNIQUE, NOT NULL"
+        TEXT description "NULL"
+        VARCHAR icon_name "DEFAULT notifications"
+        VARCHAR color_hex "DEFAULT FF9800"
+        BOOLEAN is_active "DEFAULT True"
+        DATETIME created_at "AUTO"
+    }
+
+    notification_preferences {
+        INTEGER id PK
+        INTEGER user_id FK "NOT NULL -> admin_users"
+        INTEGER notification_type_id FK "NOT NULL -> notification_types"
+        BOOLEAN is_enabled "DEFAULT True"
+        DATETIME created_at "AUTO"
+    }
+
+    admin_audit_log {
+        INTEGER id PK
+        INTEGER admin_id FK "NULL -> admin_users"
+        VARCHAR action "NOT NULL"
+        VARCHAR entity_type "NULL"
+        INTEGER entity_id "NULL"
+        VARCHAR entity_label "NULL"
+        TEXT old_value_json "NULL"
+        TEXT new_value_json "NULL"
+        VARCHAR ip_address "NULL"
+        DATETIME created_at "AUTO"
+    }
+
+    search_history {
+        INTEGER id PK
+        INTEGER user_id FK "NULL -> admin_users"
+        VARCHAR query "NOT NULL"
+        INTEGER results_count "DEFAULT 0"
+        BOOLEAN was_clicked "DEFAULT False"
+        DATETIME created_at "AUTO"
+    }
+
+    app_usage {
+        INTEGER id PK
+        INTEGER user_id FK "NULL -> admin_users"
+        DATE session_date "NOT NULL"
+        INTEGER session_duration "DEFAULT 0"
+        INTEGER screen_views "DEFAULT 0"
+        DATETIME created_at "AUTO"
+    }
+
+    usage_analytics {
+        INTEGER id PK
+        INTEGER user_id FK "NULL -> admin_users"
+        VARCHAR event_type "NOT NULL"
+        JSON event_data "NULL"
+        VARCHAR screen_name "NULL"
+        VARCHAR session_id "NULL"
+        DATETIME created_at "AUTO"
+    }
+
+    device_preferences {
+        INTEGER id PK
+        INTEGER user_id FK "NULL -> admin_users"
+        VARCHAR device_id "NOT NULL"
+        BOOLEAN dark_mode "DEFAULT False"
+        VARCHAR language "DEFAULT en"
+        FLOAT font_scale "DEFAULT 1.0"
+        BOOLEAN high_contrast "DEFAULT False"
+        BOOLEAN reduce_animations "DEFAULT False"
+        DATETIME last_sync "NULL"
+        DATETIME created_at "AUTO"
+    }
+
+    app_config {
+        INTEGER id PK
+        VARCHAR config_key UK "UNIQUE, NOT NULL"
+        TEXT config_value "NOT NULL"
+        TEXT description "NULL"
+        INTEGER updated_by_id FK "NULL -> admin_users"
+        DATETIME updated_at "AUTO"
+    }
+
+    connectivity_log {
+        INTEGER id PK
+        INTEGER user_id FK "NULL -> admin_users"
+        BOOLEAN is_online "NOT NULL"
+        VARCHAR connection_type "NULL"
+        INTEGER latency_ms "NULL"
+        TEXT error_message "NULL"
+        DATETIME created_at "AUTO"
+    }
+
+    %% ═══════════════════════════════
+    %% RELATIONSHIPS
+    %% ═══════════════════════════════
+
+    %% Department relationships
+    admin_users ||--o{ departments : "heads"
+    departments ||--o{ facilities : "owns"
+
+    %% Facility → Rooms (1:M)
+    facilities ||--o{ rooms : "contains"
+
+    %% Navigation graph
+    facilities ||--o{ navigation_nodes : "has nodes"
+    rooms ||--o{ navigation_nodes : "has nodes"
+    navigation_nodes ||--o{ navigation_edges : "from_node"
+    navigation_nodes ||--o{ navigation_edges : "to_node"
+
+    %% Map elements
+    facilities ||--o{ map_markers : "has markers"
+    rooms ||--o{ map_markers : "has markers"
+
+    %% Chatbot
+    faq_entries ||--o{ ai_chat_logs : "matched by"
+
+    %% Announcements → Notifications
+    announcements ||--o{ notifications : "generates"
+    admin_users ||--o{ announcements : "creates"
+    admin_users ||--o{ announcements : "approves"
+    admin_users ||--o{ notifications : "creates"
+
+    %% Feedback & Ratings
+    facilities ||--o{ feedback : "receives"
+    rooms ||--o{ feedback : "receives"
+    admin_users ||--o{ ratings : "submits"
+    facilities ||--o{ ratings : "rated"
+    rooms ||--o{ ratings : "rated"
+    ratings ||--o{ feedback_flags : "flagged"
+    admin_users ||--o{ feedback_flags : "flags"
+    admin_users ||--o{ feedback_flags : "resolves"
+
+    %% Notification preferences
+    admin_users ||--o{ notification_preferences : "configures"
+    notification_types ||--o{ notification_preferences : "has prefs"
+
+    %% Audit & Analytics
+    admin_users ||--o{ admin_audit_log : "audited"
+    admin_users ||--o{ search_history : "searches"
+    admin_users ||--o{ app_usage : "uses"
+    admin_users ||--o{ usage_analytics : "tracked"
+    admin_users ||--o{ device_preferences : "has prefs"
+    admin_users ||--o{ connectivity_log : "logs"
+    admin_users ||--o{ app_config : "updates"
+```
+
+### Database 2: `chatbot.db` (Flask Microservice)
+
+```mermaid
+erDiagram
+    chat_history {
+        INTEGER id PK "AUTOINCREMENT"
+        TEXT user_message "NOT NULL"
+        TEXT bot_reply "NOT NULL"
+    }
+```
+
+> [!NOTE]
+> The `chatbot.db` is a **standalone SQLite database** with no foreign key relationships to `technopath.db`. It simply logs chat interactions for the Flask chatbot microservice. The Django backend has its own `ai_chat_logs` table that tracks chatbot interactions from the Django side with richer metadata (mode, response time, FAQ entry link).
+
+---
+
+### Relationship Summary
+
+| Relationship | Type | Description |
+|-------------|------|-------------|
+| `admin_users` → `departments` | 1:M | Admin user heads multiple departments |
+| `departments` → `facilities` | 1:M | Department owns multiple facilities |
+| `facilities` → `rooms` | 1:M | Facility contains multiple rooms |
+| `facilities` → `navigation_nodes` | 1:M | Facility has multiple navigation nodes |
+| `rooms` → `navigation_nodes` | 1:M | Room has a navigation node |
+| `navigation_nodes` → `navigation_edges` | 1:M (×2) | Node connects via from/to edges |
+| `facilities` → `map_markers` | 1:M | Facility has map markers |
+| `rooms` → `map_markers` | 1:M | Room has map markers |
+| `faq_entries` → `ai_chat_logs` | 1:M | FAQ entry matched by chat logs |
+| `admin_users` → `announcements` | 1:M (×4) | User creates/approves/rejects/archives |
+| `announcements` → `notifications` | 1:M | Published announcement creates notification(s) |
+| `admin_users` → `notifications` | 1:M | Admin creates notifications |
+| `facilities` → `feedback` | 1:M | Facility receives feedback |
+| `rooms` → `feedback` | 1:M | Room receives feedback |
+| `admin_users` → `ratings` | 1:M | User submits ratings |
+| `facilities` → `ratings` | 1:M | Facility is rated |
+| `rooms` → `ratings` | 1:M | Room is rated |
+| `ratings` → `feedback_flags` | 1:M | Rating is flagged |
+| `admin_users` → `feedback_flags` | 1:M (×2) | User flags and resolves |
+| `admin_users` → `notification_preferences` | 1:M | User has preferences |
+| `notification_types` → `notification_preferences` | 1:M | Type has user preferences |
+| `admin_users` → `admin_audit_log` | 1:M | Admin actions are audited |
+| `admin_users` → `search_history` | 1:M | User search queries logged |
+| `admin_users` → `app_usage` | 1:M | User session data |
+| `admin_users` → `usage_analytics` | 1:M | User events tracked |
+| `admin_users` → `device_preferences` | 1:M | User device settings |
+| `admin_users` → `app_config` | 1:M | Admin updates config |
+| `admin_users` → `connectivity_log` | 1:M | User connectivity events |

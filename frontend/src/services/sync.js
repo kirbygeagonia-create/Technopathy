@@ -115,8 +115,19 @@ export async function syncAllData() {
         await db.notification_types.clear()
         await db.notification_types.bulkPut(notificationTypesRes.data)
 
+        const existingNotifs = await db.notifications.toArray()
+        const readStates = {}
+        for (const n of existingNotifs) {
+            readStates[n.id] = !!n.is_read
+        }
+
+        const newNotifs = notificationsRes.data.map(n => {
+            if (readStates[n.id]) n.is_read = true
+            return n
+        })
+
         await db.notifications.clear()
-        await db.notifications.bulkPut(notificationsRes.data)
+        await db.notifications.bulkPut(newNotifs)
 
         await db.app_config.clear()
         await db.app_config.bulkPut(appConfigRes.data)
@@ -172,4 +183,49 @@ export function registerConnectivityListener(onSyncComplete) {
   window.addEventListener('offline', () => {
     console.log('[Sync] Connection lost — app will continue working offline')
   })
+}
+
+// Polling interval tracker
+let pollInterval = null
+
+// Start polling for lightweight data updates (notifications/announcements)
+export function startPolling() {
+  if (pollInterval) return
+  
+  // Poll every 30 seconds
+  pollInterval = setInterval(async () => {
+    if (!isOnline()) return
+    
+    try {
+      const notificationsRes = await api.get('/notifications/')
+      
+      const existingNotifs = await db.notifications.toArray()
+      const readStates = {}
+      for (const n of existingNotifs) {
+          readStates[n.id] = !!n.is_read
+      }
+
+      const newNotifs = notificationsRes.data.map(n => {
+          if (readStates[n.id]) n.is_read = true
+          return n
+      })
+
+      await db.transaction('rw', db.notifications, async () => {
+          await db.notifications.clear()
+          await db.notifications.bulkPut(newNotifs)
+      })
+      
+      // Also opportunistically upload offline queue if device is online
+      await syncOfflineQueue()
+    } catch (e) {
+      console.warn('[Sync] Polling failed:', e.message)
+    }
+  }, 30000)
+}
+
+export function stopPolling() {
+  if (pollInterval) {
+    clearInterval(pollInterval)
+    pollInterval = null
+  }
 }

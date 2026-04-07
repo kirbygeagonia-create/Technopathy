@@ -1,0 +1,106 @@
+@startuml
+!define RECTANGLE class
+
+skinparam backgroundColor #FEFEFE
+skinparam componentStyle rectangle
+
+title TechnoPath: SEAIT Guide Map - Functional Decomposition Diagram (FDD)
+
+rectangle "TechnoPath: SEAIT Guide Map\nand Navigation System" as System {
+    
+    package "Mobile User Module" as MobileModule #LightBlue {
+        rectangle "Campus Map View" as CampusMap {
+            card "Interactive SEAIT map"
+            card "Facility markers"
+            card "Zoom & pan controls"
+            card "QR code deep linking"
+        }
+        
+        rectangle "Search & Discovery" as SearchDiscovery {
+            card "Real-time search"
+            card "Autocomplete"
+            card "Recent searches"
+            card "Location filtering"
+        }
+        
+        rectangle "Navigation System" as NavigationSystem {
+            card "Point-to-point routing"
+            card "Turn-by-turn directions"
+            card "Route visualization"
+            card "Walking distance/time"
+        }
+        
+        rectangle "AI Chatbot" as Chatbot {
+            card "Natural language processing"
+            card "FAQ offline responses"
+            card "Online AI mode"
+            card "Quick actions"
+        }
+        
+        rectangle "Notifications" as Notifications {
+            card "Push notifications"
+            card "Department-scoped"
+            card "Emergency alerts"
+        }
+        
+        rectangle "Information Center" as InfoCenter {
+            card "Building information"
+            card "Room details"
+            card "Instructor directory"
+            card "Employee directory"
+        }
+        
+        rectangle "User Engagement" as UserEngagement {
+            card "Favorites"
+            card "Ratings & feedback"
+            card "Profile settings"
+            card "Accessibility"
+        }
+    }
+    
+    package "Admin Panel Module" as AdminModule #LightGreen {
+        rectangle "Admin Dashboard" as AdminDashboard {
+            card "System statistics"
+            card "Quick actions"
+            card "Pending approvals"
+            card "Recent activity"
+        }
+        
+        package "Map Management" as MapManagement #LightYellow {
+            rectangle "Facilities Mgmt"
+            rectangle "Rooms Mgmt"
+            rectangle "Navigation Graph"
+            rectangle "FAQ/Chatbot Mgmt"
+            rectangle "QR Code Mgmt"
+        }
+        
+        package "Communications" as Communications #LightCoral {
+            rectangle "Announcements"
+            rectangle "Pending Approvals"
+            rectangle "Send Notifications"
+        }
+        
+        package "Administration" as Administration #LightGray {
+            rectangle "Admin Accounts"
+            rectangle "Feedback & Ratings"
+            rectangle "Audit Log"
+        }
+    }
+    
+    package "System Core Module" as CoreModule #LightPink {
+        rectangle "Database Management"
+        rectangle "API Services (REST)"
+        rectangle "Sync & Offline Services"
+        rectangle "Analytics & Reporting"
+    }
+}
+
+System --> MobileModule
+System --> AdminModule
+System --> CoreModule
+
+AdminModule --> MapManagement
+AdminModule --> Communications
+AdminModule --> Administration
+
+@enduml

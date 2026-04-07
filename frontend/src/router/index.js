@@ -1,6 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '../stores/authStore.js'
 
 const routes = [
+  // Splash screen
+  { path: '/splash', component: () => import('../views/SplashScreen.vue') },
+
   // Public mobile routes
   { path: '/', component: () => import('../views/HomeView.vue') },
   { path: '/map', component: () => import('../views/MapView.vue') },
@@ -8,10 +12,9 @@ const routes = [
   { path: '/chatbot', component: () => import('../views/ChatbotView.vue') },
   { path: '/notifications', component: () => import('../views/NotificationsView.vue') },
   { path: '/settings', component: () => import('../views/SettingsView.vue') },
+  { path: '/profile', component: () => import('../views/ProfileView.vue') },
+  { path: '/favorites', component: () => import('../views/FavoritesView.vue') },
   
-  // QR Scanner
-  { path: '/qr-scanner', component: () => import('../views/QRScannerView.vue') },
-
   // Feedback
   { path: '/feedback', component: () => import('../views/FeedbackView.vue') },
 
@@ -38,9 +41,17 @@ const router = createRouter({
 
 // Navigation guard — redirect to login if not authenticated
 router.beforeEach((to, from, next) => {
+  // Splash screen redirect: every session (sessionStorage)
+  if (to.path === '/' && !sessionStorage.getItem('tp_splash_shown') && from.path !== '/splash') {
+    next('/splash')
+    return
+  }
+
+  // Admin auth guard
   if (to.meta.requiresAuth) {
-    const token = localStorage.getItem('technopath_token')
-    if (!token) {
+    const authStore = useAuthStore()
+    // Check if user is logged in via store (validates token existence)
+    if (!authStore.isLoggedIn) {
       next('/admin/login')
     } else {
       next()

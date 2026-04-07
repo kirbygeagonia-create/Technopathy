@@ -3,40 +3,70 @@ import api from '../services/api.js'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    user: JSON.parse(localStorage.getItem('technopath_user') || 'null'),
-    token: localStorage.getItem('technopath_token') || null,
-    refreshToken: localStorage.getItem('technopath_refresh') || null,
+    user:         JSON.parse(localStorage.getItem('tp_user')  || 'null'),
+    token:        localStorage.getItem('tp_token')            || null,
+    refreshToken: localStorage.getItem('tp_refresh')          || null,
   }),
 
   getters: {
-    isLoggedIn: (state) => !!state.token,
-    isAdmin: (state) => !!state.user,
-    isSuperAdmin: (state) => state.user?.user_type === 'super_admin',
+    isLoggedIn:                 (s) => !!s.token,
+    isAdmin:                    (s) => !!s.token && ['super_admin', 'dean', 'program_head', 'basic_ed_head'].includes(s.user?.role),
+    isSuperAdmin:               (s) => s.user?.role === 'super_admin',
+    isDean:                     (s) => s.user?.role === 'dean',
+    isProgramHead:              (s) => s.user?.role === 'program_head',
+    isBasicEdHead:              (s) => s.user?.role === 'basic_ed_head',
+    displayName:                (s) => s.user?.display_name || s.user?.username || '',
+    roleLabel:                  (s) => s.user?.role_label || '',
+    departmentLabel:            (s) => s.user?.department_label || '',
+    departmentColor:            (s) => s.user?.department_color || 'orange',
+    department:                 (s) => s.user?.department || '',
+
+    // Permission getters — sourced directly from login response flags
+    canManageFacilities:        (s) => s.user?.can_manage_facilities        || false,
+    canManageAllRooms:          (s) => s.user?.can_manage_all_rooms         || false,
+    canManageOwnRooms:          (s) => s.user?.can_manage_own_rooms         || false,
+    canManageNavigation:        (s) => s.user?.can_manage_navigation        || false,
+    canManageFAQ:               (s) => s.user?.can_manage_faq               || false,
+    canManageAdminAccounts:     (s) => s.user?.can_manage_admin_accounts    || false,
+    canViewAuditLog:            (s) => s.user?.can_view_audit_log           || false,
+    canViewDeptAuditLog:        (s) => s.user?.can_view_dept_audit_log       || false,
+    canViewAllFeedback:         (s) => s.user?.can_view_all_feedback        || false,
+    canViewDeptFeedback:        (s) => s.user?.can_view_dept_feedback       || false,
+    canApproveAnnouncements:    (s) => s.user?.can_approve_announcements    || false,
+    canPublishDirectly:         (s) => s.user?.can_publish_directly         || false,
+    canPostAnnouncement:        (s) => s.user?.can_post_announcement        || false,
+    canPostDeptAnnouncement:    (s) => s.user?.can_post_dept_announcement    || false,
+    canPostCampusAnnouncement:  (s) => s.user?.can_post_campus_announcement  || false,
+    canSendCampusNotification:  (s) => s.user?.can_send_campus_notification || false,
   },
 
   actions: {
     async login(username, password) {
-      const response = await api.post('/auth/login/', { username, password })
-      const { access, refresh } = response.data
-
-      this.token = access
-      this.refreshToken = refresh
-      localStorage.setItem('technopath_token', access)
-      localStorage.setItem('technopath_refresh', refresh)
-
-      // Fetch user profile
-      const userRes = await api.get('/users/me/')
-      this.user = userRes.data
-      localStorage.setItem('technopath_user', JSON.stringify(userRes.data))
+      try {
+        const res = await api.post('/users/login/', { username, password })
+        const { access, refresh, user } = res.data
+        this.token        = access
+        this.refreshToken = refresh
+        this.user         = user
+        localStorage.setItem('tp_token',   access)
+        localStorage.setItem('tp_refresh', refresh)
+        localStorage.setItem('tp_user',    JSON.stringify(user))
+        return { success: true, user }
+      } catch (error) {
+        const message = error.response?.data?.detail 
+          || error.response?.data?.message 
+          || error.response?.data?.error
+          || 'Invalid username or password'
+        return { success: false, error: message }
+      }
     },
 
     logout() {
-      this.user = null
-      this.token = null
-      this.refreshToken = null
-      localStorage.removeItem('technopath_token')
-      localStorage.removeItem('technopath_refresh')
-      localStorage.removeItem('technopath_user')
-    }
-  }
+      api.post('/users/logout/').catch(() => {})
+      this.token = this.refreshToken = this.user = null
+      localStorage.removeItem('tp_token')
+      localStorage.removeItem('tp_refresh')
+      localStorage.removeItem('tp_user')
+    },
+  },
 })

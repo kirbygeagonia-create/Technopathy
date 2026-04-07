@@ -60,33 +60,20 @@ const isLoading = ref(false)
 async function handleLogin() {
   error.value = ''
   isLoading.value = true
+  console.log('Login started...')
 
-  try {
-    await authStore.login(username.value, password.value)
-    router.push('/admin')
-  } catch (err) {
-    console.error('Login error:', err)
-    
-    // Fallback: Allow mock login for development/demo when backend is unavailable
-    if (err.response?.status === 500 || !err.response) {
-      // Check for default admin credentials
-      if (username.value === 'admin' && password.value === 'admin123') {
-        console.log('Using fallback mock login (backend unavailable)')
-        // Set mock user data
-        authStore.user = { id: 1, username: 'admin', user_type: 'super_admin' }
-        authStore.token = 'mock_token_for_development'
-        localStorage.setItem('technopath_token', 'mock_token_for_development')
-        localStorage.setItem('technopath_user', JSON.stringify(authStore.user))
-        router.push('/admin')
-        return
-      }
-      error.value = 'Server error. Backend may be unavailable. Using default credentials: admin/admin123'
-    } else {
-      error.value = err.response?.data?.detail || 'Login failed. Please check your credentials.'
-    }
-  } finally {
-    isLoading.value = false
+  const result = await authStore.login(username.value, password.value)
+  console.log('Login result:', result)
+  
+  if (result.success) {
+    console.log('Login successful, redirecting to /admin')
+    await router.push('/admin')
+  } else {
+    console.error('Login failed:', result.error)
+    error.value = result.error
   }
+  
+  isLoading.value = false
 }
 
 function goBack() {

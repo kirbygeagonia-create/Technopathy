@@ -1,0 +1,259 @@
+# Implementation Plan — TechnoPath PWA Optimization
+
+> **Status:** ✅ APPROVED by user — executing in revised phase order below.
+
+## Resolved Questions
+
+- **Q1 (Building Data):** Map SVG not final — use placeholders. CL1–CL10 are ALL in MST Building 3rd floor. MST=center, RST=left-bottom (admin offices), JST=back. Detailed floor layouts provided.
+- **Q2 (Per-user notification read):** Implement alongside Phase 3 (models already being touched).
+- **Q3 (Phase Order):** Phase 1 → 5C → 8 → 6 → 2&3 → 4&5 → 7 → 9
+
+## Feasibility Assessment
+
+### Immediately Implementable (No Infrastructure Changes)
+
+| Task | Scope | Effort |
+|------|-------|--------|
+| **Task A** — Dean Account Architecture | Backend model/view/permission changes + frontend permission sync | Medium (2-3 hours) |
+| **Task B** — Announcement Workflow | Backend view logic + frontend conditional UI | Medium (2-3 hours) |
+| **Task C** — Facilities & Rooms Mobile UI | Frontend-only CSS/layout + IndexedDB filtering | Medium (1-2 hours) |
+| **Task D** — Nav Bar & Search Bar Mobile | Frontend-only CSS/layout restructure | Low (30-60 min) |
+| **Task E** — Admin Mobile Interface | Frontend route guards + mobile admin shell component | Medium (1-2 hours) |
+| **Task G** — QR Code PWA Access | Frontend route handling + admin QR generator component (npm qrcode lib) | Medium (2 hours) |
+| **Task H** — Mobile Audit & Repair | Frontend CSS + responsive fixes | High (3-4 hours) |
+| **Backend Permission Fixes** (A9, A10, B8, B9, B10) | Custom DRF permission classes | Medium (1-2 hours) |
+| **Dead Code Cleanup** (A1, A3, A5) | Delete/fix dead files | Low (15 min) |
+
+### Requires Infrastructure/Architecture Discussion
+
+| Task | Requirement | Assessment |
+|------|------------|------------|
+| **Task F** — Real-Time Sync | Polling approach: ✅ Immediately implementable with `setInterval`. WebSocket: requires Django Channels + Redis. | **Polling is implementable now.** WebSocket upgrade documented as future enhancement. |
+| **Notification per-user read** (A8/D2) | Requires new `NotificationReadStatus` model + migration + view changes | **Implementable but adds a new table.** Will implement with migration. |
+
+---
+
+## Unified Implementation Plan
+
+### Phase 1 — Backend Permission Hardening ⚡ (P0 Security)
+
+> [!CAUTION]
+> These are security-critical. Any authenticated admin can currently bypass frontend-only restrictions via direct API calls.
+
+#### [MODIFY] [views.py](file:///c:/Users/User/Documents/technopath_pwa/version4_technopath/backend_django/apps/facilities/views.py)
+- Replace `IsAuthenticatedOrReadOnly` with `IsSuperAdmin` for create/update/delete
+- Keep read as public (AllowAny or IsAuthenticatedOrReadOnly)
+
+#### [MODIFY] [views.py](file:///c:/Users/User/Documents/technopath_pwa/version4_technopath/backend_django/apps/rooms/views.py)
+- Add custom `CanManageRoom` permission that checks:
+  - Super Admin → all rooms
+  - Dean/PH/BEH → only rooms in facilities linked to their department
+- Apply to write operations (POST, PUT, DELETE)
+
+#### [MODIFY] [views.py](file:///c:/Users/User/Documents/technopath_pwa/version4_technopath/backend_django/apps/navigation/views.py)
+- Replace `IsAuthenticatedOrReadOnly` with `IsSuperAdmin` for write operations
+
+#### [MODIFY] [views.py](file:///c:/Users/User/Documents/technopath_pwa/version4_technopath/backend_django/apps/chatbot/views.py)
+- Replace `IsAuthenticatedOrReadOnly` with `IsSuperAdmin` for FAQ writes
+
+#### [MODIFY] [views.py](file:///c:/Users/User/Documents/technopath_pwa/version4_technopath/backend_django/apps/core/views.py)
+- Add role check to `AdminAuditLogListView` to match the `/api/users/audit-log/` restriction
+- Consider deprecating the redundant endpoint
+
+#### [MODIFY] [permissions.py](file:///c:/Users/User/Documents/technopath_pwa/version4_technopath/backend_django/apps/users/permissions.py)
+- Add `CanManageRoom` permission class
+- Add `ReadOnlyOrSuperAdmin` helper permission
+
+---
+
+### Phase 2 — Dean Account Architecture (Task A)
+
+#### [MODIFY] [models.py](file:///c:/Users/User/Documents/technopath_pwa/version4_technopath/backend_django/apps/users/models.py)
+- Downgrade Dean permissions:
+  - `can_approve_announcements()` → `False` for dean
+  - `can_publish_directly()` → Only when `scope == own department`  (moved to view logic)
+  - `can_view_all_feedback()` → Scope to own department
+  - `can_send_campus_notification()` → `False` for dean (or only with Super Admin approval)
+- Add clean/save validation: enforce unique `(role='dean', department)` constraint
+- Update `get_permissions_dict()` with new flags
+
+#### [MODIFY] [views.py](file:///c:/Users/User/Documents/technopath_pwa/version4_technopath/backend_django/apps/users/views.py)
+- In `AdminListCreateView.post()`: validate that when creating a dean, there isn't already a dean for that department
+- In `AdminDetailView.put()`: validate department uniqueness on role change
+
+#### [MODIFY] [AdminAccounts.vue](file:///c:/Users/User/Documents/technopath_pwa/version4_technopath/frontend/src/components/admin/AdminAccounts.vue)
+- Fix department `<select>` options to match `DEPARTMENT_CHOICES`
+- Add validation feedback when dean-per-department constraint is violated
+
+#### [MODIFY] [authStore.js](file:///c:/Users/User/Documents/technopath_pwa/version4_technopath/frontend/src/stores/authStore.js)
+- Update permission flags to include new dean-scoped permissions
+
+---
+
+### Phase 3 — Announcement Workflow (Task B)
+
+#### [MODIFY] [views.py](file:///c:/Users/User/Documents/technopath_pwa/version4_technopath/backend_django/apps/announcements/views.py)
+- `AnnouncementCreateView.post()`: Implement tiered logic:
+  - Super Admin → always publish directly
+  - Dean + own-dept scope → publish directly
+  - Dean + campus-wide → pending, approved by Super Admin only
+  - Program Head → pending, approved by own-dept Dean OR Super Admin
+  - Basic Ed Head → pending, approved by Super Admin only
+- `PendingApprovalsView.get()`: Filter to show only announcements the current user can approve
+  - Super Admin sees all pending
+  - Dean sees only pending from their own department's Program Heads
+
+#### [MODIFY] [models.py](file:///c:/Users/User/Documents/technopath_pwa/version4_technopath/backend_django/apps/announcements/models.py)
+- Add `approved_by_role` field or comment documenting approval chain
+- Add edge-case handling: deactivated Dean → announcements remain published (add code comment)
+- Add archive endpoint
+
+#### [MODIFY] [urls.py](file:///c:/Users/User/Documents/technopath_pwa/version4_technopath/backend_django/apps/announcements/urls.py)
+- Add `<int:pk>/archive/` endpoint
+
+#### [MODIFY] [permissions.py](file:///c:/Users/User/Documents/technopath_pwa/version4_technopath/backend_django/apps/users/permissions.py)
+- Update `CanApproveAnnouncements` to check scoped approval authority
+
+#### [MODIFY] [AdminAnnouncements.vue](file:///c:/Users/User/Documents/technopath_pwa/version4_technopath/frontend/src/components/admin/AdminAnnouncements.vue)
+- Update UI to show approval flow info based on role + selected scope
+- Show "Publishes immediately" or "Requires approval from [role]" dynamically
+
+#### [MODIFY] [AdminPendingApprovals.vue](file:///c:/Users/User/Documents/technopath_pwa/version4_technopath/frontend/src/components/admin/AdminPendingApprovals.vue)
+- Only display items the current user has authority to approve
+
+---
+
+### Phase 4 — Admin Mobile Interface (Task E)
+
+#### [MODIFY] [AdminView.vue](file:///c:/Users/User/Documents/technopath_pwa/version4_technopath/frontend/src/views/AdminView.vue)
+- Replace full mobile block with restricted mobile view:
+  - ✅ Show: Announcements, Notifications, Dashboard summary (read-only)
+  - ❌ Hide: Facilities, Rooms, Navigation, Accounts, FAQ, Nav Graph, Config
+- Show "Desktop required for this feature" message for blocked items
+- Gate at component level using `v-if="!isMobile"` or route-level nav guard
+
+#### [MODIFY] [router/index.js](file:///c:/Users/User/Documents/technopath_pwa/version4_technopath/frontend/src/router/index.js)
+- Add mobile detection to admin route guards for CRUD-heavy admin sub-routes
+
+---
+
+### Phase 5 — Mobile UI Critical Fixes (Tasks C & D)
+
+#### Task C — Facilities & Rooms Side-by-Side
+
+#### [MODIFY] [HomeView.vue](file:///c:/Users/User/Documents/technopath_pwa/version4_technopath/frontend/src/views/HomeView.vue) or [NEW] FacilitiesRoomsPanel.vue
+- Create a linked facilities + rooms panel:
+  - Left: scrollable facility list
+  - Right: rooms filtered by selected facility
+  - Data sourced from IndexedDB (no extra API calls)
+  - 44×44px tap targets, no overflow at 320px
+
+#### Task D — Nav Bar & Search Bar
+
+#### [MODIFY] [App.vue](file:///c:/Users/User/Documents/technopath_pwa/version4_technopath/frontend/src/App.vue) and/or HomeView
+- Reorder: nav buttons above search bar
+- Make search bar full-width with proper padding
+- Remove camera icon from nav bar
+- Apply `env(safe-area-inset-*)` throughout
+- Test stability at 320–430px
+
+---
+
+### Phase 6 — Full Mobile Audit & P0/P1 Repairs (Task H)
+
+- Audit every guest screen at 320px, 375px, 390px, 430px, 360px, 412px
+- Fix all P0 issues (horizontal overflow, unreachable buttons, illegible text)
+- Fix all P1 issues (safe-area gaps, keyboard overlap, loading states)
+- Stress test 6 end-to-end flows
+
+---
+
+### Phase 7 — Real-Time Polling Sync (Task F)
+
+#### [MODIFY] [sync.js](file:///c:/Users/User/Documents/technopath_pwa/version4_technopath/frontend/src/services/sync.js)
+- Add polling mechanism:
+  - Announcements & notifications: 15-30 second interval
+  - Other data: 60-120 second interval
+- Use `requestIdleCallback` where available for low-priority syncs
+- Add `visibilitychange` listener to pause when backgrounded
+- Add code comments documenting upgrade path to WebSockets/Django Channels
+- Implement offline feedback upload queue
+
+---
+
+### Phase 8 — QR Code PWA Access Point (Task G)
+
+#### [NEW] AdminQRCodeManager.vue
+- Super Admin desktop-only component
+- Generate campus-wide QR code → PWA URL
+- Generate per-facility/room QR codes with deep-link: `/?source=qr&location=<code>`
+- Download as PNG/SVG
+
+#### [MODIFY] [router/index.js](file:///c:/Users/User/Documents/technopath_pwa/version4_technopath/frontend/src/router/index.js)
+- Detect `?source=qr&location=<code>` on load
+- Auto-navigate to and highlight the relevant facility/room
+
+#### [MODIFY] [HomeView.vue](file:///c:/Users/User/Documents/technopath_pwa/version4_technopath/frontend/src/views/HomeView.vue)
+- Handle incoming QR deep-link: find facility/room by code, scroll to/highlight it
+
+---
+
+### Phase 9 — Cleanup & Minor Fixes
+
+- Delete `apps/analytics/` orphan directory
+- Fix or delete `users/serializers.py` dead serializers
+- Fix `db.js` `user_type` → `role`
+- Fix `ProfileView.vue` partial logout
+- Fix `AdminAccounts.vue` PATCH → PUT for toggle status
+- Fix MST/CL5/CL6 building mapping inconsistencies
+- Add `created_at` to Flask chatbot `chat_history` table
+
+---
+
+## Verification Plan
+
+### Automated Tests
+- Django: Run `python manage.py test` after each backend phase
+- Run `python manage.py check` to verify model integrity after migrations
+- Frontend: `npm run build` to catch compilation errors after each phase
+
+### Browser Testing
+- Use browser subagent to verify mobile layouts at 375px and 412px viewpoints
+- Execute 6 stress test flows from Task H
+
+### Manual Verification
+- Verify admin login on mobile shows restricted view
+- Verify announcement publish/approval flow end-to-end for each role
+- Verify facilities + rooms linked filtering works from IndexedDB
+
+---
+
+## Approved Execution Order
+
+1. **Phase 1** — Backend Permission Hardening (P0 Security, non-negotiable first)
+2. **Phase 5 Task C** — Facilities+Rooms linked panel (dependency for Phase 8)
+3. **Phase 8** — QR Code PWA Access Point (user priority)
+4. **Phase 6** — Full Mobile Audit & P0/P1 Repairs
+5. **Phase 2 & 3** — Dean Architecture + Announcement Workflow (bundled, tightly coupled; includes per-user notification read)
+6. **Phase 4 & 5D** — Admin Mobile Interface + remaining Mobile UI Fixes
+7. **Phase 7** — Real-Time Polling Sync
+8. **Phase 9** — Cleanup & Minor Fixes
+
+## Campus Building Reference Data
+
+### MST Building (center, big blue long building)
+- 1F: MST 101 – MST 120
+- 2F: MST 201 – MST 221
+- 3F: CL1 – CL10, MST 301 – MST 305
+- 4F: MST 401 – MST 420
+
+### RST Building (left-bottom, big blue long building — admin offices)
+- 1F: Registrar (7 windows), Accounting Office
+- 2F: Guidance Office, Safety & Security Office, HR, SSC Office, Student Affairs Office
+- 3F: IT offices, Laboratory, Silakbo (School Publication) Office
+
+### JST Building (very back, big blue long building)
+- 1F: JST 101 – JST 120
+- 2F: JST 201 – JST 220
+- 3F: JST 301 – JST 320
+- 4F: JST 401 – JST 420

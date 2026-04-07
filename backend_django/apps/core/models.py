@@ -139,31 +139,34 @@ class NotificationPreference(models.Model):
 
 class AdminAuditLog(models.Model):
     ACTION_CHOICES = [
-        ('CREATE', 'Create'),
-        ('UPDATE', 'Update'),
-        ('DELETE', 'Delete'),
-        ('SOFT_DELETE', 'Soft Delete'),
-        ('RESTORE', 'Restore'),
-        ('LOGIN', 'Login'),
-        ('LOGOUT', 'Logout'),
+        ('login',          'Login'),
+        ('logout',         'Logout'),
+        ('create',         'Create'),
+        ('update',         'Update'),
+        ('soft_delete',    'Soft Delete'),
+        ('restore',        'Restore'),
+        ('approve',        'Approve'),
+        ('reject',         'Reject'),
+        ('publish',        'Publish'),
+        ('reset_password', 'Reset Password'),
     ]
-    
-    user = models.ForeignKey('users.AdminUser', on_delete=models.CASCADE)
-    action = models.CharField(max_length=20, choices=ACTION_CHOICES)
-    entity_type = models.CharField(max_length=50)
-    entity_id = models.IntegerField(blank=True, null=True)
-    old_values = models.JSONField(blank=True, null=True)
-    new_values = models.JSONField(blank=True, null=True)
-    ip_address = models.GenericIPAddressField(blank=True, null=True)
-    user_agent = models.TextField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+
+    admin         = models.ForeignKey(
+        'users.AdminUser', on_delete=models.SET_NULL,
+        null=True, related_name='audit_entries'
+    )
+    action        = models.CharField(max_length=20, choices=ACTION_CHOICES)
+    entity_type   = models.CharField(max_length=50, blank=True, null=True)
+    entity_id     = models.IntegerField(blank=True, null=True)
+    entity_label  = models.CharField(max_length=200, blank=True, null=True)
+    old_value_json= models.TextField(blank=True, null=True)
+    new_value_json= models.TextField(blank=True, null=True)
+    ip_address    = models.CharField(max_length=50, blank=True, null=True)
+    created_at    = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = 'admin_audit_log'
         ordering = ['-created_at']
-
-    def __str__(self):
-        return f"{self.action} {self.entity_type} by {self.user.username}"
 
 
 class SearchHistory(models.Model):

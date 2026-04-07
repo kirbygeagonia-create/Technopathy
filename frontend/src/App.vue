@@ -5,9 +5,12 @@
       <!-- Side Navigation for Desktop -->
       <aside class="app-side-nav" v-if="showSideNav">
         <div class="app-side-nav-header">
-          <span class="app-logo-fallback">
-            <span class="material-icons">school</span>
-          </span>
+          <img 
+            src="/src/assets/SEAITlogo.png" 
+            alt="SEAIT Logo" 
+            class="app-logo-img"
+            @error="$event.target.style.display='none'"
+          />
           <div class="app-logo-text">TechnoPath</div>
         </div>
         
@@ -45,15 +48,15 @@
               <span class="material-icons">meeting_room</span>
               <span>Rooms Info</span>
             </router-link>
-            <router-link to="/instructor-info" class="app-info-item">
-              <span class="material-icons">school</span>
-              <span>Instructor Info</span>
-            </router-link>
-            <router-link to="/employees" class="app-info-item">
-              <span class="material-icons">people</span>
-              <span>Employees</span>
-            </router-link>
           </div>
+        </div>
+
+        <!-- Admin Panel Button (visible only for admins) -->
+        <div v-if="authStore.isAdmin" class="app-admin-section">
+          <router-link to="/admin" class="app-admin-link">
+            <span class="material-icons">admin_panel_settings</span>
+            <span class="app-nav-text">Admin Panel</span>
+          </router-link>
         </div>
 
         <div class="app-side-nav-footer">
@@ -122,6 +125,8 @@
         </router-link>
       </nav>
     </template>
+    <!-- Global Toast Component -->
+    <AppToast />
   </div>
 </template>
 
@@ -130,11 +135,15 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useSyncStore } from './stores/syncStore.js'
 import { useAuthStore } from './stores/authStore.js'
+import { useThemeStore } from './stores/themeStore.js'
+import AppToast from './components/AppToast.vue'
+import { startPolling, stopPolling } from './services/sync.js'
 
 const router = useRouter()
 const route = useRoute()
 const syncStore = useSyncStore()
 const authStore = useAuthStore()
+const themeStore = useThemeStore()
 
 const windowWidth = ref(window.innerWidth)
 
@@ -151,8 +160,8 @@ const isActiveRoute = (path) => {
 // Full menu for desktop side nav
 const menuItems = [
   { path: '/', label: 'Home', icon: 'home' },
-  { path: '/navigate', label: 'Navigate', icon: 'map' },
-  { path: '/qr-scanner', label: 'QR Scanner', icon: 'qr_code_scanner' },
+  { path: '/map', label: 'Explore Map', icon: 'map' },
+  { path: '/navigate', label: 'Navigate', icon: 'directions' },
   { path: '/chatbot', label: 'Chatbot', icon: 'smart_toy' },
   { path: '/notifications', label: 'Notifications', icon: 'notifications' },
   { path: '/feedback', label: 'Ratings & Feedback', icon: 'star' },
@@ -162,26 +171,31 @@ const menuItems = [
 // Simplified menu for mobile bottom nav
 const mobileMenuItems = [
   { path: '/', label: 'Home', icon: 'home' },
-  { path: '/navigate', label: 'Navigate', icon: 'explore' },
+  { path: '/navigate', label: 'Navigate', icon: 'directions' },
+  { path: '/chatbot', label: 'Chatbot', icon: 'smart_toy' },
   { path: '/settings', label: 'Settings', icon: 'settings' },
 ]
 
 // Hide side nav on admin routes
 const showSideNav = computed(() => {
-  return !route.path.startsWith('/admin')
+  return !route.path.startsWith('/admin') && route.path !== '/splash'
 })
 
 // Hide bottom nav on certain routes
 const showBottomNav = computed(() => {
-  const hiddenRoutes = ['/admin', '/qr-scanner', '/chatbot', '/notifications', '/feedback']
+  const hiddenRoutes = ['/admin', '/notifications', '/feedback', '/splash']
   return !hiddenRoutes.some(path => route.path.startsWith(path))
 })
 
 // Info dropdown state
 const isInfoDropdownOpen = ref(false)
 
+let resizeTimer = null
 function updateWindowWidth() {
-  windowWidth.value = window.innerWidth
+  if (resizeTimer) clearTimeout(resizeTimer)
+  resizeTimer = setTimeout(() => {
+    windowWidth.value = window.innerWidth
+  }, 150)
 }
 
 function updateStatus() {
@@ -189,15 +203,18 @@ function updateStatus() {
 }
 
 onMounted(() => {
+  themeStore.initTheme()
   window.addEventListener('resize', updateWindowWidth)
   window.addEventListener('online', updateStatus)
   window.addEventListener('offline', updateStatus)
+  startPolling()
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', updateWindowWidth)
   window.removeEventListener('online', updateStatus)
   window.removeEventListener('offline', updateStatus)
+  stopPolling()
 })
 </script>
 
