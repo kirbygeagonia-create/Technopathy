@@ -15,11 +15,11 @@
             <span v-if="isOffline" class="status-offline">
               <span class="material-icons">wifi_off</span> Offline Mode
             </span>
-            <span v-else-if="isAIEnabled" class="status-ai">
-              <span class="material-icons">psychology</span> AI Powered
+            <span v-else-if="flaskConnected" class="status-ai">
+              <span class="material-icons">psychology</span> AI Powered (GPT)
             </span>
             <span v-else class="status-basic">
-              <span class="material-icons">chat</span> Basic Mode
+              <span class="material-icons">chat</span> Connecting...
             </span>
           </p>
         </div>
@@ -135,10 +135,24 @@ const error = ref('')
 const faqList = ref([])
 
 const isOffline = computed(() => !isOnline())
+const flaskConnected = ref(false)
 const isAIEnabled = computed(() => {
   const status = aiChatbot.getStatus()
   return status.isAIEnabled
 })
+
+// Check Flask connection on mount
+async function checkFlaskConnection() {
+  try {
+    const response = await fetch(`${import.meta.env.VITE_FLASK_CHATBOT_URL || 'http://localhost:5000'}/health`, {
+      method: 'GET',
+      mode: 'cors'
+    })
+    flaskConnected.value = response.ok
+  } catch {
+    flaskConnected.value = false
+  }
+}
 
 const quickActions = ref([
   'Where is CL1?',
@@ -260,6 +274,7 @@ async function sendMessage() {
 
 onMounted(async () => {
   inputField.value?.focus()
+  await checkFlaskConnection()
   await loadFAQ()
   await aiChatbot.initChatHistory()
 })

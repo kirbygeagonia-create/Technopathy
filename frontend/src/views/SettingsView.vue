@@ -128,15 +128,14 @@
       </div>
     </Transition>
 
-    <!-- Toast -->
-    <div v-if="toastMessage" class="toast">{{ toastMessage }}</div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useThemeStore } from '../stores/themeStore.js'
+import { showToast } from '../services/toast.js'
 import FacilitiesRoomsPanel from '../components/FacilitiesRoomsPanel.vue'
 
 const router = useRouter()
@@ -148,7 +147,6 @@ const isDarkMode = computed({
   set: (val) => themeStore.setTheme(val)
 })
 const showFacilitiesRoomsPanel = ref(false)
-const toastMessage = ref('')
 
 // Methods
 const goToAdminLogin = () => {
@@ -164,16 +162,36 @@ const toggleTheme = () => {
   showToast(themeStore.isDarkMode ? 'Dark mode enabled' : 'Light mode enabled')
 }
 
-const checkForUpdates = () => {
-  showToast('You are using the latest version.')
+const isCheckingUpdate = ref(false)
+const updateAvailable = ref(false)
+const currentVersion = ref('1.0.0')
+
+const checkForUpdates = async () => {
+  isCheckingUpdate.value = true
+  try {
+    // Check for service worker updates
+    const registration = await navigator.serviceWorker?.getRegistration()
+    if (registration) {
+      await registration.update()
+      
+      // Check if new service worker is waiting
+      if (registration.waiting) {
+        updateAvailable.value = true
+        showToast('Update available! Restart app to apply.', 'info')
+      } else {
+        showToast('You are using the latest version.', 'success')
+      }
+    } else {
+      showToast('App is up to date', 'success')
+    }
+  } catch (error) {
+    showToast('Could not check for updates', 'error')
+  } finally {
+    isCheckingUpdate.value = false
+  }
 }
 
-const showToast = (message) => {
-  toastMessage.value = message
-  setTimeout(() => {
-    toastMessage.value = ''
-  }, 2000)
-}
+// Using global showToast from toast.js service
 
 onMounted(() => {
   // Initialize theme store if not already done

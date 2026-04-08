@@ -122,6 +122,22 @@
         >
           <span class="material-icons">{{ item.icon }}</span>
           <span class="app-nav-label">{{ item.label }}</span>
+          <!-- Notification badge for feedback -->
+          <span v-if="item.path === '/feedback' && unreadCount > 0" class="nav-badge">
+            {{ unreadCount > 9 ? '9+' : unreadCount }}
+          </span>
+        </router-link>
+        <!-- Notifications shortcut -->
+        <router-link 
+          to="/notifications"
+          class="app-nav-item"
+          :class="{ 'app-active': route.path === '/notifications' }"
+        >
+          <span class="material-icons">notifications</span>
+          <span class="app-nav-label">Alerts</span>
+          <span v-if="unreadCount > 0" class="nav-badge">
+            {{ unreadCount > 9 ? '9+' : unreadCount }}
+          </span>
         </router-link>
       </nav>
     </template>
@@ -173,8 +189,24 @@ const mobileMenuItems = [
   { path: '/', label: 'Home', icon: 'home' },
   { path: '/navigate', label: 'Navigate', icon: 'directions' },
   { path: '/chatbot', label: 'Chatbot', icon: 'smart_toy' },
+  { path: '/feedback', label: 'Feedback', icon: 'star' },
   { path: '/settings', label: 'Settings', icon: 'settings' },
 ]
+
+// Unread notifications count
+const unreadCount = ref(0)
+
+async function loadUnreadCount() {
+  try {
+    const res = await fetch('/api/notifications/unread-count/')
+    if (res.ok) {
+      const data = await res.json()
+      unreadCount.value = data.count || 0
+    }
+  } catch {
+    // Silent fail - offline or error
+  }
+}
 
 // Hide side nav on admin routes
 const showSideNav = computed(() => {
@@ -183,7 +215,7 @@ const showSideNav = computed(() => {
 
 // Hide bottom nav on certain routes
 const showBottomNav = computed(() => {
-  const hiddenRoutes = ['/admin', '/notifications', '/feedback', '/splash']
+  const hiddenRoutes = ['/admin', '/splash']
   return !hiddenRoutes.some(path => route.path.startsWith(path))
 })
 
@@ -208,6 +240,9 @@ onMounted(() => {
   window.addEventListener('online', updateStatus)
   window.addEventListener('offline', updateStatus)
   startPolling()
+  loadUnreadCount()
+  // Poll for unread notifications every 30 seconds
+  setInterval(loadUnreadCount, 30000)
 })
 
 onUnmounted(() => {

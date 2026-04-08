@@ -142,13 +142,30 @@ const goBack = () => {
   router.replace('/')
 }
 
+// Category mapping from UI display names to backend values
+const categoryMap = {
+  'General': 'general',
+  'Map Accuracy': 'map_accuracy',
+  'Navigation': 'navigation',
+  'AI Chatbot': 'ai_chatbot',
+  'Bug Report': 'bug_report'
+}
+
 const submitFeedback = async () => {
   if (!rating.value) return
 
   isSubmitting.value = true
   error.value = ''
 
-  const feedbackData = {
+  // API payload - only valid backend fields
+  const apiPayload = {
+    rating: rating.value,
+    category: categoryMap[category.value] || 'general',
+    comment: comment.value
+  }
+
+  // Local storage payload (includes UI-only fields)
+  const localPayload = {
     rating: rating.value,
     category: category.value,
     comment: comment.value,
@@ -159,13 +176,13 @@ const submitFeedback = async () => {
 
   try {
     // Try to submit online first
-    await api.post('/feedback/', feedbackData)
+    await api.post('/feedback/', apiPayload)
     submitted.value = true
   } catch (err) {
     // If offline, save to IndexedDB for later sync
     try {
       await db.feedback.add({
-        ...feedbackData,
+        ...localPayload,
         synced: 0
       })
       submitted.value = true

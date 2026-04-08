@@ -24,7 +24,8 @@
         </div>
         
         <div v-for="notif in notifications" :key="notif.id" 
-             :class="['notifications-card', notif.type, { 'notifications-unread': !notif.is_read }]">
+             :class="['notifications-card', notif.type, { 'notifications-unread': !notif.is_read }]"
+             @click="markAsRead(notif)">
           <div class="notifications-card-header">
             <span v-if="notif.source_label"
                   :class="['source-chip', 'chip-' + (notif.source_color || 'orange')]">
@@ -59,6 +60,9 @@ onMounted(async () => {
     // If online, sync from API first to get latest notifications
     if (isOnline()) {
       try {
+        // First, sync any pending read statuses
+        await syncPendingReadStatuses()
+        
         const res = await api.get('/notifications/')
         notifications.value = res.data
         // Save to IndexedDB for offline use
@@ -91,12 +95,81 @@ function formatTime(timestamp) {
   return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
 
+/**
+ * Mark individual notification as read
+ */
+async function markAsRead(notif) {
+  if (notif.is_read) return  // Already read
+  
+  // Update local state
+  notif.is_read = true
+  
+  // Update IndexedDB
+  await db.notifications.update(notif.id, { is_read: true })
+  
+  // Sync to backend if online
+  if (isOnline()) {
+    try {
+      await api.post(`/notifications/${notif.id}/read/`)
+    } catch (e) {
+      console.warn('Failed to sync read status for notification:', notif.id, e)
+      // Store for later sync
+      await storePendingReadSync(notif.id)
+    }
+  } else {
+    // Store for later sync when online
+    await storePendingReadSync(notif.id)
+  }
+}
+
+/**
+ * Store pending read sync for offline mode
+ */
+async function storePendingReadSync(notificationId) {
+  try {
+    const pending = await db.sync_meta.get('pending_read_syncs') || { value: [] }
+    if (!pending.value.includes(notificationId)) {
+      pending.value.push(notificationId)
+      await db.sync_meta.put({ key: 'pending_read_syncs', value: pending.value })
+    }
+  } catch (e) {
+    console.warn('Failed to store pending read sync:', e)
+  }
+}
+
+/**
+ * Sync pending read statuses when coming back online
+ */
+async function syncPendingReadStatuses() {
+  try {
+    const pending = await db.sync_meta.get('pending_read_syncs')
+    if (!pending?.value?.length) return
+    
+    const notificationIds = pending.value
+    for (const id of notificationIds) {
+      try {
+        await api.post(`/notifications/${id}/read/`)
+      } catch (e) {
+        console.warn('Failed to sync read status for:', id)
+      }
+    }
+    
+    // Clear pending syncs
+    await db.sync_meta.put({ key: 'pending_read_syncs', value: [] })
+  } catch (e) {
+    console.warn('Failed to sync pending read statuses:', e)
+  }
+}
+
 async function markAllAsRead() {
   let hasUnread = false
+  const unreadIds = []
+  
   for (const notif of notifications.value) {
     if (!notif.is_read) {
       notif.is_read = true
       hasUnread = true
+      unreadIds.push(notif.id)
       await db.notifications.update(notif.id, { is_read: true })
     }
   }
@@ -106,10 +179,18 @@ async function markAllAsRead() {
       try {
         await api.post('/notifications/read-all/')
       } catch (e) {
-        console.warn('Failed to sync read status:', e)
+        console.warn('Failed to sync read-all status:', e)
+        // Store individual IDs for later sync
+        for (const id of unreadIds) {
+          await storePendingReadSync(id)
+        }
       }
     } else {
       showToast('Offline: Read status saved locally', 'info')
+      // Store for later sync
+      for (const id of unreadIds) {
+        await storePendingReadSync(id)
+      }
     }
   }
 }
@@ -118,6 +199,14 @@ async function markAllAsRead() {
 <style>
 /* Styles moved to external file: src/assets/notifications.css */
 @import '../assets/notifications.css';
+
+.notifications-card {
+  cursor: pointer;
+}
+
+.notifications-card:hover {
+  background: var(--color-surface);
+}
 
 .source-chip {
   display: inline-block;

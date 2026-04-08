@@ -191,6 +191,7 @@ import { useRoute } from 'vue-router'
 import offlineData from '../services/offlineData.js'
 import { isOnline } from '../services/sync.js'
 import { findPath } from '../services/pathfinder.js'
+import api from '../services/api.js'
 
 const route = useRoute()
 
@@ -231,13 +232,16 @@ onMounted(async () => {
   }
 })
 
-const locations = ref([
+const locations = ref([])
+
+// Fallback mock locations for offline/dev mode only
+const mockLocations = import.meta.env.DEV ? [
   'Main Gate',
   'MST Building', 'JST Building', 'RST Building',
   'Library', 'Registrar Office', 'Cafeteria', 'Gymnasium',
   'CL1', 'CL2', 'CL3', 'CL4', 'CL5', 'CL6',
   'CR1', 'CR2', 'CR3', 'CR4',
-])
+] : []
 
 const transformStyle = computed(() => ({
   transform: `translate(${tx.value}px, ${ty.value}px) scale(${scale.value})`,
@@ -425,6 +429,7 @@ function onTouchMove(e) {
 // Data
 async function loadData() {
   try {
+    // Load map markers
     const res = await offlineData.getMapMarkers()
     mapMarkers.value = res.data
     
@@ -438,6 +443,29 @@ async function loadData() {
         { id: 5, name: 'CL1', marker_type: 'room', x_position: 0.32, y_position: 0.42 },
       ]
     }
+    
+    // Load locations from API (facilities and rooms)
+    try {
+      const [facilitiesRes, roomsRes] = await Promise.all([
+        api.get('/facilities/').catch(() => ({ data: [] })),
+        api.get('/rooms/').catch(() => ({ data: [] }))
+      ])
+      
+      const facilityNames = facilitiesRes.data.map(f => f.name)
+      const roomNames = roomsRes.data.map(r => r.name)
+      
+      locations.value = [...facilityNames, ...roomNames].sort()
+      
+      // If API returned no data and we're offline, use mock data (dev only)
+      if (locations.value.length === 0 && !isOnline() && import.meta.env.DEV) {
+        locations.value = mockLocations
+      }
+    } catch (apiErr) {
+      console.error('[NavigateView] Error loading locations from API:', apiErr)
+      if (import.meta.env.DEV) {
+        locations.value = mockLocations
+      }
+    }
   } catch (err) {
     console.error('[NavigateView] Error loading markers:', err)
     // Fallback to mock data
@@ -448,6 +476,7 @@ async function loadData() {
       { id: 4, name: 'Library', marker_type: 'facility', x_position: 0.2, y_position: 0.5 },
       { id: 5, name: 'CL1', marker_type: 'room', x_position: 0.32, y_position: 0.42 },
     ]
+    locations.value = mockLocations
   }
 }
 </script>

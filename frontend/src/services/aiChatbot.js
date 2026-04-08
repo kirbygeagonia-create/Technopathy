@@ -1,25 +1,24 @@
 import { isOnline } from './sync.js'
 import { getFAQEntries } from './offlineData.js'
 import db from './db.js'
-import api from './api.js'
 
 /**
  * AI-Powered Chatbot Service for TechnoPath
  * 
  * Priority chain:
  * 1. Flask chatbot API (if configured and online)
- * 2. OpenAI API (if key configured and online)
- * 3. Rule-based fallback (always works offline)
+ * 2. Rule-based fallback (always works offline)
+ * 
+ * NOTE: OpenAI API removed from frontend to prevent API key exposure.
+ * All AI processing happens server-side via Flask chatbot.
  * 
  * Maintains conversation history and campus context.
  */
 
 const FLASK_CHATBOT_URL = import.meta.env.VITE_FLASK_CHATBOT_URL || 'http://localhost:5000'
-const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY || ''
-const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions'
 const USE_AI_OFFLINE = false // Set to true to queue AI requests when offline
 
-// Campus context for AI
+// Campus context for rule-based responses (kept for reference)
 const CAMPUS_CONTEXT = `
 You are the SEAIT Campus Assistant for TechnoPath, a campus guide app for South East Asian Institute of Technology (SEAIT) in Tupi, South Cotabato, Philippines.
 
@@ -37,7 +36,6 @@ CAMPUS INFORMATION:
 
 KEY SERVICES:
 - Interactive campus map with floor plans
-- QR code scanning for room/building info
 - Turn-by-turn navigation between locations
 - Offline mode works without internet
 
@@ -97,43 +95,6 @@ async function generateFlaskResponse(userMessage) {
 
   const data = await response.json()
   return data.reply
-}
-
-/**
- * Generate response using OpenAI API
- */
-async function generateAIResponse(userMessage) {
-  if (!OPENAI_API_KEY) {
-    throw new Error('OpenAI API key not configured')
-  }
-
-  const messages = [
-    { role: 'system', content: CAMPUS_CONTEXT },
-    ...conversationHistory.slice(-MAX_HISTORY),
-    { role: 'user', content: userMessage }
-  ]
-
-  const response = await fetch(OPENAI_API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${OPENAI_API_KEY}`
-    },
-    body: JSON.stringify({
-      model: 'gpt-3.5-turbo',
-      messages,
-      max_tokens: 250,
-      temperature: 0.7
-    })
-  })
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error?.message || 'AI service unavailable')
-  }
-
-  const data = await response.json()
-  return data.choices[0].message.content.trim()
 }
 
 /**
@@ -198,10 +159,6 @@ async function generateRuleBasedResponse(userMessage) {
     return 'Use the Navigate tab for turn-by-turn directions! Enter your starting point and destination to see the shortest route across campus.'
   }
   
-  if (msg.includes('qr') || msg.includes('scan')) {
-    return 'Use the QR Scanner to scan codes at buildings and rooms for quick info. The app also works offline after your first visit!'
-  }
-  
   if (msg.includes('offline')) {
     return 'TechnoPath works offline! Once you\'ve loaded the app while online, you can use the map, navigation, and room info without internet. Your feedback will sync when you reconnect.'
   }
@@ -211,7 +168,8 @@ async function generateRuleBasedResponse(userMessage) {
 }
 
 /**
- * Main chat function - tries Flask first, then OpenAI, then falls back to rules
+ * Main chat function - tries Flask first, then falls back to rules
+ * NOTE: OpenAI API removed from frontend to prevent API key exposure
  */
 export async function sendMessage(userMessage) {
   if (!userMessage?.trim()) {
@@ -223,29 +181,17 @@ export async function sendMessage(userMessage) {
   await saveToHistory('user', userMessage)
 
   let response
-  let source = 'flask'
+  let source = 'ai'  // GPT/AI from Flask backend
 
   if (isOnline()) {
-    // Try Flask chatbot first
+    // Try Flask chatbot with OpenAI GPT
     try {
       response = await generateFlaskResponse(userMessage)
     } catch (flaskErr) {
-      console.log('[AI Chatbot] Flask failed, trying OpenAI:', flaskErr.message)
-      
-      // Try OpenAI as secondary
-      if (OPENAI_API_KEY) {
-        try {
-          response = await generateAIResponse(userMessage)
-          source = 'ai'
-        } catch (aiErr) {
-          console.log('[AI Chatbot] OpenAI failed, using fallback:', aiErr.message)
-          response = await generateRuleBasedResponse(userMessage)
-          source = 'fallback'
-        }
-      } else {
-        response = await generateRuleBasedResponse(userMessage)
-        source = 'fallback'
-      }
+      console.log('[AI Chatbot] Flask failed, using rule-based fallback:', flaskErr.message)
+      // Use rule-based fallback
+      response = await generateRuleBasedResponse(userMessage)
+      source = 'fallback'
     }
   } else {
     // Offline mode - use rule-based
@@ -283,9 +229,10 @@ export function getStatus() {
   return {
     isOnline: isOnline(),
     hasFlaskUrl: !!FLASK_CHATBOT_URL,
-    hasAIKey: !!OPENAI_API_KEY,
     historyLength: conversationHistory.length,
-    isAIEnabled: isOnline() && (!!FLASK_CHATBOT_URL || !!OPENAI_API_KEY)
+    isAIEnabled: isOnline() && !!FLASK_CHATBOT_URL,
+    aiModel: 'gpt-3.5-turbo',  // Now using real OpenAI GPT via Flask backend
+    // OpenAI API is securely hosted on Flask backend (not frontend)
   }
 }
 

@@ -37,19 +37,42 @@
       </div>
     </div>
 
-    <!-- Graph Visualization Placeholder -->
+    <!-- Visual Node Editor Canvas -->
     <div class="graph-container">
-      <div class="graph-placeholder">
-        <span class="material-icons">account_tree</span>
-        <p>Interactive Navigation Graph</p>
-        <p class="sub-text">Visual graph editor would be implemented here with a library like Cytoscape.js or D3.js</p>
-        <div class="mock-graph">
-          <div class="mock-node entrance">Entrance</div>
-          <div class="mock-edge"></div>
-          <div class="mock-node junction">J1</div>
-          <div class="mock-edge"></div>
-          <div class="mock-node room">Room 101</div>
-        </div>
+      <div class="graph-toolbar">
+        <button class="btn-icon" @click="canvasZoomIn" title="Zoom In">
+          <span class="material-icons">zoom_in</span>
+        </button>
+        <button class="btn-icon" @click="canvasZoomOut" title="Zoom Out">
+          <span class="material-icons">zoom_out</span>
+        </button>
+        <button class="btn-icon" @click="canvasReset" title="Reset View">
+          <span class="material-icons">center_focus_strong</span>
+        </button>
+        <div class="toolbar-divider"></div>
+        <button class="btn-icon" :class="{ active: editorMode === 'select' }" @click="editorMode = 'select'" title="Select/Move">
+          <span class="material-icons">pan_tool</span>
+        </button>
+        <button class="btn-icon" :class="{ active: editorMode === 'add' }" @click="editorMode = 'add'" title="Add Node">
+          <span class="material-icons">add_location</span>
+        </button>
+        <button class="btn-icon" :class="{ active: editorMode === 'connect' }" @click="editorMode = 'connect'" title="Connect Nodes">
+          <span class="material-icons">timeline</span>
+        </button>
+        <div class="toolbar-info">{{ editorMode === 'select' ? 'Click to select, drag to move' : editorMode === 'add' ? 'Click canvas to add node' : 'Click two nodes to connect' }}</div>
+      </div>
+      <canvas
+        ref="graphCanvas"
+        class="graph-canvas"
+        @mousedown="onCanvasMouseDown"
+        @mousemove="onCanvasMouseMove"
+        @mouseup="onCanvasMouseUp"
+        @wheel="onCanvasWheel"
+      ></canvas>
+      <div class="graph-legend">
+        <div class="legend-item"><span class="legend-dot entrance"></span>Entrance</div>
+        <div class="legend-item"><span class="legend-dot room"></span>Room</div>
+        <div class="legend-item"><span class="legend-dot junction"></span>Junction</div>
       </div>
     </div>
 
@@ -179,8 +202,8 @@ const nodeForm = ref({
   type: 'room',
   building: '',
   floor: 1,
-  x: 0,
-  y: 0
+  x: 0.5,
+  y: 0.5
 })
 
 function getConnectionCount(nodeId) {
@@ -205,7 +228,7 @@ function confirmDeleteNode(node) {
 function closeModal() {
   showAddNodeModal.value = false
   showEditNodeModal.value = false
-  nodeForm.value = { id: null, node_id: '', name: '', type: 'room', building: '', floor: 1, x: 0, y: 0 }
+  nodeForm.value = { id: null, node_id: '', name: '', type: 'room', building: '', floor: 1, x: 0.5, y: 0.5 }
 }
 
 function resetView() {
@@ -224,13 +247,13 @@ async function loadData() {
     buildings.value = buildingsRes.data
   } catch (e) {
     console.error('Failed to load navigation data:', e)
-    // Mock data
+    // Mock data with normalized coordinates (0.0-1.0 range)
     nodes.value = [
-      { id: 1, node_id: 'ENTRANCE_MAIN', name: 'Main Entrance', type: 'entrance', building: 'MAIN-ACAD', floor: 1, x: 0, y: 0 },
-      { id: 2, node_id: 'J1_F1', name: 'Junction 1', type: 'junction', building: 'MAIN-ACAD', floor: 1, x: 10, y: 0 },
-      { id: 3, node_id: 'ROOM_101', name: 'Room 101', type: 'room', building: 'MAIN-ACAD', floor: 1, x: 20, y: 5 },
-      { id: 4, node_id: 'ROOM_102', name: 'Room 102', type: 'room', building: 'MAIN-ACAD', floor: 1, x: 20, y: -5 },
-      { id: 5, node_id: 'STAIR_A', name: 'Stairwell A', type: 'stairs', building: 'MAIN-ACAD', floor: 1, x: 15, y: 0 }
+      { id: 1, node_id: 'ENTRANCE_MAIN', name: 'Main Entrance', type: 'entrance', building: 'MAIN-ACAD', floor: 1, x: 0.0, y: 0.5 },
+      { id: 2, node_id: 'J1_F1', name: 'Junction 1', type: 'junction', building: 'MAIN-ACAD', floor: 1, x: 0.25, y: 0.5 },
+      { id: 3, node_id: 'ROOM_101', name: 'Room 101', type: 'room', building: 'MAIN-ACAD', floor: 1, x: 0.5, y: 0.6 },
+      { id: 4, node_id: 'ROOM_102', name: 'Room 102', type: 'room', building: 'MAIN-ACAD', floor: 1, x: 0.5, y: 0.4 },
+      { id: 5, node_id: 'STAIR_A', name: 'Stairwell A', type: 'stairs', building: 'MAIN-ACAD', floor: 1, x: 0.4, y: 0.5 }
     ]
     edges.value = [
       { id: 1, from: 'ENTRANCE_MAIN', to: 'J1_F1', weight: 10 },
@@ -244,12 +267,30 @@ async function loadData() {
   }
 }
 
+/**
+ * Normalize coordinates to 0.0-1.0 range
+ * If values are > 1, assumes they're on a 0-20 scale and normalizes
+ */
+function normalizeCoordinates(node) {
+  const x = parseFloat(node.x)
+  const y = parseFloat(node.y)
+  
+  return {
+    ...node,
+    x: x > 1 ? x / 20 : x,
+    y: y > 1 ? y / 20 : y
+  }
+}
+
 async function saveNode() {
   try {
+    // Normalize coordinates before saving
+    const normalizedNode = normalizeCoordinates(nodeForm.value)
+    
     if (showEditNodeModal.value) {
-      await api.put(`/navigation/nodes/${nodeForm.value.id}/`, nodeForm.value)
+      await api.put(`/navigation/nodes/${normalizedNode.id}/`, normalizedNode)
     } else {
-      await api.post('/navigation/nodes/', nodeForm.value)
+      await api.post('/navigation/nodes/', normalizedNode)
     }
     closeModal()
     loadData()
@@ -267,7 +308,319 @@ async function deleteNode(node) {
   }
 }
 
-onMounted(loadData)
+async function createEdge(fromNodeId, toNodeId) {
+  try {
+    await api.post('/navigation/edges/', {
+      from_node: fromNodeId,
+      to_node: toNodeId,
+      distance: 10,
+      is_bidirectional: true
+    })
+    loadData() // Refresh edges from backend
+  } catch (e) {
+    console.error('Failed to create edge:', e)
+  }
+}
+
+// Canvas Node Editor
+const graphCanvas = ref(null)
+const editorMode = ref('select') // 'select', 'add', 'connect'
+const canvasScale = ref(1)
+const canvasOffset = ref({ x: 0, y: 0 })
+const isDragging = ref(false)
+const dragNode = ref(null)
+const dragStart = ref({ x: 0, y: 0 })
+const selectedNode = ref(null)
+const connectStartNode = ref(null)
+
+const NODE_RADIUS = 20
+const CANVAS_WIDTH = 800
+const CANVAS_HEIGHT = 500
+
+// Node type colors
+const typeColors = {
+  entrance: '#4CAF50',
+  room: '#FF9800',
+  junction: '#2196F3',
+  stairs: '#9C27B0',
+  elevator: '#E91E63'
+}
+
+function initCanvas() {
+  const canvas = graphCanvas.value
+  if (!canvas) return
+  
+  canvas.width = canvas.offsetWidth
+  canvas.height = canvas.offsetHeight
+  
+  drawCanvas()
+}
+
+function drawCanvas() {
+  const canvas = graphCanvas.value
+  if (!canvas) return
+  
+  const ctx = canvas.getContext('2d')
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  
+  // Draw grid
+  drawGrid(ctx, canvas.width, canvas.height)
+  
+  // Draw edges
+  ctx.strokeStyle = '#666'
+  ctx.lineWidth = 2
+  edges.value.forEach(edge => {
+    const fromNode = nodes.value.find(n => n.node_id === edge.from)
+    const toNode = nodes.value.find(n => n.node_id === edge.to)
+    if (fromNode && toNode) {
+      const fromPos = nodeToCanvas(fromNode)
+      const toPos = nodeToCanvas(toNode)
+      
+      ctx.beginPath()
+      ctx.moveTo(fromPos.x, fromPos.y)
+      ctx.lineTo(toPos.x, toPos.y)
+      ctx.stroke()
+      
+      // Draw arrow
+      drawArrow(ctx, fromPos.x, fromPos.y, toPos.x, toPos.y)
+    }
+  })
+  
+  // Draw nodes
+  nodes.value.forEach(node => {
+    const pos = nodeToCanvas(node)
+    const isSelected = selectedNode.value?.id === node.id
+    const color = typeColors[node.type] || '#999'
+    
+    // Node circle
+    ctx.beginPath()
+    ctx.arc(pos.x, pos.y, NODE_RADIUS, 0, Math.PI * 2)
+    ctx.fillStyle = color
+    ctx.fill()
+    
+    // Selection ring
+    if (isSelected) {
+      ctx.strokeStyle = '#FF5722'
+      ctx.lineWidth = 3
+      ctx.stroke()
+      
+      ctx.beginPath()
+      ctx.arc(pos.x, pos.y, NODE_RADIUS + 5, 0, Math.PI * 2)
+      ctx.strokeStyle = '#FF5722'
+      ctx.lineWidth = 2
+      ctx.stroke()
+    } else {
+      ctx.strokeStyle = 'white'
+      ctx.lineWidth = 2
+      ctx.stroke()
+    }
+    
+    // Node label
+    ctx.fillStyle = 'white'
+    ctx.font = 'bold 11px Inter, sans-serif'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText(node.name.substring(0, 8), pos.x, pos.y)
+    
+    // Node ID below
+    ctx.fillStyle = '#333'
+    ctx.font = '9px Inter, sans-serif'
+    ctx.fillText(node.node_id, pos.x, pos.y + NODE_RADIUS + 12)
+  })
+  
+  // Draw connection line in progress
+  if (connectStartNode.value && isDragging.value) {
+    const startPos = nodeToCanvas(connectStartNode.value)
+    ctx.beginPath()
+    ctx.moveTo(startPos.x, startPos.y)
+    ctx.lineTo(dragStart.value.x, dragStart.value.y)
+    ctx.strokeStyle = '#4CAF50'
+    ctx.setLineDash([5, 5])
+    ctx.stroke()
+    ctx.setLineDash([])
+  }
+}
+
+function drawGrid(ctx, width, height) {
+  ctx.strokeStyle = '#E0E0E0'
+  ctx.lineWidth = 1
+  const gridSize = 50 * canvasScale.value
+  
+  for (let x = 0; x < width; x += gridSize) {
+    ctx.beginPath()
+    ctx.moveTo(x, 0)
+    ctx.lineTo(x, height)
+    ctx.stroke()
+  }
+  
+  for (let y = 0; y < height; y += gridSize) {
+    ctx.beginPath()
+    ctx.moveTo(0, y)
+    ctx.lineTo(width, y)
+    ctx.stroke()
+  }
+}
+
+function drawArrow(ctx, fromX, fromY, toX, toY) {
+  const angle = Math.atan2(toY - fromY, toX - fromX)
+  const arrowLength = 10
+  const arrowAngle = Math.PI / 6
+  
+  const endX = toX - NODE_RADIUS * Math.cos(angle)
+  const endY = toY - NODE_RADIUS * Math.sin(angle)
+  
+  ctx.beginPath()
+  ctx.moveTo(endX, endY)
+  ctx.lineTo(
+    endX - arrowLength * Math.cos(angle - arrowAngle),
+    endY - arrowLength * Math.sin(angle - arrowAngle)
+  )
+  ctx.stroke()
+  
+  ctx.beginPath()
+  ctx.moveTo(endX, endY)
+  ctx.lineTo(
+    endX - arrowLength * Math.cos(angle + arrowAngle),
+    endY - arrowLength * Math.sin(angle + arrowAngle)
+  )
+  ctx.stroke()
+}
+
+function nodeToCanvas(node) {
+  const x = (node.x * CANVAS_WIDTH + canvasOffset.value.x) * canvasScale.value
+  const y = (node.y * CANVAS_HEIGHT + canvasOffset.value.y) * canvasScale.value
+  return { x, y }
+}
+
+function canvasToNode(x, y) {
+  const nodeX = (x / canvasScale.value - canvasOffset.value.x) / CANVAS_WIDTH
+  const nodeY = (y / canvasScale.value - canvasOffset.value.y) / CANVAS_HEIGHT
+  return { x: Math.max(0, Math.min(1, nodeX)), y: Math.max(0, Math.min(1, nodeY)) }
+}
+
+function getNodeAtPosition(x, y) {
+  return nodes.value.find(node => {
+    const pos = nodeToCanvas(node)
+    const dx = x - pos.x
+    const dy = y - pos.y
+    return Math.sqrt(dx * dx + dy * dy) <= NODE_RADIUS
+  })
+}
+
+function onCanvasMouseDown(e) {
+  const canvas = graphCanvas.value
+  const rect = canvas.getBoundingClientRect()
+  const x = e.clientX - rect.left
+  const y = e.clientY - rect.top
+  
+  const clickedNode = getNodeAtPosition(x, y)
+  
+  if (editorMode.value === 'select') {
+    if (clickedNode) {
+      isDragging.value = true
+      dragNode.value = clickedNode
+      selectedNode.value = clickedNode
+      dragStart.value = { x, y }
+    } else {
+      selectedNode.value = null
+    }
+  } else if (editorMode.value === 'add') {
+    if (!clickedNode) {
+      const coords = canvasToNode(x, y)
+      nodeForm.value.x = coords.x
+      nodeForm.value.y = coords.y
+      showAddNodeModal.value = true
+    }
+  } else if (editorMode.value === 'connect') {
+    if (clickedNode) {
+      if (!connectStartNode.value) {
+        connectStartNode.value = clickedNode
+        isDragging.value = true
+        dragStart.value = { x, y }
+      } else if (connectStartNode.value.id !== clickedNode.id) {
+        // Create connection and persist to backend
+        createEdge(connectStartNode.value.node_id, clickedNode.node_id)
+        connectStartNode.value = null
+        isDragging.value = false
+        drawCanvas()
+      }
+    } else {
+      connectStartNode.value = null
+      isDragging.value = false
+    }
+  }
+  
+  drawCanvas()
+}
+
+function onCanvasMouseMove(e) {
+  if (!isDragging.value) return
+  
+  const canvas = graphCanvas.value
+  const rect = canvas.getBoundingClientRect()
+  const x = e.clientX - rect.left
+  const y = e.clientY - rect.top
+  
+  if (editorMode.value === 'select' && dragNode.value) {
+    const coords = canvasToNode(x, y)
+    dragNode.value.x = coords.x
+    dragNode.value.y = coords.y
+    drawCanvas()
+  } else if (editorMode.value === 'connect') {
+    dragStart.value = { x, y }
+    drawCanvas()
+  }
+}
+
+function onCanvasMouseUp() {
+  if (editorMode.value === 'select' && dragNode.value) {
+    // Save position to backend
+    saveNodePosition(dragNode.value)
+  }
+  
+  isDragging.value = false
+  dragNode.value = null
+}
+
+async function saveNodePosition(node) {
+  try {
+    await api.patch(`/navigation/nodes/${node.id}/`, {
+      x: node.x,
+      y: node.y
+    })
+  } catch (e) {
+    console.error('Failed to save node position:', e)
+  }
+}
+
+function onCanvasWheel(e) {
+  e.preventDefault()
+  const delta = e.deltaY > 0 ? 0.9 : 1.1
+  canvasScale.value = Math.max(0.5, Math.min(3, canvasScale.value * delta))
+  drawCanvas()
+}
+
+function canvasZoomIn() {
+  canvasScale.value = Math.min(3, canvasScale.value * 1.2)
+  drawCanvas()
+}
+
+function canvasZoomOut() {
+  canvasScale.value = Math.max(0.5, canvasScale.value / 1.2)
+  drawCanvas()
+}
+
+function canvasReset() {
+  canvasScale.value = 1
+  canvasOffset.value = { x: 0, y: 0 }
+  drawCanvas()
+}
+
+onMounted(() => {
+  loadData()
+  initCanvas()
+  window.addEventListener('resize', initCanvas)
+})
 </script>
 
 <style scoped>
@@ -361,57 +714,96 @@ onMounted(loadData)
   background: var(--color-surface);
   border-radius: var(--radius-lg);
   border: 1px solid var(--color-border);
-  padding: 40px;
   margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  height: 500px;
+  position: relative;
+  overflow: hidden;
 }
 
-.graph-placeholder {
-  text-align: center;
-  color: var(--color-text-secondary);
+.graph-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
 }
 
-.graph-placeholder .material-icons {
-  font-size: 64px;
-  color: var(--color-primary);
-  margin-bottom: 16px;
-}
-
-.graph-placeholder p {
-  font-size: var(--text-lg);
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin: 0 0 8px 0;
-}
-
-.sub-text {
-  font-size: var(--text-sm);
-  color: var(--color-text-hint);
-  margin-bottom: 24px;
-}
-
-.mock-graph {
+.graph-toolbar .btn-icon {
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-}
-
-.mock-node {
-  padding: 12px 20px;
+  border: none;
+  background: transparent;
   border-radius: var(--radius-md);
-  font-size: var(--text-sm);
-  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-.mock-node.entrance { background: var(--color-success-bg); color: var(--color-success); }
-.mock-node.junction { background: var(--color-info-bg); color: var(--color-info); }
-.mock-node.room { background: var(--color-primary-light); color: var(--color-primary); }
+.graph-toolbar .btn-icon:hover {
+  background: var(--color-surface-2);
+}
 
-.mock-edge {
-  width: 40px;
-  height: 2px;
+.graph-toolbar .btn-icon.active {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.graph-toolbar .toolbar-divider {
+  width: 1px;
+  height: 24px;
   background: var(--color-border);
+  margin: 0 8px;
 }
+
+.graph-toolbar .toolbar-info {
+  margin-left: auto;
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+.graph-canvas {
+  flex: 1;
+  width: 100%;
+  cursor: crosshair;
+}
+
+.graph-canvas:active {
+  cursor: grabbing;
+}
+
+.graph-legend {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  display: flex;
+  gap: 12px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.legend-dot.entrance { background: #4CAF50; }
+.legend-dot.room { background: #FF9800; }
+.legend-dot.junction { background: #2196F3; }
 
 .section-title {
   margin-bottom: 16px;

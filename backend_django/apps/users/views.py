@@ -235,3 +235,32 @@ class AuditLogView(APIView):
             'ip_address':   l.ip_address,
             'created_at':   l.created_at,
         } for l in qs])
+
+
+class PublicDirectoryView(APIView):
+    """Public endpoint for instructor and employee directory - no authentication required"""
+    permission_classes = []
+
+    def get(self, request):
+        """Return list of instructors and employees for public directory"""
+        # Get admin users who are instructors or program heads (visible to public)
+        from .models import AdminUser
+        
+        # Filter for roles that should be visible in public directory
+        visible_roles = ['dean', 'program_head', 'basic_ed_head']
+        
+        users = AdminUser.objects.filter(
+            role__in=visible_roles,
+            is_active=True
+        ).order_by('display_name')
+        
+        data = [{
+            'id': user.id,
+            'name': user.display_name or user.username,
+            'department': user.get_department_label(),
+            'role': user.get_role_label(),
+            'email': user.email if user.show_email_public else None,
+            'office': user.office_location or None,
+        } for user in users]
+        
+        return Response(data)

@@ -252,8 +252,8 @@ const reduceAnimations = ref(false)
 // Favorites
 const favoritesCount = ref(0)
 
-// Auth state
-const isLoggedIn = computed(() => !!localStorage.getItem('tp_token'))
+// Auth state - use authStore instead of localStorage
+const isLoggedIn = computed(() => authStore.isLoggedIn)
 
 // Dialog states
 const showEditName = ref(false)
@@ -336,8 +336,7 @@ const saveReduceAnimations = async () => {
 }
 
 const logout = () => {
-  authStore.logout()
-  router.push('/')
+  authStore.logout(router, '/')
 }
 
 // Load preferences from localStorage

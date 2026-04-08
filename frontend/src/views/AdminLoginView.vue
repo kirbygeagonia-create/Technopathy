@@ -60,16 +60,12 @@ const isLoading = ref(false)
 async function handleLogin() {
   error.value = ''
   isLoading.value = true
-  console.log('Login started...')
 
   const result = await authStore.login(username.value, password.value)
-  console.log('Login result:', result)
   
   if (result.success) {
-    console.log('Login successful, redirecting to /admin')
     await router.push('/admin')
   } else {
-    console.error('Login failed:', result.error)
     error.value = result.error
   }
   

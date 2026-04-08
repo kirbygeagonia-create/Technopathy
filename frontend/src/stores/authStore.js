@@ -61,12 +61,24 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    logout() {
+    logout(router = null, redirectPath = '/') {
       api.post('/users/logout/').catch(() => {})
       this.token = this.refreshToken = this.user = null
       localStorage.removeItem('tp_token')
       localStorage.removeItem('tp_refresh')
       localStorage.removeItem('tp_user')
+      
+      // Redirect if router provided
+      if (router) {
+        router.push(redirectPath)
+      }
     },
+    
+    clearTokens() {
+      this.token = this.refreshToken = this.user = null
+      localStorage.removeItem('tp_token')
+      localStorage.removeItem('tp_refresh')
+      localStorage.removeItem('tp_user')
+    }
   },
 })

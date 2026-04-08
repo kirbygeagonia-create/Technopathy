@@ -93,7 +93,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: #333;
+  color: var(--color-text-primary, #333);
 }
 
 .homeview-expanded .homeview-dropdown-header {
@@ -103,7 +103,7 @@
 .homeview-dropdown-content {
   max-height: min(200px, 40vh);
   overflow-y: auto;
-  background: white;
+  background: var(--color-bg, #FFFFFF);
   border-radius: 0 0 12px 12px;
   height: auto;
 }
@@ -117,7 +117,7 @@
   min-height: 44px;
   font-size: 14px;
   font-weight: 500;
-  color: #333;
+  color: var(--color-text-primary, #333);
   border-bottom: 1px solid rgba(0,0,0,0.05);
 }
 
@@ -135,7 +135,7 @@
 }
 
 .homeview-dropdown-item.homeview-empty {
-  color: #999;
+  color: var(--color-text-hint, #9E9E9E);
   font-style: italic;
   cursor: default;
   font-weight: 400;
@@ -143,19 +143,19 @@
 
 .homeview-dropdown-item:hover,
 .homeview-dropdown-item.homeview-selected {
-  background: rgba(255, 152, 0, 0.15);
-  color: #E65100;
+  background: var(--color-primary-light, rgba(255, 152, 0, 0.15));
+  color: var(--color-primary-dark, #E65100);
   font-weight: 600;
 }
 
 .homeview-chevron {
   font-size: 20px;
-  color: #666;
+  color: var(--color-text-secondary, #616161);
 }
 
 .homeview-check {
   font-size: 18px;
-  color: #FF9800;
+  color: var(--color-primary, #FF9800);
 }
 
 /* Map styles */
@@ -171,7 +171,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f5f5f5;
+  background: var(--color-surface, #F5F5F5);
   overflow: hidden;
   cursor: grab;
 }
@@ -415,7 +415,7 @@
 .search-bar {
   display: flex;
   align-items: center;
-  background: white;
+  background: var(--color-bg, #FFFFFF);
   border-radius: 10px;
   padding: 10px 14px;
   gap: 10px;
@@ -431,7 +431,7 @@
 
 .search-bar .material-icons {
   font-size: 20px;
-  color: #666;
+  color: var(--color-text-secondary, #616161);
   flex-shrink: 0;
 }
 
@@ -449,12 +449,12 @@
 
 .clear-btn .material-icons {
   font-size: 18px;
-  color: #999;
+  color: var(--color-text-hint, #9E9E9E);
 }
 
 .search-btn .material-icons {
   font-size: 20px;
-  color: #FF9800;
+  color: var(--color-primary, #FF9800);
 }
 
 /* Modal and dialog styles */
@@ -475,7 +475,7 @@
 }
 
 .menu-modal {
-  background: white;
+  background: var(--color-bg, #FFFFFF);
   border-radius: 16px;
   width: 280px;
   overflow: hidden;
@@ -491,7 +491,7 @@
 }
 
 .menu-item:hover {
-  background: #f5f5f5;
+  background: var(--color-surface, #F5F5F5);
 }
 
 .menu-icon {
@@ -499,7 +499,7 @@
 }
 
 .dialog {
-  background: white;
+  background: var(--color-bg, #FFFFFF);
   border-radius: 16px;
   padding: 24px;
   width: 320px;
@@ -577,7 +577,7 @@
 }
 
 .result-item:hover {
-  background: #f5f5f5;
+  background: var(--color-surface, #F5F5F5);
 }
 
 .result-icon {
@@ -600,14 +600,14 @@
 
 .result-type {
   font-size: 12px;
-  color: #666;
+  color: var(--color-text-secondary, #616161);
 }
 
 .close-btn {
   width: 100%;
   margin-top: 16px;
   padding: 12px;
-  background: #f5f5f5;
+  background: var(--color-surface, #F5F5F5);
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -628,7 +628,7 @@
 }
 
 .menu-sheet {
-  background: white;
+  background: var(--color-bg, #FFFFFF);
   border-radius: 20px 20px 0 0;
   animation: slideUpSheet 0.3s ease;
   max-height: 80vh;
@@ -662,7 +662,7 @@
 .menu-sheet-header h3 {
   margin: 0;
   font-size: 18px;
-  color: #333;
+  color: var(--color-text-primary, #333);
 }
 
 .menu-sheet-content {
@@ -682,7 +682,7 @@
 }
 
 .menu-sheet-content .menu-item:hover {
-  background: #f5f5f5;
+  background: var(--color-surface, #F5F5F5);
 }
 
 .menu-item-icon {
@@ -697,12 +697,12 @@
 
 .menu-item-icon .material-icons {
   font-size: 24px;
-  color: #FF9800;
+  color: var(--color-primary, #FF9800);
 }
 
 .menu-sheet-content .menu-item span:last-child {
   font-size: 16px;
-  color: #333;
+  color: var(--color-text-primary, #333);
   font-weight: 500;
 }
 
@@ -714,11 +714,11 @@
 .menu-close-btn {
   width: 100%;
   padding: 14px;
-  background: #f5f5f5;
+  background: var(--color-surface, #F5F5F5);
   border: none;
   border-radius: 12px;
   font-size: 16px;
-  color: #666;
+  color: var(--color-text-secondary, #616161);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -740,7 +740,7 @@
     display: flex;
     flex-direction: column;
     padding: 0;
-    background: #f5f5f5;
+    background: var(--color-surface, #F5F5F5);
   }
 
   /* Hide mobile elements in desktop */
@@ -757,7 +757,7 @@
     transform: translateX(-50%);
     width: 400px;
     z-index: 100;
-    background: white;
+    background: var(--color-bg, #FFFFFF);
     border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.15);
     padding: 8px 16px;
@@ -864,12 +864,12 @@
     padding: 12px;
     font-size: 14px;
     font-weight: 500;
-    color: #333;
+    color: var(--color-text-primary, #333);
     min-height: 44px;
   }
 
   .homeview-dropdown-item.homeview-selected {
-    color: #E65100;
+    color: var(--color-primary-dark, #E65100);
     font-weight: 600;
   }
 
@@ -1034,14 +1034,14 @@
 .recent-searches-title {
   font-size: 13px;
   font-weight: 600;
-  color: #666;
+  color: var(--color-text-secondary, #616161);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .clear-recent {
   font-size: 13px;
-  color: #FF9800;
+  color: var(--color-primary, #FF9800);
   background: none;
   border: none;
   cursor: pointer;
@@ -1072,17 +1072,17 @@
 }
 
 .recent-search-item:hover {
-  background: #f5f5f5;
+  background: var(--color-surface, #F5F5F5);
 }
 
 .recent-search-item .material-icons {
   font-size: 18px;
-  color: #999;
+  color: var(--color-text-hint, #9E9E9E);
 }
 
 .recent-search-text {
   font-size: 14px;
-  color: #333;
+  color: var(--color-text-primary, #333);
   font-weight: 500;
 }
 
@@ -1133,12 +1133,12 @@
 }
 
 .suggestion-item:hover {
-  background: #f5f5f5;
+  background: var(--color-surface, #F5F5F5);
 }
 
 .suggestion-item .material-icons {
   font-size: 22px;
-  color: #FF9800;
+  color: var(--color-primary, #FF9800);
   flex-shrink: 0;
 }
 
@@ -1152,7 +1152,7 @@
 .suggestion-name {
   font-size: 15px;
   font-weight: 500;
-  color: #333;
+  color: var(--color-text-primary, #333);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1160,7 +1160,7 @@
 
 .suggestion-type {
   font-size: 12px;
-  color: #666;
+  color: var(--color-text-secondary, #616161);
 }
 
 /* Mobile Search Suggestions */
@@ -1196,7 +1196,7 @@
   transform: translateX(-50%);
   width: 90%;
   max-width: 360px;
-  background: white;
+  background: var(--color-bg, #FFFFFF);
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.2);
   z-index: 105;
@@ -1223,7 +1223,7 @@
 
 .marker-info-icon.facility {
   background: #FFF3E0;
-  color: #FF9800;
+  color: var(--color-primary, #FF9800);
 }
 
 .marker-info-icon.room {
@@ -1244,7 +1244,7 @@
   margin: 0;
   font-size: 16px;
   font-weight: 600;
-  color: #333;
+  color: var(--color-text-primary, #333);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1252,7 +1252,7 @@
 
 .marker-info-type {
   font-size: 12px;
-  color: #999;
+  color: var(--color-text-hint, #9E9E9E);
   text-transform: capitalize;
 }
 
@@ -1261,7 +1261,7 @@
   height: 32px;
   border-radius: 50%;
   border: none;
-  background: #f5f5f5;
+  background: var(--color-surface, #F5F5F5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1276,7 +1276,7 @@
 
 .marker-info-close .material-icons {
   font-size: 18px;
-  color: #666;
+  color: var(--color-text-secondary, #616161);
 }
 
 .marker-info-actions {
@@ -1306,7 +1306,7 @@
 
 .marker-info-btn-favorite {
   background: #FFF3E0;
-  color: #FF9800;
+  color: var(--color-primary, #FF9800);
 }
 
 .marker-info-btn-favorite:hover {

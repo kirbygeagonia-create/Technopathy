@@ -96,15 +96,6 @@
         </div>
       </div>
       <div class="stat-box">
-        <div class="stat-icon orange">
-          <span class="material-icons">qr_code_scanner</span>
-        </div>
-        <div class="stat-data">
-          <div class="stat-number">{{ stats.qrScans }}</div>
-          <div class="stat-label">QR Scans</div>
-        </div>
-      </div>
-      <div class="stat-box">
         <div class="stat-icon purple">
           <span class="material-icons">map</span>
         </div>
@@ -136,7 +127,6 @@ const faqCounts = ref({
 const stats = ref({
   chatbotQueries: 1247,
   navigationUses: 856,
-  qrScans: 432,
   mapViews: 2103
 })
 
@@ -167,7 +157,7 @@ onMounted(async () => {
       { id: 3, rating: 5, comment: 'The chatbot is amazing! Answered all my questions.', category: 'AI Chatbot', created_at: '2024-03-23' },
       { id: 4, rating: 5, comment: 'Navigation feature saved me so much time!', category: 'Navigation', created_at: '2024-03-22' },
       { id: 5, rating: 3, comment: 'App is good but sometimes slow to load.', category: 'Bug Report', created_at: '2024-03-21' },
-      { id: 6, rating: 5, comment: 'Love the QR scanner feature!', category: 'General', created_at: '2024-03-20' },
+      { id: 6, rating: 5, comment: 'Very helpful for finding my way around campus!', category: 'General', created_at: '2024-03-20' },
       { id: 7, rating: 4, comment: 'Very useful for new students.', category: 'General', created_at: '2024-03-19' },
       { id: 8, rating: 5, comment: 'Perfect campus guide!', category: 'General', created_at: '2024-03-18' },
     ]

@@ -50,12 +50,6 @@
           <span>FAQ / Chatbot</span>
         </button>
 
-        <button v-if="!isMobile && (auth.canManageFacilities || auth.canManageAllRooms || auth.canManageOwnRooms)"
-                :class="navCls('qrcode')" @click="go('qrcode')">
-          <span class="material-icons tp-nav-icon">qr_code_2</span>
-          <span>QR Codes</span>
-        </button>
-
         <!-- ── Communications group ──────────────── -->
         <div class="tp-nav-group-label">COMMUNICATIONS</div>
 
@@ -146,14 +140,13 @@
                              :dept="auth.department" />
       <AdminNavGraph         v-else-if="section === 'navigation'  && auth.canManageNavigation" />
       <AdminFAQ              v-else-if="section === 'faq'         && auth.canManageFAQ" />
-      <AdminQRCode           v-else-if="section === 'qrcode'      && (auth.canManageFacilities || auth.canManageAllRooms || auth.canManageOwnRooms)" />
       <AdminAnnouncements    v-else-if="section === 'announcements' && auth.canPostAnnouncement"
                              @my-pending="myPendingCount = $event" />
       <AdminPendingApprovals v-else-if="section === 'pending'     && auth.canApproveAnnouncements"
                              @count="pendingCount = $event" />
       <AdminSendNotification v-else-if="section === 'notifications' && auth.canSendCampusNotification" />
       <AdminAccounts         v-else-if="section === 'admins'      && auth.canManageAdminAccounts" />
-      <AdminFeedback         v-else-if="section === 'feedback'    && auth.canViewAllFeedback" />
+      <AdminFeedback         v-else-if="section === 'feedback'    && (auth.canViewAllFeedback || auth.canViewDeptFeedback)" />
       <AdminAuditLog         v-else-if="section === 'auditlog'    && auth.canViewAuditLog" />
 
       <div v-else class="tp-access-denied">
@@ -192,7 +185,6 @@ import AdminFacilities       from '../components/admin/AdminFacilities.vue'
 import AdminRooms            from '../components/admin/AdminRooms.vue'
 import AdminNavGraph         from '../components/admin/AdminNavGraph.vue'
 import AdminFAQ              from '../components/admin/AdminFAQ.vue'
-import AdminQRCode           from '../components/admin/AdminQRCode.vue'
 import AdminAnnouncements    from '../components/admin/AdminAnnouncements.vue'
 import AdminPendingApprovals from '../components/admin/AdminPendingApprovals.vue'
 import AdminSendNotification from '../components/admin/AdminSendNotification.vue'
@@ -266,8 +258,7 @@ async function loadPendingCount() {
 
 function confirmLogout() {
   showLogoutConfirm.value = false
-  auth.logout()
-  router.push('/admin/login')
+  auth.logout(router, '/admin/login')
 }
 
 onMounted(() => {

@@ -325,8 +325,7 @@ function clearCache() {
 }
 
 function logout() {
-  authStore.logout()
-  router.push('/admin/login')
+  authStore.logout(router, '/admin/login')
 }
 </script>
 

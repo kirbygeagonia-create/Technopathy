@@ -140,8 +140,8 @@ const loadData = async () => {
         break
       case 'instructors':
       case 'employees':
-        // These would need a users endpoint with role filtering
-        endpoint = '/users/'
+        // Use public directory endpoint - no authentication required
+        endpoint = '/users/directory/'
         break
       default:
         endpoint = '/facilities/'

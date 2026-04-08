@@ -24,7 +24,7 @@ class AdminUserManager(BaseUserManager):
 class AdminUser(AbstractBaseUser, PermissionsMixin):
 
     ROLE_CHOICES = [
-        ('super_admin',   'Safety and Security Office'),
+        ('super_admin',   'System Administrator'),
         ('dean',          'College Dean'),
         ('program_head',  'College Program Head'),
         ('basic_ed_head', 'Basic Education Head'),
@@ -77,13 +77,15 @@ class AdminUser(AbstractBaseUser, PermissionsMixin):
         help_text='Override label shown on announcements. Auto-filled from department if blank.'
     )
 
-    is_active      = models.BooleanField(default=True)
-    is_staff       = models.BooleanField(default=False)
-    login_attempts = models.IntegerField(default=0)
-    locked_until   = models.DateTimeField(blank=True, null=True)
-    last_login     = models.DateTimeField(blank=True, null=True)
-    created_at     = models.DateTimeField(auto_now_add=True)
-    updated_at     = models.DateTimeField(auto_now=True)
+    is_active        = models.BooleanField(default=True)
+    is_staff         = models.BooleanField(default=False)
+    login_attempts   = models.IntegerField(default=0)
+    locked_until     = models.DateTimeField(blank=True, null=True)
+    last_login       = models.DateTimeField(blank=True, null=True)
+    show_email_public = models.BooleanField(default=False, help_text='Allow email to be shown in public directory')
+    office_location  = models.CharField(max_length=100, blank=True, null=True, help_text='Office location for public directory')
+    created_at       = models.DateTimeField(auto_now_add=True)
+    updated_at       = models.DateTimeField(auto_now=True)
 
     objects = AdminUserManager()
     USERNAME_FIELD  = 'username'

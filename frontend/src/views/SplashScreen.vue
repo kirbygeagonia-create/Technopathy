@@ -30,9 +30,14 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 const logoFailed = ref(false)
 const isExiting = ref(false)
+const startTime = Date.now()
+const minDisplay = 1500  // Minimum 1.5 seconds for UX
 
 onMounted(() => {
-  // Auto-navigate after 2.5 seconds (matching Flutter's 3s minus Vue mount time)
+  // Smart splash: ensure minimum display time while loading
+  const elapsed = Date.now() - startTime
+  const remaining = Math.max(0, minDisplay - elapsed)
+  
   setTimeout(() => {
     isExiting.value = true
     // Wait for exit animation to complete
@@ -40,7 +45,7 @@ onMounted(() => {
       sessionStorage.setItem('tp_splash_shown', 'true')
       router.replace('/')
     }, 450)
-  }, 2500)
+  }, remaining)
 })
 </script>
 

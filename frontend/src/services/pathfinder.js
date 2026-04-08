@@ -1,31 +1,130 @@
 // Dijkstra's algorithm — ported from pathfinder.dart
 // Works fully offline using navigation_nodes and navigation_edges from IndexedDB
+// Optimized with binary heap priority queue: O(n log n) instead of O(n²)
 
 import { getNavigationData } from './offlineData.js'
 
+/**
+ * Binary Heap Priority Queue for O(log n) operations
+ * Used to optimize Dijkstra's algorithm
+ */
+class PriorityQueue {
+  constructor() {
+    this.heap = []
+  }
+
+  push(item) {
+    this.heap.push(item)
+    this._bubbleUp(this.heap.length - 1)
+  }
+
+  pop() {
+    if (this.heap.length === 0) return null
+    if (this.heap.length === 1) return this.heap.pop()
+    
+    const min = this.heap[0]
+    this.heap[0] = this.heap.pop()
+    this._bubbleDown(0)
+    return min
+  }
+
+  isEmpty() {
+    return this.heap.length === 0
+  }
+
+  _bubbleUp(index) {
+    while (index > 0) {
+      const parentIndex = Math.floor((index - 1) / 2)
+      if (this.heap[parentIndex].dist <= this.heap[index].dist) break
+      [this.heap[parentIndex], this.heap[index]] = [this.heap[index], this.heap[parentIndex]]
+      index = parentIndex
+    }
+  }
+
+  _bubbleDown(index) {
+    const length = this.heap.length
+    while (true) {
+      let smallest = index
+      const leftChild = 2 * index + 1
+      const rightChild = 2 * index + 2
+
+      if (leftChild < length && this.heap[leftChild].dist < this.heap[smallest].dist) {
+        smallest = leftChild
+      }
+      if (rightChild < length && this.heap[rightChild].dist < this.heap[smallest].dist) {
+        smallest = rightChild
+      }
+      if (smallest === index) break
+
+      [this.heap[index], this.heap[smallest]] = [this.heap[smallest], this.heap[index]]
+      index = smallest
+    }
+  }
+}
+
+/**
+ * Normalize edge fields for backward compatibility
+ * Handles both from_node/to_node (object) and from_node_id/to_node_id (number) formats
+ */
+function normalizeEdge(edge) {
+  return {
+    from_node_id: edge.from_node_id ?? edge.from_node?.id ?? edge.from,
+    to_node_id: edge.to_node_id ?? edge.to_node?.id ?? edge.to,
+    distance: edge.distance ?? 1,
+    is_bidirectional: edge.is_bidirectional ?? true,
+    is_deleted: edge.is_deleted ?? false
+  }
+}
+
+/**
+ * Normalize node fields for backward compatibility
+ * Handles both x/y and x_position/y_position field names
+ */
+function normalizeNode(node) {
+  return {
+    id: node.id,
+    name: node.name,
+    x_position: node.x_position ?? node.x ?? 0.5,
+    y_position: node.y_position ?? node.y ?? 0.5,
+    floor: node.floor ?? 1,
+    map_svg_id: node.map_svg_id,
+    node_type: node.node_type,
+    is_deleted: node.is_deleted ?? false
+  }
+}
+
 export function dijkstra(nodes, edges, startId, endId) {
+  // Normalize nodes and edges for consistent field access
+  const normalizedNodes = nodes.map(normalizeNode).filter(n => !n.is_deleted)
+  const normalizedEdges = edges.map(normalizeEdge).filter(e => !e.is_deleted)
+  
+  const nodeMap = new Map(normalizedNodes.map(n => [n.id, n]))
   const distances = {}
   const previous = {}
   const visited = new Set()
-  const queue = []
+  const queue = new PriorityQueue() // Optimized with binary heap
 
-  nodes.forEach(n => {
+  normalizedNodes.forEach(n => {
     distances[n.id] = Infinity
     previous[n.id] = null
   })
+  
+  if (!nodeMap.has(startId) || !nodeMap.has(endId)) {
+    return null // Start or end node not found or deleted
+  }
+  
   distances[startId] = 0
   queue.push({ id: startId, dist: 0 })
 
-  while (queue.length > 0) {
-    queue.sort((a, b) => a.dist - b.dist)
-    const { id: currentId } = queue.shift()
+  while (!queue.isEmpty()) {
+    const { id: currentId } = queue.pop()
 
     if (visited.has(currentId)) continue
     visited.add(currentId)
 
     if (currentId === endId) break
 
-    const neighbors = edges.filter(
+    const neighbors = normalizedEdges.filter(
       e => (!e.is_deleted) && (
         e.from_node_id === currentId ||
         (e.is_bidirectional && e.to_node_id === currentId)
@@ -66,19 +165,24 @@ export async function findPath(startName, endName) {
   try {
     // Get navigation data from backend/IndexedDB
     const navData = await getNavigationData()
-    const nodes = navData.nodes
-    const edges = navData.edges
+    const rawNodes = navData.nodes
+    const rawEdges = navData.edges
+
+    // Normalize nodes for consistent field access
+    const nodes = rawNodes.map(normalizeNode)
+    const edges = rawEdges.map(normalizeEdge)
 
     if (!nodes || nodes.length === 0) {
       throw new Error('No navigation data available')
     }
 
-    // Find nodes by name (or map_svg_id)
-    const startNode = nodes.find(n => 
+    // Find nodes by name (or map_svg_id), excluding soft-deleted nodes
+    const activeNodes = nodes.filter(n => !n.is_deleted)
+    const startNode = activeNodes.find(n => 
       n.name?.toLowerCase() === startName.toLowerCase() || 
       n.map_svg_id?.toLowerCase() === startName.toLowerCase()
     )
-    const endNode = nodes.find(n => 
+    const endNode = activeNodes.find(n => 
       n.name?.toLowerCase() === endName.toLowerCase() || 
       n.map_svg_id?.toLowerCase() === endName.toLowerCase()
     )
@@ -90,22 +194,22 @@ export async function findPath(startName, endName) {
       throw new Error(`Destination "${endName}" not found`)
     }
 
-    // Run Dijkstra
-    const result = dijkstra(nodes, edges, startNode.id, endNode.id)
+    // Run Dijkstra (it normalizes internally)
+    const result = dijkstra(rawNodes, rawEdges, startNode.id, endNode.id)
     
     if (!result) {
       throw new Error('No path found between locations')
     }
 
-    // Build path with node details
+    // Build path with node details (using only active nodes)
     const pathNodes = result.path.map(nodeId => {
-      const node = nodes.find(n => n.id === nodeId)
+      const node = activeNodes.find(n => n.id === nodeId)
       return {
         id: node.id,
         name: node.name,
-        x: node.x_position || 0.5,
-        y: node.y_position || 0.5,
-        floor: node.floor || 1
+        x: node.x_position,
+        y: node.y_position,
+        floor: node.floor
       }
     })
 

@@ -11,7 +11,8 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,svg,png,jpg}'],
         runtimeCaching: [
           {
-            urlPattern: /^http:\/\/localhost:8000\/api\//,
+            // Use relative URL pattern - works in both dev and production
+            urlPattern: ({ url }) => url.pathname.startsWith('/api/'),
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',

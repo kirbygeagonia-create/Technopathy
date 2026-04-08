@@ -67,3 +67,15 @@ backend_django/media/
 _flutter_archive/build/
 _flutter_archive/.dart_tool/
 .aider*
+
+# Node Installers (Security - don't commit binaries)
+*.msi
+*.zip
+
+# Credentials (Security - never commit passwords)
+*Acounts.txt
+*accounts.txt
+*passwords.txt
+*secrets.txt
+*.key
+*.pem

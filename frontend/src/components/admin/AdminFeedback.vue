@@ -234,7 +234,7 @@ async function loadFeedback() {
     feedback.value = [
       { id: 1, user_name: 'John Doe', user_email: 'john@student.edu', rating: 5, comment: 'The app is really helpful for finding my way around campus! Love the map feature.', category: 'App Experience', is_read: true, is_responded: true, created_at: new Date(Date.now() - 86400000).toISOString() },
       { id: 2, user_name: 'Jane Smith', user_email: 'jane@student.edu', rating: 4, comment: 'Great app, but would love to see more detailed room information.', category: 'Feature Request', is_read: true, is_responded: false, created_at: new Date(Date.now() - 172800000).toISOString() },
-      { id: 3, user_name: 'Mike Johnson', user_email: null, rating: 5, comment: 'The QR scanner is brilliant! Makes finding rooms so much easier.', category: 'App Experience', is_read: false, is_responded: false, created_at: new Date(Date.now() - 200000).toISOString() },
+      { id: 3, user_name: 'Mike Johnson', user_email: null, rating: 5, comment: 'The navigation feature is brilliant! Makes finding rooms so much easier.', category: 'App Experience', is_read: false, is_responded: false, created_at: new Date(Date.now() - 200000).toISOString() },
       { id: 4, user_name: 'Sarah Lee', user_email: 'sarah@student.edu', rating: 3, comment: 'Good concept but the map can be slow to load sometimes.', category: 'Performance', is_read: true, is_responded: false, created_at: new Date(Date.now() - 259200000).toISOString() },
       { id: 5, rating: 2, comment: 'Had trouble finding the library. Needs better navigation.', category: 'Navigation', is_read: false, is_responded: false, created_at: new Date(Date.now() - 345600000).toISOString() }
     ]

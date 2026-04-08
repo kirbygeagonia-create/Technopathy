@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import (LoginView, LogoutView, MeView,
-                    AdminListCreateView, AdminDetailView, AuditLogView)
+                    AdminListCreateView, AdminDetailView, AuditLogView,
+                    PublicDirectoryView)
 
 urlpatterns = [
     path('login/',           LoginView.as_view()),
@@ -9,4 +10,5 @@ urlpatterns = [
     path('admins/',          AdminListCreateView.as_view()),
     path('admins/<int:pk>/', AdminDetailView.as_view()),
     path('audit-log/',       AuditLogView.as_view()),
+    path('directory/',       PublicDirectoryView.as_view()),  # Public endpoint for instructors/employees
 ]

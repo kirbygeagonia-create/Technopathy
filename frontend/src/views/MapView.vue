@@ -172,7 +172,7 @@ const ty = ref(0)
 const isPanning = ref(false)
 const panStart = ref({ x: 0, y: 0 })
 const showLabels = ref(true)
-const showLegend = ref(true)
+const showLegend = ref(false)  // Default collapsed for cleaner UI
 const activeFilter = ref('all')
 const mapLoaded = ref(false)
 
@@ -336,15 +336,22 @@ function navigateToRoom(room) {
 function addFavorite() {
   if (!selectedMarker.value) return
   const favorites = JSON.parse(localStorage.getItem('tp_favorites') || '[]')
-  const exists = favorites.find(f => f.name === selectedMarker.value.name)
+  
+  // Generate composite key to prevent ID collisions
+  const compositeId = `${selectedMarker.value.marker_type}_${selectedMarker.value.id || selectedMarker.value.name}`
+  
+  const exists = favorites.find(f => f.id === compositeId)
   if (!exists) {
     favorites.push({
-      id: Date.now(),
+      id: compositeId,  // Use composite key: type_id or type_name
       name: selectedMarker.value.name,
       type: selectedMarker.value.marker_type,
       addedAt: new Date().toISOString(),
     })
     localStorage.setItem('tp_favorites', JSON.stringify(favorites))
+    showToast(`${selectedMarker.value.name} added to favorites!`, 'success')
+  } else {
+    showToast('This location is already in your favorites!', 'info')
   }
 }
 

@@ -1,11 +1,28 @@
+import os
 import sqlite3
 from pathlib import Path
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from openai import OpenAI
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+# Initialize OpenAI client
+client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all origins
+# Restrict CORS to known origins for security
+CORS(app, origins=[
+    "http://localhost:5173",  # Vite dev server
+    "http://localhost:4173",  # Vite preview
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:4173",
+    # Production domains - add your deployed URLs here
+    # "https://yourdomain.com",
+], supports_credentials=True)
 DB_PATH = Path(__file__).parent / "chatbot.db"
 
 
@@ -25,8 +42,47 @@ def init_db() -> None:
         conn.commit()
 
 
+CAMPUS_CONTEXT = """You are the SEAIT Campus Assistant for TechnoPath, a campus guide app.
+
+CAMPUS INFORMATION:
+- MST Building (Main Science and Technology): 4 floors, center of campus. Houses MST 101-120 (1F), MST 201-221 (2F), Computer Labs CL1-CL10 (3F), MST 301-420 (4F)
+- JST Building (Junior Science and Technology): 4 floors at back of campus. JST101-102 (1F), JST201-202 labs (2F), seminar rooms (3F)
+- RST Building (Research Science and Technology): 3 floors, left-bottom from main gate. Registrar & Accounting (1F), Guidance/Safety/HR/SSC/Student Affairs (2F), IT/Silakbo/Laboratory offices (3F)
+- Library: 2 floors, ground floor left wing. Open Mon-Fri 8AM-6PM, Sat 8AM-12PM
+- Cafeteria: Center grounds between MST and Gymnasium. Open 7AM-6PM daily
+- Gymnasium: Back of campus with basketball/volleyball courts, fitness equipment
+- Computer Labs CL1-CL6: All on 3rd floor of MST Building
+- Registrar Office: 1st floor RST Building, 7 windows, Mon-Fri 8AM-5PM
+- CICT Office: 2nd floor MST Building, near computer labs
+- Comfort rooms available on every floor of all buildings, near stairwells
+
+INSTRUCTIONS:
+- Be helpful, concise, and friendly (2-3 sentences max)
+- Guide users to use the Navigate tab for directions
+- If unsure, direct them to the Registrar office
+- Always mention the specific building location
+- For classrooms like CL1-CL10, mention they're in MST Building 3rd floor"""
+
 def generate_reply(message: str) -> str:
-    """Full SEAIT campus knowledge base reply function."""
+    """Generate AI-powered response using OpenAI GPT."""
+    try:
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": CAMPUS_CONTEXT},
+                {"role": "user", "content": message}
+            ],
+            max_tokens=150,
+            temperature=0.7
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        # Fallback to rule-based if OpenAI fails
+        print(f"OpenAI error: {e}. Falling back to rule-based.")
+        return generate_rule_based_reply(message)
+
+def generate_rule_based_reply(message: str) -> str:
+    """Fallback rule-based reply function."""
     msg = message.lower().strip()
 
     greetings = ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening', 'kumusta', 'musta', 'magandang']
@@ -59,10 +115,10 @@ def generate_reply(message: str) -> str:
             return (f"The {data['name']} is at the {data['location']}. "
                     "Open the Map tab to see its location on the campus layout.")
 
-    if any(w in msg for w in ['qr', 'qr code', 'scan', 'scanner']):
-        return ("You can scan QR codes posted at SEAIT campus buildings. "
-                "The main gate QR code opens TechnoPath directly without needing to download or install anything. "
-                "Use the QR Scanner button in the app to scan room and building QR codes.")
+    if any(w in msg for w in ['offline', 'no internet', 'without wifi']):
+        return ("TechnoPath works offline! Once you've loaded the app while online, "
+                "you can use the map, navigation, and room info without internet. "
+                "Your feedback will sync when you reconnect.")
 
     if any(w in msg for w in ['navigate', 'route', 'path', 'direction', 'shortest']):
         return ("Use the Navigate tab at the bottom of the screen. "

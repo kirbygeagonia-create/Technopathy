@@ -1,7 +1,12 @@
 <template>
   <div class="home-view">
     <!-- Onboarding Tutorial -->
-    <OnboardingTutorial ref="onboardingRef" @complete="onOnboardingComplete" @skip="onOnboardingSkip" />
+    <OnboardingTutorial 
+      v-if="showOnboarding" 
+      ref="onboardingRef" 
+      @complete="onOnboardingComplete" 
+      @skip="onOnboardingSkip" 
+    />
 
     <!-- Top bar with facility/room selectors - MOBILE ONLY -->
     <div class="top-selectors mobile-only">
@@ -500,8 +505,8 @@ const handleDeepLink = () => {
   const location = route.query.location
   const welcome = route.query.welcome
   
-  // Handle main gate QR code scan
-  if (source === 'maingate' || welcome === 'true') {
+  // Handle welcome parameter for first-time visitors
+  if (welcome === 'true') {
     showToast('Welcome to SEAIT Campus! Use the map to find your way around.', 'success', 5000)
     // Default to first facility
     if (facilities.value.length > 0 && !selectedFacility.value) {
@@ -510,29 +515,9 @@ const handleDeepLink = () => {
     return
   }
   
-  if (source === 'qr' && location) {
-    const [type, strId] = location.split('_')
-    const id = parseInt(strId)
-    
-    if (type === 'facility') {
-      const fac = facilities.value.find(f => f.id === id)
-      if (fac) {
-        selectFacility(fac.name)
-        const marker = mapMarkers.value.find(m => m.name === fac.name)
-        if (marker) showMarkerInfo(marker)
-      }
-    } else if (type === 'room') {
-      const rm = rooms.value.find(r => r.id === id)
-      if (rm) {
-        selectRoom(rm.name)
-        const marker = mapMarkers.value.find(m => m.name === rm.name)
-        if (marker) showMarkerInfo(marker)
-      }
-    }
-  } else {
-    if (facilities.value.length > 0 && !selectedFacility.value) selectedFacility.value = facilities.value[0].name
-    if (rooms.value.length > 0 && !selectedRoom.value) selectedRoom.value = rooms.value[0].name
-  }
+  // Default facility and room selection
+  if (facilities.value.length > 0 && !selectedFacility.value) selectedFacility.value = facilities.value[0].name
+  if (rooms.value.length > 0 && !selectedRoom.value) selectedRoom.value = rooms.value[0].name
 }
 
 watch(() => route.query, () => {
@@ -670,15 +655,18 @@ const addToFavorites = () => {
   const marker = selectedMarker.value
   const favorites = JSON.parse(localStorage.getItem('tp_favorites') || '[]')
   
-  // Check if already in favorites
-  if (favorites.some(f => f.id === marker.id)) {
+  // Generate composite key to prevent ID collisions between views
+  const compositeId = `${marker.marker_type}_${marker.id || marker.name}`
+  
+  // Check if already in favorites using composite ID
+  if (favorites.some(f => f.id === compositeId)) {
     showToast('This location is already in your favorites!', 'info')
     return
   }
   
-  // Add to favorites
+  // Add to favorites with composite ID
   favorites.push({
-    id: marker.id,
+    id: compositeId,
     name: marker.name,
     type: marker.marker_type,
     description: marker.description || marker.marker_type,
@@ -834,18 +822,21 @@ const goToInstructorInfo = () => { showMenu.value = false; router.push('/instruc
 const goToEmployees = () => { showMenu.value = false; router.push('/employees') }
 
 const onboardingRef = ref(null)
+const showOnboarding = ref(false)
 
 const onOnboardingComplete = () => {
-  console.log('Onboarding completed')
+  localStorage.setItem('tp_onboarding_completed', 'true')
+  localStorage.setItem('tp_onboarding_completed_at', Date.now().toString())
+  showOnboarding.value = false
 }
 
 const onOnboardingSkip = () => {
-  console.log('Onboarding skipped')
+  localStorage.setItem('tp_onboarding_completed', 'true')
+  localStorage.setItem('tp_onboarding_completed_at', Date.now().toString())
+  showOnboarding.value = false
 }
 
 // Lifecycle
-let notificationTimer
-
 onMounted(async () => {
   await loadData()
   handleDeepLink()
@@ -853,12 +844,14 @@ onMounted(async () => {
   if (!syncStore.lastSyncedAt) {
     syncStore.sync()
   }
-  // Auto-refresh notifications every 5 seconds
-  notificationTimer = setInterval(loadNotificationCount, 5000)
-})
-
-onUnmounted(() => {
-  if (notificationTimer) clearInterval(notificationTimer)
+  // Note: Removed 5-second aggressive polling
+  // sync.js handles periodic sync (30s interval) which includes notifications
+  
+  // Check if onboarding should be shown (only first time)
+  const onboardingCompleted = localStorage.getItem('tp_onboarding_completed')
+  if (!onboardingCompleted) {
+    showOnboarding.value = true
+  }
 })
 </script>
 
