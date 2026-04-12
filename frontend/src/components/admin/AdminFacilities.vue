@@ -19,15 +19,15 @@
         <span class="stat-label">Total Facilities</span>
       </div>
       <div class="stat-box">
-        <span class="stat-number">{{ facilities.filter(f => f.type === 'academic').length }}</span>
+        <span class="stat-number">{{ facilities.filter(f => f.facility_type === 'academic').length }}</span>
         <span class="stat-label">Academic</span>
       </div>
       <div class="stat-box">
-        <span class="stat-number">{{ facilities.filter(f => f.type === 'admin').length }}</span>
+        <span class="stat-number">{{ facilities.filter(f => f.facility_type === 'administrative').length }}</span>
         <span class="stat-label">Administrative</span>
       </div>
       <div class="stat-box">
-        <span class="stat-number">{{ facilities.filter(f => f.type === 'facility').length }}</span>
+        <span class="stat-number">{{ facilities.filter(f => f.facility_type === 'service' || f.facility_type === 'sports' || f.facility_type === 'dining' || f.facility_type === 'library').length }}</span>
         <span class="stat-label">Facilities</span>
       </div>
     </div>
@@ -41,10 +41,11 @@
       <select v-model="filterType" class="filter-select">
         <option value="">All Types</option>
         <option value="academic">Academic Building</option>
-        <option value="admin">Administrative</option>
-        <option value="facility">Facility</option>
+        <option value="administrative">Administrative</option>
         <option value="library">Library</option>
-        <option value="canteen">Canteen</option>
+        <option value="sports">Sports & Recreation</option>
+        <option value="dining">Dining</option>
+        <option value="service">Service Facility</option>
       </select>
     </div>
 
@@ -57,7 +58,7 @@
         <div class="facility-content">
           <div class="facility-header">
             <h3>{{ facility.name }}</h3>
-            <span :class="['type-badge', 'type-' + facility.type]">{{ formatType(facility.type) }}</span>
+            <span :class="['type-badge', 'type-' + facility.facility_type]">{{ formatType(facility.facility_type) }}</span>
           </div>
           <p class="facility-code">Code: {{ facility.code }}</p>
           <p class="facility-description">{{ facility.description }}</p>
@@ -112,12 +113,13 @@
             </div>
             <div class="form-group">
               <label>Type</label>
-              <select v-model="form.type">
+              <select v-model="form.facility_type">
                 <option value="academic">Academic Building</option>
-                <option value="admin">Administrative</option>
-                <option value="facility">Facility</option>
+                <option value="administrative">Administrative</option>
                 <option value="library">Library</option>
-                <option value="canteen">Canteen</option>
+                <option value="sports">Sports & Recreation</option>
+                <option value="dining">Dining</option>
+                <option value="service">Service Facility</option>
               </select>
             </div>
           </div>
@@ -182,10 +184,9 @@ const form = ref({
   id: null,
   name: '',
   code: '',
-  type: 'academic',
+  facility_type: 'academic',
   description: '',
-  floors: 1,
-  room_count: 0
+  total_floors: 1,
 })
 
 const filteredFacilities = computed(() => {
@@ -194,7 +195,7 @@ const filteredFacilities = computed(() => {
       f.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
       f.code.toLowerCase().includes(searchQuery.value.toLowerCase())
     
-    const matchesType = !filterType.value || f.type === filterType.value
+    const matchesType = !filterType.value || f.facility_type === filterType.value
     
     return matchesSearch && matchesType
   })
@@ -203,10 +204,11 @@ const filteredFacilities = computed(() => {
 function formatType(type) {
   const labels = {
     'academic': 'Academic',
-    'admin': 'Administrative',
-    'facility': 'Facility',
+    'administrative': 'Administrative',
     'library': 'Library',
-    'canteen': 'Canteen'
+    'sports': 'Sports',
+    'dining': 'Dining',
+    'service': 'Service'
   }
   return labels[type] || type
 }
@@ -219,7 +221,7 @@ function editFacility(facility) {
 function closeModal() {
   showCreateModal.value = false
   showEditModal.value = false
-  form.value = { id: null, name: '', code: '', type: 'academic', description: '', floors: 1, room_count: 0 }
+  form.value = { id: null, name: '', code: '', facility_type: 'academic', description: '', total_floors: 1 }
 }
 
 function confirmDelete(facility) {

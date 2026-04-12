@@ -48,97 +48,92 @@ export async function syncAllData() {
     const syncStart = new Date().toISOString()
 
     // Fetch all data from Django API in parallel
-    const [
-      facilitiesRes,
-      roomsRes,
-      departmentsRes,
-      nodesRes,
-      edgesRes,
-      mapMarkersRes,
-      mapLabelsRes,
-      faqRes,
-      notificationTypesRes,
-      notificationsRes,
-      appConfigRes
-    ] = await Promise.all([
-      api.get('/facilities/'),
-      api.get('/rooms/'),
-      api.get('/core/departments/'),
-      api.get('/navigation/nodes/'),
-      api.get('/navigation/edges/'),
-      api.get('/core/map-markers/'),
-      api.get('/core/map-labels/'),
-      api.get('/chatbot/faq/'),
-      api.get('/core/notification-types/'),
-      api.get('/notifications/'),
-      api.get('/core/app-config/')
-    ])
+    // Uses Promise.allSettled so one failing endpoint doesn't kill the entire cache
+    const endpoints = [
+      { key: 'facilities',       url: '/facilities/',           table: 'facilities' },
+      { key: 'rooms',            url: '/rooms/',                table: 'rooms' },
+      { key: 'departments',      url: '/core/departments/',     table: 'departments' },
+      { key: 'nodes',            url: '/navigation/nodes/',     table: 'navigation_nodes' },
+      { key: 'edges',            url: '/navigation/edges/',     table: 'navigation_edges' },
+      { key: 'mapMarkers',       url: '/core/map-markers/',     table: 'map_markers' },
+      { key: 'mapLabels',        url: '/core/map-labels/',      table: 'map_labels' },
+      { key: 'faq',              url: '/chatbot/faq/',          table: 'faq_entries' },
+      // notification_types table was removed in db.js v5 — do NOT fetch or write
+      { key: 'notifications',    url: '/notifications/',        table: 'notifications' },
+      { key: 'appConfig',        url: '/core/app-config/',      table: 'app_config' },
+    ]
 
-    // Write all fetched data into IndexedDB (replaces existing data)
-    await db.transaction('rw',
-      db.facilities,
-      db.rooms,
-      db.departments,
-      db.navigation_nodes,
-      db.navigation_edges,
-      db.map_markers,
-      db.map_labels,
-      db.faq_entries,
-      db.notification_types,
-      db.notifications,
-      db.app_config,
-      async () => {
-        await db.facilities.clear()
-        await db.facilities.bulkPut(facilitiesRes.data)
+    const results = await Promise.allSettled(
+      endpoints.map(ep => api.get(ep.url))
+    )
 
-        await db.rooms.clear()
-        await db.rooms.bulkPut(roomsRes.data)
+    // Build a map of successfully-fetched data
+    const fetched = {}
+    results.forEach((result, i) => {
+      if (result.status === 'fulfilled') {
+        fetched[endpoints[i].key] = result.value.data
+      } else {
+        console.warn(`[Sync] Failed to fetch ${endpoints[i].url}:`, result.reason?.message)
+      }
+    })
 
-        await db.departments.clear()
-        await db.departments.bulkPut(departmentsRes.data)
+    // Determine which tables to include in the transaction
+    const tablesToWrite = endpoints
+      .filter(ep => fetched[ep.key] !== undefined)
+      .map(ep => db[ep.table])
+      .filter(Boolean)
 
-        await db.navigation_nodes.clear()
-        await db.navigation_nodes.bulkPut(nodesRes.data)
+    if (tablesToWrite.length === 0) {
+      console.warn('[Sync] All endpoints failed — keeping existing cached data')
+      return { success: false, reason: 'all_endpoints_failed' }
+    }
 
-        await db.navigation_edges.clear()
-        await db.navigation_edges.bulkPut(edgesRes.data)
+    // Write all successfully-fetched data into IndexedDB
+    await db.transaction('rw', ...tablesToWrite, async () => {
+      // Simple tables: clear and replace
+      const simpleTables = [
+        'facilities', 'rooms', 'departments', 'nodes', 'edges',
+        'mapMarkers', 'mapLabels', 'faq', 'appConfig'
+      ]
+      const tableMap = {
+        facilities: 'facilities', rooms: 'rooms', departments: 'departments',
+        nodes: 'navigation_nodes', edges: 'navigation_edges',
+        mapMarkers: 'map_markers', mapLabels: 'map_labels',
+        faq: 'faq_entries', appConfig: 'app_config'
+      }
 
-        await db.map_markers.clear()
-        await db.map_markers.bulkPut(mapMarkersRes.data)
+      for (const key of simpleTables) {
+        if (fetched[key] !== undefined) {
+          await db[tableMap[key]].clear()
+          await db[tableMap[key]].bulkPut(fetched[key])
+        }
+      }
 
-        await db.map_labels.clear()
-        await db.map_labels.bulkPut(mapLabelsRes.data)
-
-        await db.faq_entries.clear()
-        await db.faq_entries.bulkPut(faqRes.data)
-
-        await db.notification_types.clear()
-        await db.notification_types.bulkPut(notificationTypesRes.data)
-
+      // Notifications: preserve read state across sync
+      if (fetched.notifications !== undefined) {
         const existingNotifs = await db.notifications.toArray()
         const readStates = {}
         for (const n of existingNotifs) {
-            readStates[n.id] = !!n.is_read
+          readStates[n.id] = !!n.is_read
         }
 
-        const newNotifs = notificationsRes.data.map(n => {
-            if (readStates[n.id]) n.is_read = true
-            return n
+        const newNotifs = fetched.notifications.map(n => {
+          if (readStates[n.id]) n.is_read = true
+          return n
         })
 
         await db.notifications.clear()
         await db.notifications.bulkPut(newNotifs)
-
-        await db.app_config.clear()
-        await db.app_config.bulkPut(appConfigRes.data)
       }
-    )
+    })
 
     // Save sync timestamp
     await setLastSync(syncStart)
 
-    console.log('[Sync] Sync complete — all data saved to IndexedDB for offline use')
-    return { success: true, syncedAt: syncStart }
+    const successCount = Object.keys(fetched).length
+    const totalCount = endpoints.length
+    console.log(`[Sync] Sync complete — ${successCount}/${totalCount} endpoints cached for offline use`)
+    return { success: true, syncedAt: syncStart, synced: successCount, total: totalCount }
 
   } catch (error) {
     console.error('[Sync] Sync failed:', error.message)

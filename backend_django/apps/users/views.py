@@ -219,11 +219,12 @@ class AuditLogView(APIView):
         if not request.user.can_view_audit_log():
             return Response({'error': 'Access denied.'}, status=403)
         from apps.core.models import AdminAuditLog
-        qs = AdminAuditLog.objects.select_related('admin').order_by('-created_at')[:300]
+        qs = AdminAuditLog.objects.select_related('admin').order_by('-created_at')
         if request.query_params.get('entity_type'):
             qs = qs.filter(entity_type=request.query_params['entity_type'])
         if request.query_params.get('action'):
             qs = qs.filter(action=request.query_params['action'])
+        qs = qs[:300]
         return Response([{
             'id':           l.id,
             'admin':        l.admin.display_name if l.admin else 'Unknown',
@@ -258,7 +259,7 @@ class PublicDirectoryView(APIView):
             'id': user.id,
             'name': user.display_name or user.username,
             'department': user.get_department_label(),
-            'role': user.get_role_label(),
+            'role': user.get_role_display(),
             'email': user.email if user.show_email_public else None,
             'office': user.office_location or None,
         } for user in users]

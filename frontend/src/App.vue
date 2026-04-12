@@ -127,18 +127,7 @@
             {{ unreadCount > 9 ? '9+' : unreadCount }}
           </span>
         </router-link>
-        <!-- Notifications shortcut -->
-        <router-link 
-          to="/notifications"
-          class="app-nav-item"
-          :class="{ 'app-active': route.path === '/notifications' }"
-        >
-          <span class="material-icons">notifications</span>
-          <span class="app-nav-label">Alerts</span>
-          <span v-if="unreadCount > 0" class="nav-badge">
-            {{ unreadCount > 9 ? '9+' : unreadCount }}
-          </span>
-        </router-link>
+
       </nav>
     </template>
     <!-- Global Toast Component -->

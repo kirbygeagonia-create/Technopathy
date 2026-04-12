@@ -294,7 +294,7 @@ async function loadDashboardData() {
     // Fetch recent activity from audit log (Super Admin gets all, Dean gets dept only)
     if (auth.canViewAuditLog || auth.canViewDeptAuditLog) {
       promises.push(
-        api.get('/core/audit-log/?limit=5')
+        api.get('/users/audit-log/?limit=5')
           .then(r => {
             recentActivity.value = r.data.map(item => ({
               id: item.id,

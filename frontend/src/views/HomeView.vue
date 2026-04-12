@@ -8,59 +8,62 @@
       @skip="onOnboardingSkip" 
     />
 
-    <!-- Top bar with facility/room selectors - MOBILE ONLY -->
-    <div class="top-selectors mobile-only">
-      <!-- Facilities Dropdown Wrapper -->
-      <div class="homeview-dropdown-wrapper homeview-facilities-wrapper" @click.stop>
-        <div 
-          class="homeview-facilities-dropdown"
-          :class="{ 'homeview-expanded': isFacilitiesExpanded }"
-        >
-          <button class="homeview-dropdown-header" @click.prevent="toggleFacilities">
-            <span class="dropdown-label">{{ selectedFacility || 'Select Facility' }}</span>
-            <span class="homeview-chevron material-icons">{{ isFacilitiesExpanded ? 'expand_less' : 'expand_more' }}</span>
+    <!-- Unified Top Search & Filter Area -->
+    <div class="home-top-overlay">
+      <!-- Primary Search Bar -->
+      <div class="unified-search-container">
+        <div class="unified-search-input-wrapper">
+          <span class="material-icons search-icon">search</span>
+          <input
+            v-model="searchText"
+            type="text"
+            placeholder="Search locations, facilities..."
+            @keyup.enter="performSearch"
+            @input="debouncedSearch"
+            class="unified-search-input"
+          />
+          <button v-if="searchText" class="clear-btn" @click="searchText = ''">
+            <span class="material-icons">close</span>
           </button>
-          <div v-if="isFacilitiesExpanded" class="homeview-dropdown-content" @click.stop>
-            <div
-              v-for="facility in facilities"
-              :key="facility.id"
-              class="homeview-dropdown-item"
-              :class="{ 'homeview-selected': selectedFacility === facility.name }"
-              @click.stop="selectFacility(facility.name)"
-            >
-              {{ facility.name }}
-              <span v-if="selectedFacility === facility.name" class="homeview-check material-icons">check</span>
+        </div>
+
+        <!-- Search Autocomplete Suggestions -->
+        <div v-if="searchSuggestions.length > 0 && searchText" class="search-suggestions unified-suggestions">
+          <div
+            v-for="suggestion in searchSuggestions.slice(0, 6)"
+            :key="suggestion.name"
+            class="suggestion-item"
+            @click="selectSuggestion(suggestion)"
+          >
+            <span class="material-icons">
+              {{ suggestion.type === 'Facility' ? 'business' : 'meeting_room' }}
+            </span>
+            <div class="suggestion-info">
+              <span class="suggestion-name">{{ suggestion.name }}</span>
+              <span class="suggestion-type">{{ suggestion.info }}</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Rooms Dropdown Wrapper -->
-      <div class="homeview-dropdown-wrapper homeview-rooms-wrapper" @click.stop>
-        <div 
-          class="homeview-rooms-dropdown"
-          :class="{ 'homeview-expanded': isRoomsExpanded }"
+      <!-- Scrollable Filter Chips -->
+      <div class="filter-chips-container">
+        <button 
+          class="filter-chip" 
+          :class="{ active: !selectedFacility && !selectedRoom }"
+          @click="clearFilters"
         >
-          <button class="homeview-dropdown-header" @click.prevent="toggleRooms">
-            <span class="dropdown-label">{{ selectedRoom || 'Select Room' }}</span>
-            <span class="homeview-chevron material-icons">{{ isRoomsExpanded ? 'expand_less' : 'expand_more' }}</span>
-          </button>
-          <div v-if="isRoomsExpanded" class="homeview-dropdown-content" @click.stop>
-            <div
-              v-for="room in filteredRooms"
-              :key="room.id"
-              class="homeview-dropdown-item"
-              :class="{ 'homeview-selected': selectedRoom === room.name }"
-              @click.stop="selectRoom(room.name)"
-            >
-              {{ room.name }}
-              <span v-if="selectedRoom === room.name" class="homeview-check material-icons">check</span>
-            </div>
-            <div v-if="filteredRooms.length === 0" class="homeview-dropdown-item homeview-empty">
-              No rooms in this facility
-            </div>
-          </div>
-        </div>
+          All
+        </button>
+        <button 
+          v-for="facility in facilities"
+          :key="facility.id"
+          class="filter-chip"
+          :class="{ active: selectedFacility === facility.name }"
+          @click="selectFacility(facility.name)"
+        >
+          {{ facility.name }}
+        </button>
       </div>
     </div>
 
@@ -144,60 +147,7 @@
         </div>
       </div>
 
-      <!-- Desktop Search Bar -->
-      <div class="desktop-search">
-        <span class="material-icons">search</span>
-        <input
-          v-model="searchText"
-          type="text"
-          placeholder="Search location, building, room..."
-          @keyup.enter="performSearch"
-          @input="debouncedSearch"
-        />
-        <button v-if="searchText" class="clear-btn" @click="searchText = ''">
-          <span class="material-icons">close</span>
-        </button>
-        <button class="search-btn" @click="performSearch">
-          <span class="material-icons">arrow_forward</span>
-        </button>
-      </div>
-
-      <!-- Search Autocomplete Suggestions -->
-      <div v-if="searchSuggestions.length > 0 && searchText" class="search-suggestions">
-        <div
-          v-for="suggestion in searchSuggestions.slice(0, 6)"
-          :key="suggestion.name"
-          class="suggestion-item"
-          @click="selectSuggestion(suggestion)"
-        >
-          <span class="material-icons">
-            {{ suggestion.type === 'Facility' ? 'business' : 'meeting_room' }}
-          </span>
-          <div class="suggestion-info">
-            <span class="suggestion-name">{{ suggestion.name }}</span>
-            <span class="suggestion-type">{{ suggestion.info }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Recent Searches -->
-      <div v-if="recentSearches.length > 0 && !searchText" class="recent-searches">
-        <div class="recent-searches-header">
-          <span class="recent-searches-title">Recent Searches</span>
-          <button class="clear-recent" @click="clearRecentSearches">Clear</button>
-        </div>
-        <div class="recent-searches-list">
-          <div
-            v-for="search in recentSearches.slice(0, 5)"
-            :key="search.id"
-            class="recent-search-item"
-            @click="selectRecentSearch(search.query)"
-          >
-            <span class="material-icons">history</span>
-            <span class="recent-search-text">{{ search.query }}</span>
-          </div>
-        </div>
-      </div>
+          <!-- Removed desktop-search and suggestions as they are unified at the top -->
 
       <!-- Desktop Location Button -->
       <button 
@@ -227,10 +177,6 @@
             <span class="material-icons">location_on</span>
           </button>
           
-          <button class="action-btn" @click="showRatingDialog">
-            <span class="material-icons">star</span>
-          </button>
-          
           <button class="action-btn notification-btn" @click="goToNotifications">
             <span class="material-icons">notifications</span>
             <span v-if="unreadNotifications > 0" class="badge">
@@ -240,26 +186,6 @@
           
           <button class="action-btn" @click="goToChatbot">
             <span class="material-icons">smart_toy</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Search bar -->
-      <div class="search-container">
-        <div class="search-bar">
-          <span class="material-icons">search</span>
-          <input
-            v-model="searchText"
-            type="text"
-            placeholder="Search location, building, room..."
-            @keyup.enter="performSearch"
-            @input="debouncedSearch"
-          />
-          <button v-if="searchText" class="clear-btn" @click="searchText = ''">
-            <span class="material-icons">close</span>
-          </button>
-          <button class="search-btn" @click="performSearch">
-            <span class="material-icons">arrow_forward</span>
           </button>
         </div>
       </div>
@@ -375,6 +301,7 @@ import { showToast } from '../services/toast.js'
 import OnboardingTutorial from '../components/OnboardingTutorial.vue'
 import { isOnline } from '../services/sync.js'
 import api from '../services/api.js'
+import useMapPanZoom from '../composables/useMapPanZoom.js'
 
 const router = useRouter()
 const route = useRoute()
@@ -404,18 +331,20 @@ let searchDebounceTimer = null
 const selectedMarker = ref(null)
 const isMarkerInfoVisible = ref(false)
 
-// Map zoom and pan
-const scale = ref(1)
-const translateX = ref(0)
-const translateY = ref(0)
-const isPanning = ref(false)
-const startX = ref(0)
-const startY = ref(0)
-
-const mapTransformStyle = computed(() => ({
-  transform: `translate(${translateX.value}px, ${translateY.value}px) scale(${scale.value})`,
-  transformOrigin: 'center center'
-}))
+// Map zoom and pan — use shared composable
+const mapContainer = ref(null)
+const {
+  scale, translateX, translateY,
+  transformStyle: mapTransformStyle,
+  zoomIn, zoomOut,
+  onPointerDown: startPan,
+  onPointerMove: handlePan,
+  onPointerUp: endPan,
+  onWheel: handleZoom,
+  onTouchStart: startTouchPan,
+  onTouchMove: handleTouchPan,
+  initTransform
+} = useMapPanZoom()
 
 // Filtered markers based on selection
 const filteredMarkers = computed(() => {
@@ -499,6 +428,12 @@ const useFallbackData = () => {
     { id: 5, name: 'CL1', marker_type: 'room', x_position: 0.32, y_position: 0.42 },
   ]
 }
+
+const getMarkerStyle = (marker) => ({
+  left: `${marker.x_position * 100}%`,
+  top: `${marker.y_position * 100}%`,
+  color: marker.marker_type === 'facility' ? '#FF9800' : '#4CAF50'
+})
 
 const handleDeepLink = () => {
   const source = route.query.source
@@ -586,58 +521,6 @@ const selectRoom = (name) => {
   }
 }
 
-const zoomIn = () => {
-  scale.value = Math.min(scale.value * 1.2, 5)
-}
-
-const zoomOut = () => {
-  scale.value = Math.max(scale.value / 1.2, 0.5)
-}
-
-const handleZoom = (e) => {
-  if (e.deltaY < 0) zoomIn()
-  else zoomOut()
-}
-
-// Pan functionality
-const startPan = (e) => {
-  isPanning.value = true
-  startX.value = e.clientX - translateX.value
-  startY.value = e.clientY - translateY.value
-}
-
-const handlePan = (e) => {
-  if (!isPanning.value) return
-  e.preventDefault()
-  translateX.value = e.clientX - startX.value
-  translateY.value = e.clientY - startY.value
-}
-
-const endPan = () => {
-  isPanning.value = false
-}
-
-// Touch pan for mobile
-const startTouchPan = (e) => {
-  if (e.touches.length === 1) {
-    isPanning.value = true
-    startX.value = e.touches[0].clientX - translateX.value
-    startY.value = e.touches[0].clientY - translateY.value
-  }
-}
-
-const handleTouchPan = (e) => {
-  if (!isPanning.value || e.touches.length !== 1) return
-  e.preventDefault()
-  translateX.value = e.touches[0].clientX - startX.value
-  translateY.value = e.touches[0].clientY - startY.value
-}
-
-const getMarkerStyle = (marker) => ({
-  left: `${marker.x_position * 100}%`,
-  top: `${marker.y_position * 100}%`,
-  color: marker.marker_type === 'facility' ? '#FF9800' : '#4CAF50'
-})
 
 const showMarkerInfo = (marker) => {
   selectedMarker.value = marker

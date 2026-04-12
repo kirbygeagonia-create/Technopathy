@@ -40,7 +40,7 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   // Show splash on first session visit to /
-  if (to.path === '/' && !sessionStorage.getItem('tp_splash_shown') && from.path !== '/splash') {
+  if (to.path === '/' && !localStorage.getItem('tp_splash_v1') && from.path !== '/splash') {
     next('/splash')
     return
   }

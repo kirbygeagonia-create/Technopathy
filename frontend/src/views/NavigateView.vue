@@ -12,10 +12,14 @@
     <div class="navview-panel">
       <div class="navview-field">
         <span class="material-icons navview-field-icon from">my_location</span>
-        <select v-model="fromLocation" class="navview-select">
-          <option value="">Select starting point</option>
-          <option v-for="loc in locations" :key="'from-'+loc" :value="loc">{{ loc }}</option>
-        </select>
+        <input 
+          v-model="fromLocation" 
+          type="text"
+          list="navigate-locations"
+          class="navview-select"
+          placeholder="Select starting point"
+          autocomplete="off"
+        >
       </div>
       
       <button class="navview-swap-btn" @click="swapLocations" title="Swap locations">
@@ -24,11 +28,19 @@
 
       <div class="navview-field">
         <span class="material-icons navview-field-icon to">place</span>
-        <select v-model="toLocation" class="navview-select">
-          <option value="">Select destination</option>
-          <option v-for="loc in locations" :key="'to-'+loc" :value="loc">{{ loc }}</option>
-        </select>
+        <input 
+          v-model="toLocation" 
+          type="text"
+          list="navigate-locations"
+          class="navview-select"
+          placeholder="Select destination"
+          autocomplete="off"
+        >
       </div>
+
+      <datalist id="navigate-locations">
+        <option v-for="loc in locations" :key="loc" :value="loc"></option>
+      </datalist>
 
       <div class="navview-actions-row">
         <button class="navview-find-btn" @click="findRoute" :disabled="!fromLocation || !toLocation">
@@ -65,7 +77,7 @@
         <svg 
           v-if="routeFound && routePoints.length > 1"
           class="navview-route-svg"
-          viewBox="0 0 800 600"
+          viewBox="0 0 3301 7114"
           preserveAspectRatio="none"
         >
           <!-- Route path shadow -->
@@ -73,7 +85,7 @@
             :points="routePointsStr"
             fill="none"
             stroke="rgba(0,0,0,0.15)"
-            stroke-width="8"
+            stroke-width="40"
             stroke-linecap="round"
             stroke-linejoin="round"
           />
@@ -82,7 +94,7 @@
             :points="routePointsStr"
             fill="none"
             stroke="#FF9800"
-            stroke-width="5"
+            stroke-width="24"
             stroke-linecap="round"
             stroke-linejoin="round"
             class="navview-route-line"
@@ -91,19 +103,19 @@
           <!-- Start marker -->
           <circle
             :cx="routePoints[0].x" :cy="routePoints[0].y"
-            r="8" fill="#388E3C" stroke="white" stroke-width="2"
+            r="36" fill="#388E3C" stroke="white" stroke-width="8"
           />
           <!-- End marker -->
           <circle
             :cx="routePoints[routePoints.length-1].x" :cy="routePoints[routePoints.length-1].y"
-            r="8" fill="#D32F2F" stroke="white" stroke-width="2"
+            r="36" fill="#D32F2F" stroke="white" stroke-width="8"
           />
           <!-- Waypoint markers -->
           <circle
             v-for="(pt, i) in routePoints.slice(1, -1)"
             :key="'wp-'+i"
             :cx="pt.x" :cy="pt.y"
-            r="4" fill="#FF9800" stroke="white" stroke-width="1.5"
+            r="16" fill="white" stroke="#FF9800" stroke-width="6"
           />
         </svg>
 
@@ -263,8 +275,8 @@ async function findRoute() {
     const result = await findPath(fromLocation.value, toLocation.value)
     if (result && result.path && result.path.length > 0) {
       routePoints.value = result.path.map(node => ({
-        x: node.x * 800,
-        y: node.y * 600,
+        x: node.x * 3301,
+        y: node.y * 7114,
       }))
       routeInfo.value = {
         distance: result.totalDistance ? `${result.totalDistance}m` : '~150m',
@@ -311,10 +323,10 @@ function generateMockRoute() {
   const mid2 = { x: (start.x + end.x) / 2, y: (start.y + end.y) / 2 }
 
   routePoints.value = [
-    { x: start.x * 800, y: start.y * 600 },
-    { x: mid1.x * 800, y: mid1.y * 600 },
-    { x: mid2.x * 800, y: mid2.y * 600 },
-    { x: end.x * 800, y: end.y * 600 },
+    { x: start.x * 3301, y: start.y * 7114 },
+    { x: mid1.x * 3301, y: mid1.y * 7114 },
+    { x: mid2.x * 3301, y: mid2.y * 7114 },
+    { x: end.x * 3301, y: end.y * 7114 },
   ]
 
   const dist = Math.round(Math.hypot((end.x - start.x) * 200, (end.y - start.y) * 200))

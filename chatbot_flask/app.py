@@ -4,31 +4,38 @@ from pathlib import Path
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from openai import OpenAI
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
 
-# Initialize OpenAI client
-client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+# Initialize OpenAI client — key stays server-side, never sent to browser
+_openai_key = os.getenv('OPENAI_API_KEY', '')
+OPENAI_ENABLED = False
+client = None
 
-
-import os
-
-# OpenAI client — key stays server-side, never sent to browser
-try:
-    import openai
-    _openai_key = os.environ.get('OPENAI_API_KEY', '')
-    if _openai_key:
-        openai.api_key = _openai_key
+if _openai_key:
+    try:
+        from openai import OpenAI
+        client = OpenAI(api_key=_openai_key)
         OPENAI_ENABLED = True
-    else:
-        OPENAI_ENABLED = False
-except ImportError:
-    OPENAI_ENABLED = False
+    except ImportError:
+        print('[Chatbot] openai package not installed — falling back to rule-based replies')
+else:
+    print('[Chatbot] OPENAI_API_KEY not set — using rule-based replies only')
 
 app = Flask(__name__)
+
+# Rate limiter — prevent API abuse and runaway OpenAI costs
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["60 per minute"],
+    storage_uri="memory://",
+)
+
 # Restrict CORS to known origins for security
 CORS(app, origins=[
     "http://localhost:5173",  # Vite dev server
@@ -79,7 +86,9 @@ INSTRUCTIONS:
 - For classrooms like CL1-CL10, mention they're in MST Building 3rd floor"""
 
 def generate_reply(message: str) -> str:
-    """Generate AI-powered response using OpenAI GPT."""
+    """Generate AI-powered response using OpenAI GPT, with rule-based fallback."""
+    if not OPENAI_ENABLED or not client:
+        return generate_rule_based_reply(message)
     try:
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
@@ -199,12 +208,15 @@ def health():
 
 
 @app.route("/chat", methods=["POST"])
+@limiter.limit("20 per minute")
 def chat():
-    """Chat endpoint called from Flutter app."""
+    """Chat endpoint called from the TechnoPath PWA."""
     data = request.get_json(silent=True) or {}
     message = str(data.get("message", "")).strip()
     if not message:
         return jsonify({"error": "message is required"}), 400
+    if len(message) > 1000:
+        return jsonify({"error": "Message too long (max 1000 characters)"}), 400
 
     reply = generate_reply(message)
     with sqlite3.connect(DB_PATH) as conn:

@@ -59,55 +59,6 @@ class MapLabel(models.Model):
         return self.label_text
 
 
-class Rating(models.Model):
-    CATEGORIES = [
-        ('general', 'General'),
-        ('facility', 'Facility'),
-        ('room', 'Room'),
-        ('navigation', 'Navigation'),
-        ('app', 'App Experience'),
-    ]
-    
-    user = models.ForeignKey('users.AdminUser', on_delete=models.SET_NULL, null=True, blank=True)
-    facility = models.ForeignKey('facilities.Facility', on_delete=models.SET_NULL, null=True, blank=True)
-    room = models.ForeignKey('rooms.Room', on_delete=models.SET_NULL, null=True, blank=True)
-    rating = models.IntegerField()
-    comment = models.TextField(blank=True, null=True)
-    category = models.CharField(max_length=20, choices=CATEGORIES, default='general')
-    is_anonymous = models.BooleanField(default=True)
-    is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        db_table = 'ratings'
-
-    def __str__(self):
-        return f"{self.rating} stars - {self.category}"
-
-
-class FeedbackFlag(models.Model):
-    STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('reviewed', 'Reviewed'),
-        ('resolved', 'Resolved'),
-        ('dismissed', 'Dismissed'),
-    ]
-    
-    user = models.ForeignKey('users.AdminUser', on_delete=models.SET_NULL, null=True, blank=True, related_name='flagged_feedback')
-    rating = models.ForeignKey(Rating, on_delete=models.CASCADE)
-    reason = models.TextField()
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    resolved_by = models.ForeignKey('users.AdminUser', on_delete=models.SET_NULL, null=True, blank=True, related_name='resolved_flags')
-    resolved_at = models.DateTimeField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        db_table = 'feedback_flags'
-
-    def __str__(self):
-        return f"Flag on rating {self.rating_id} - {self.status}"
-
-
 class NotificationType(models.Model):
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True, null=True)
@@ -184,63 +135,6 @@ class SearchHistory(models.Model):
         return f"Search: {self.query}"
 
 
-class AppUsage(models.Model):
-    user = models.ForeignKey('users.AdminUser', on_delete=models.CASCADE, null=True, blank=True)
-    session_date = models.DateField()
-    session_duration = models.IntegerField(default=0)  # in seconds
-    screen_views = models.IntegerField(default=0)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        db_table = 'app_usage'
-
-    def __str__(self):
-        return f"Usage on {self.session_date}"
-
-
-class UsageAnalytics(models.Model):
-    EVENT_TYPES = [
-        ('screen_view', 'Screen View'),
-        ('search', 'Search'),
-        ('navigation', 'Navigation'),
-        ('rating', 'Rating'),
-        ('feedback', 'Feedback'),
-        ('share', 'Share'),
-        ('notification_open', 'Notification Open'),
-    ]
-    
-    user = models.ForeignKey('users.AdminUser', on_delete=models.SET_NULL, null=True, blank=True)
-    event_type = models.CharField(max_length=50, choices=EVENT_TYPES)
-    event_data = models.JSONField(blank=True, null=True)
-    screen_name = models.CharField(max_length=100, blank=True, null=True)
-    session_id = models.CharField(max_length=100, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        db_table = 'usage_analytics'
-
-    def __str__(self):
-        return f"{self.event_type} - {self.screen_name}"
-
-
-class DevicePreference(models.Model):
-    user = models.ForeignKey('users.AdminUser', on_delete=models.SET_NULL, null=True, blank=True)
-    device_id = models.CharField(max_length=200)
-    dark_mode = models.BooleanField(default=False)
-    language = models.CharField(max_length=10, default='en')
-    font_scale = models.FloatField(default=1.0)
-    high_contrast = models.BooleanField(default=False)
-    reduce_animations = models.BooleanField(default=False)
-    last_sync = models.DateTimeField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        db_table = 'device_preferences'
-
-    def __str__(self):
-        return f"Preferences for {self.device_id}"
-
-
 class AppConfig(models.Model):
     config_key = models.CharField(max_length=100, unique=True)
     config_value = models.TextField()
@@ -253,18 +147,3 @@ class AppConfig(models.Model):
 
     def __str__(self):
         return self.config_key
-
-
-class ConnectivityLog(models.Model):
-    user = models.ForeignKey('users.AdminUser', on_delete=models.SET_NULL, null=True, blank=True)
-    is_online = models.BooleanField()
-    connection_type = models.CharField(max_length=50, blank=True, null=True)
-    latency_ms = models.IntegerField(blank=True, null=True)
-    error_message = models.TextField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        db_table = 'connectivity_log'
-
-    def __str__(self):
-        return f"Connectivity: {'Online' if self.is_online else 'Offline'}"

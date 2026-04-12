@@ -21,170 +21,155 @@
         </button>
       </div>
 
-      <!-- User Info -->
-      <div class="profile-section">
-        <h3 class="profile-section-title">User Information</h3>
-        <div class="profile-card">
-          <div class="profile-item">
-            <!-- FIX: replaced style="background:#E3F2FD; color:#2196F3" with .icon-blue -->
-            <div class="profile-item-icon icon-blue">
-              <span class="material-icons">person</span>
-            </div>
-            <div class="profile-item-text">
-              <div class="profile-item-title">Display Name</div>
-              <div class="profile-item-subtitle">{{ userProfile.displayName || 'Guest User' }}</div>
-            </div>
-            <button class="profile-edit-btn" @click="editName">
-              <span class="material-icons">edit</span>
-            </button>
+      <!-- Unified Profile Settings -->
+      <div class="profile-card unified-profile-card">
+        
+        <div class="profile-group-header">User Information</div>
+        <div class="profile-item">
+          <!-- FIX: replaced style="background:#E3F2FD; color:#2196F3" with .icon-blue -->
+          <div class="profile-item-icon icon-blue">
+            <span class="material-icons">person</span>
           </div>
-
-          <div class="profile-item">
-            <div class="profile-item-icon icon-orange">
-              <span class="material-icons">email</span>
-            </div>
-            <div class="profile-item-text">
-              <div class="profile-item-title">Email</div>
-              <div class="profile-item-subtitle">{{ userProfile.email || 'Not provided' }}</div>
-            </div>
+          <div class="profile-item-text">
+            <div class="profile-item-title">Display Name</div>
+            <div class="profile-item-subtitle">{{ userProfile.displayName || 'Guest User' }}</div>
           </div>
+          <button class="profile-edit-btn" @click="editName">
+            <span class="material-icons">edit</span>
+          </button>
+        </div>
 
-          <div class="profile-item">
-            <div class="profile-item-icon icon-purple">
-              <span class="material-icons">phone</span>
-            </div>
-            <div class="profile-item-text">
-              <div class="profile-item-title">Phone</div>
-              <div class="profile-item-subtitle">{{ userProfile.phone || 'Not provided' }}</div>
-            </div>
-            <button class="profile-edit-btn" @click="editPhone">
-              <span class="material-icons">edit</span>
-            </button>
+        <div class="profile-item">
+          <div class="profile-item-icon icon-orange">
+            <span class="material-icons">email</span>
+          </div>
+          <div class="profile-item-text">
+            <div class="profile-item-title">Email</div>
+            <div class="profile-item-subtitle">{{ userProfile.email || 'Not provided' }}</div>
           </div>
         </div>
-      </div>
 
-      <!-- Preferences -->
-      <div class="profile-section">
-        <h3 class="profile-section-title">Preferences</h3>
-        <div class="profile-card">
-          <div class="profile-item">
-            <div class="profile-item-icon icon-green">
-              <span class="material-icons">language</span>
-            </div>
-            <div class="profile-item-text">
-              <div class="profile-item-title">Language</div>
-              <div class="profile-item-subtitle">{{ selectedLanguage }}</div>
-            </div>
-            <select v-model="selectedLanguage" class="profile-select" @change="saveLanguage">
-              <option value="English">English</option>
-              <option value="Filipino">Filipino</option>
-              <option value="Cebuano">Cebuano</option>
-            </select>
+        <div class="profile-item">
+          <div class="profile-item-icon icon-purple">
+            <span class="material-icons">phone</span>
           </div>
-
-          <div class="profile-item">
-            <div class="profile-item-icon icon-yellow">
-              <span class="material-icons">text_fields</span>
-            </div>
-            <div class="profile-item-text">
-              <div class="profile-item-title">Font Size</div>
-              <div class="profile-item-subtitle">{{ fontSizeLabel }}</div>
-            </div>
-            <div class="profile-slider-container">
-              <input
-                type="range" min="0.8" max="1.3" step="0.1"
-                v-model.number="fontScale"
-                class="profile-slider"
-                @change="saveFontScale"
-              />
-            </div>
+          <div class="profile-item-text">
+            <div class="profile-item-title">Phone</div>
+            <div class="profile-item-subtitle">{{ userProfile.phone || 'Not provided' }}</div>
           </div>
+          <button class="profile-edit-btn" @click="editPhone">
+            <span class="material-icons">edit</span>
+          </button>
+        </div>
 
-          <div class="profile-item">
-            <div class="profile-item-icon icon-grey">
-              <span class="material-icons">contrast</span>
-            </div>
-            <div class="profile-item-text">
-              <div class="profile-item-title">High Contrast</div>
-              <div class="profile-item-subtitle">Better visibility</div>
-            </div>
-            <label class="profile-switch">
-              <input type="checkbox" v-model="highContrast" @change="saveHighContrast">
-              <span class="profile-slider-switch"></span>
-            </label>
+        <div class="profile-group-header">Preferences</div>
+        <div class="profile-item">
+          <div class="profile-item-icon icon-green">
+            <span class="material-icons">language</span>
           </div>
+          <div class="profile-item-text">
+            <div class="profile-item-title">Language</div>
+            <div class="profile-item-subtitle">{{ selectedLanguage }}</div>
+          </div>
+          <select v-model="selectedLanguage" class="profile-select" @change="saveLanguage">
+            <option value="English">English</option>
+            <option value="Filipino">Filipino</option>
+            <option value="Cebuano">Cebuano</option>
+          </select>
+        </div>
 
-          <div class="profile-item">
-            <div class="profile-item-icon icon-pink">
-              <span class="material-icons">animation</span>
-            </div>
-            <div class="profile-item-text">
-              <div class="profile-item-title">Reduce Animations</div>
-              <div class="profile-item-subtitle">Minimize motion effects</div>
-            </div>
-            <label class="profile-switch">
-              <input type="checkbox" v-model="reduceAnimations" @change="saveReduceAnimations">
-              <span class="profile-slider-switch"></span>
-            </label>
+        <div class="profile-item">
+          <div class="profile-item-icon icon-yellow">
+            <span class="material-icons">text_fields</span>
+          </div>
+          <div class="profile-item-text">
+            <div class="profile-item-title">Font Size</div>
+            <div class="profile-item-subtitle">{{ fontSizeLabel }}</div>
+          </div>
+          <div class="profile-slider-container">
+            <input
+              type="range" min="0.8" max="1.3" step="0.1"
+              v-model.number="fontScale"
+              class="profile-slider"
+              @change="saveFontScale"
+            />
           </div>
         </div>
-      </div>
 
-      <!-- Quick Links -->
-      <div class="profile-section">
-        <h3 class="profile-section-title">Quick Links</h3>
-        <div class="profile-card">
-          <div class="profile-item" @click="goToFavorites">
-            <div class="profile-item-icon icon-red">
-              <span class="material-icons">favorite</span>
-            </div>
-            <div class="profile-item-text">
-              <div class="profile-item-title">My Favorites</div>
-              <div class="profile-item-subtitle">{{ favoritesCount }} saved locations</div>
-            </div>
-            <span class="material-icons profile-chevron">chevron_right</span>
+        <div class="profile-item">
+          <div class="profile-item-icon icon-grey">
+            <span class="material-icons">contrast</span>
           </div>
-
-          <div class="profile-item" @click="goToSettings">
-            <div class="profile-item-icon icon-cyan">
-              <span class="material-icons">settings</span>
-            </div>
-            <div class="profile-item-text">
-              <div class="profile-item-title">Settings</div>
-              <div class="profile-item-subtitle">App configuration</div>
-            </div>
-            <span class="material-icons profile-chevron">chevron_right</span>
+          <div class="profile-item-text">
+            <div class="profile-item-title">High Contrast</div>
+            <div class="profile-item-subtitle">Better visibility</div>
           </div>
+          <label class="profile-switch">
+            <input type="checkbox" v-model="highContrast" @change="saveHighContrast">
+            <span class="profile-slider-switch"></span>
+          </label>
         </div>
-      </div>
 
-      <!-- Account -->
-      <div class="profile-section">
-        <h3 class="profile-section-title">Account</h3>
-        <div class="profile-card">
-          <div class="profile-item profile-item-danger" @click="logout" v-if="isLoggedIn">
-            <div class="profile-item-icon icon-red">
-              <span class="material-icons">logout</span>
-            </div>
-            <div class="profile-item-text">
-              <div class="profile-item-title">Logout</div>
-              <div class="profile-item-subtitle">Sign out of your account</div>
-            </div>
-            <span class="material-icons profile-chevron">chevron_right</span>
+        <div class="profile-item">
+          <div class="profile-item-icon icon-pink">
+            <span class="material-icons">animation</span>
           </div>
-
-          <div class="profile-item" @click="goToAdminLogin" v-else>
-            <div class="profile-item-icon icon-orange">
-              <span class="material-icons">login</span>
-            </div>
-            <div class="profile-item-text">
-              <div class="profile-item-title">Login as Admin</div>
-              <div class="profile-item-subtitle">Access admin dashboard</div>
-            </div>
-            <span class="material-icons profile-chevron">chevron_right</span>
+          <div class="profile-item-text">
+            <div class="profile-item-title">Reduce Animations</div>
+            <div class="profile-item-subtitle">Minimize motion effects</div>
           </div>
+          <label class="profile-switch">
+            <input type="checkbox" v-model="reduceAnimations" @change="saveReduceAnimations">
+            <span class="profile-slider-switch"></span>
+          </label>
         </div>
+
+        <div class="profile-group-header">Quick Links</div>
+        <div class="profile-item" @click="goToFavorites">
+          <div class="profile-item-icon icon-red">
+            <span class="material-icons">favorite</span>
+          </div>
+          <div class="profile-item-text">
+            <div class="profile-item-title">My Favorites</div>
+            <div class="profile-item-subtitle">{{ favoritesCount }} saved locations</div>
+          </div>
+          <span class="material-icons profile-chevron">chevron_right</span>
+        </div>
+
+        <div class="profile-item" @click="goToSettings">
+          <div class="profile-item-icon icon-cyan">
+            <span class="material-icons">settings</span>
+          </div>
+          <div class="profile-item-text">
+            <div class="profile-item-title">Settings</div>
+            <div class="profile-item-subtitle">App configuration</div>
+          </div>
+          <span class="material-icons profile-chevron">chevron_right</span>
+        </div>
+
+        <div class="profile-group-header">Account</div>
+        <div class="profile-item profile-item-danger" @click="logout" v-if="isLoggedIn">
+          <div class="profile-item-icon icon-red">
+            <span class="material-icons">logout</span>
+          </div>
+          <div class="profile-item-text">
+            <div class="profile-item-title">Logout</div>
+            <div class="profile-item-subtitle">Sign out of your account</div>
+          </div>
+          <span class="material-icons profile-chevron">chevron_right</span>
+        </div>
+
+        <div class="profile-item" @click="goToAdminLogin" v-else>
+          <div class="profile-item-icon icon-orange">
+            <span class="material-icons">login</span>
+          </div>
+          <div class="profile-item-text">
+            <div class="profile-item-title">Login as Admin</div>
+            <div class="profile-item-subtitle">Access admin dashboard</div>
+          </div>
+          <span class="material-icons profile-chevron">chevron_right</span>
+        </div>
+
       </div>
     </div>
 

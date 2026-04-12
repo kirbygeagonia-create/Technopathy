@@ -51,7 +51,7 @@ onMounted(async () => {
 
   // Wait for CSS exit animation (450ms fade-out in splash.css)
   setTimeout(() => {
-    sessionStorage.setItem('tp_splash_shown', 'true')
+    localStorage.setItem('tp_splash_v1', '1')
     router.value.replace('/')
   }, 450)
 })

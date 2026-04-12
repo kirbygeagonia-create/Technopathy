@@ -6,7 +6,7 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth.hashers import make_password
 from apps.core.models import (
     Department, AppConfig, NotificationType, MapMarker, 
-    MapLabel, Rating
+    MapLabel
 )
 from apps.facilities.models import Facility
 from apps.rooms.models import Room

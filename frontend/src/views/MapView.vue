@@ -159,6 +159,7 @@ import useMapPanZoom from '../composables/useMapPanZoom.js'
 import { useRouter } from 'vue-router'
 import offlineData from '../services/offlineData.js'
 import { isOnline } from '../services/sync.js'
+import { showToast } from '../services/toast.js'
 
 const router = useRouter()
 
@@ -258,12 +259,13 @@ async function loadBuildingRooms(marker) {
     const res = await offlineData.getRooms(marker.id)
     buildingRooms.value = res.data
     
-    // If offline and no rooms, use mock data
-    if (res.data.length === 0 && !isOnline()) {
+    // If offline and no rooms, use mock data (DEV only)
+    if (res.data.length === 0 && !isOnline() && import.meta.env.DEV) {
       useMockRooms(marker)
     }
   } catch {
-    useMockRooms(marker)
+    if (import.meta.env.DEV) useMockRooms(marker)
+    else buildingRooms.value = []
   }
 }
 
@@ -352,38 +354,8 @@ function addFavorite() {
   }
 }
 
-// Pan & Zoom
-// pan/zoom handled by useMapPanZoom composable
-
-let lastTouchDist = 0
-function onTouchStart(e) {
-  if (e.touches.length === 2) {
-    lastTouchDist = Math.hypot(
-      e.touches[0].clientX - e.touches[1].clientX,
-      e.touches[0].clientY - e.touches[1].clientY
-    )
-  } else if (e.touches.length === 1) {
-    isPanning.value = true
-    panStart.value = { x: e.touches[0].clientX - tx.value, y: e.touches[0].clientY - ty.value }
-  }
-}
-
-function onTouchMove(e) {
-  if (e.touches.length === 2) {
-    const dist = Math.hypot(
-      e.touches[0].clientX - e.touches[1].clientX,
-      e.touches[0].clientY - e.touches[1].clientY
-    )
-    if (lastTouchDist > 0) {
-      const delta = dist / lastTouchDist
-      scale.value = Math.max(0.5, Math.min(5, scale.value * delta))
-    }
-    lastTouchDist = dist
-  } else if (e.touches.length === 1 && isPanning.value) {
-    tx.value = e.touches[0].clientX - panStart.value.x
-    ty.value = e.touches[0].clientY - panStart.value.y
-  }
-}
+// Pan & Zoom handled entirely by useMapPanZoom composable
+// Touch events (onTouchStart, onTouchMove) come from the composable
 
 onMounted(async () => {
   await loadData()

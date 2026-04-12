@@ -13,7 +13,7 @@ import db from './db.js'
  * All AI calls go through the Flask backend which holds the key securely.
  */
 
-const FLASK_CHATBOT_URL = import.meta.env.VITE_FLASK_CHATBOT_URL || 'http://localhost:5000'
+const FLASK_CHATBOT_URL = import.meta.env.VITE_FLASK_CHATBOT_URL || '/chatbot-api'
 
 const CAMPUS_CONTEXT_SUMMARY = `
 SEAIT Campus — TechnoPath guide app for South East Asian Institute of Technology, Tupi, South Cotabato.

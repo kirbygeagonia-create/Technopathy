@@ -5,17 +5,15 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticate
 from django_filters.rest_framework import DjangoFilterBackend
 from apps.users.permissions import ReadOnlyOrSuperAdmin, CanViewAuditLog
 from .models import (
-    Department, MapMarker, MapLabel, Rating, FeedbackFlag,
+    Department, MapMarker, MapLabel,
     NotificationType, NotificationPreference, AdminAuditLog,
-    SearchHistory, AppUsage, UsageAnalytics, DevicePreference,
-    AppConfig, ConnectivityLog
+    SearchHistory, AppConfig
 )
 from .serializers import (
     DepartmentSerializer, MapMarkerSerializer, MapLabelSerializer,
-    RatingSerializer, FeedbackFlagSerializer, NotificationTypeSerializer,
+    NotificationTypeSerializer,
     NotificationPreferenceSerializer, AdminAuditLogSerializer,
-    SearchHistorySerializer, AppUsageSerializer, UsageAnalyticsSerializer,
-    DevicePreferenceSerializer, AppConfigSerializer, ConnectivityLogSerializer
+    SearchHistorySerializer, AppConfigSerializer
 )
 
 
@@ -59,36 +57,6 @@ class MapLabelDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = MapLabel.objects.all()
     serializer_class = MapLabelSerializer
     permission_classes = [ReadOnlyOrSuperAdmin]
-
-
-# Rating Views
-class RatingListCreateView(generics.ListCreateAPIView):
-    queryset = Rating.objects.filter(is_active=True)
-    serializer_class = RatingSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['category', 'facility', 'room']
-
-
-class RatingDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Rating.objects.all()
-    serializer_class = RatingSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
-
-
-# Feedback Flag Views
-class FeedbackFlagListCreateView(generics.ListCreateAPIView):
-    queryset = FeedbackFlag.objects.all()
-    serializer_class = FeedbackFlagSerializer
-    permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['status']
-
-
-class FeedbackFlagDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = FeedbackFlag.objects.all()
-    serializer_class = FeedbackFlagSerializer
-    permission_classes = [IsAuthenticated]
 
 
 # Notification Type Views
@@ -146,46 +114,6 @@ class SearchHistoryListCreateView(generics.ListCreateAPIView):
             serializer.save()
 
 
-# App Usage Views
-class AppUsageListCreateView(generics.ListCreateAPIView):
-    queryset = AppUsage.objects.all()
-    serializer_class = AppUsageSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return AppUsage.objects.filter(user=self.request.user)
-
-
-# Usage Analytics Views
-class UsageAnalyticsListCreateView(generics.ListCreateAPIView):
-    queryset = UsageAnalytics.objects.all()
-    serializer_class = UsageAnalyticsSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['event_type', 'screen_name']
-
-    def perform_create(self, serializer):
-        if self.request.user.is_authenticated:
-            serializer.save(user=self.request.user)
-        else:
-            serializer.save()
-
-
-# Device Preference Views
-class DevicePreferenceListCreateView(generics.ListCreateAPIView):
-    queryset = DevicePreference.objects.all()
-    serializer_class = DevicePreferenceSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return DevicePreference.objects.filter(user=self.request.user)
-
-
-class DevicePreferenceDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = DevicePreference.objects.all()
-    serializer_class = DevicePreferenceSerializer
-    permission_classes = [IsAuthenticated]
-
 
 # App Config Views
 class AppConfigListCreateView(generics.ListCreateAPIView):
@@ -199,19 +127,6 @@ class AppConfigDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = AppConfigSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     lookup_field = 'config_key'
-
-
-# Connectivity Log Views
-class ConnectivityLogListCreateView(generics.ListCreateAPIView):
-    queryset = ConnectivityLog.objects.all()
-    serializer_class = ConnectivityLogSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
-
-    def perform_create(self, serializer):
-        if self.request.user.is_authenticated:
-            serializer.save(user=self.request.user)
-        else:
-            serializer.save()
 
 
 # Dashboard Stats
@@ -232,7 +147,7 @@ def dashboard_stats(request):
         'total_notifications': Notification.objects.count(),
         'unread_notifications': Notification.objects.filter(is_read=False).count(),
         'total_feedback': Feedback.objects.count(),
-        'recent_ratings': Rating.objects.filter(is_active=True).count(),
+        'recent_feedback': Feedback.objects.order_by('-created_at')[:5].count(),
         'audit_logs_count': AdminAuditLog.objects.count(),
     }
     return Response(stats)

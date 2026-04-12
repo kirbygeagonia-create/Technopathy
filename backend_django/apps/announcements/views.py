@@ -61,7 +61,7 @@ class AnnouncementCreateView(APIView):
             source_color      = user.get_department_color(),
             scope             = scope,
             target_department = d.get('target_department', ''),
-            status            = 'published' if publishes_direct else 'pending_approval',
+            status            = 'pending_approval',
             requires_approval = not publishes_direct,
         )
         a.save()

@@ -248,15 +248,26 @@ function generateSteps(pathNodes, totalDistance) {
   })
 
   // Intermediate steps
+  // Calculate proportional segment distances from the total Dijkstra distance
+  const segmentDistances = []
+  let totalPixelDist = 0
+  for (let i = 1; i < pathNodes.length; i++) {
+    const dx = pathNodes[i].x - pathNodes[i-1].x
+    const dy = pathNodes[i].y - pathNodes[i-1].y
+    const pixDist = Math.sqrt(dx * dx + dy * dy)
+    segmentDistances.push(pixDist)
+    totalPixelDist += pixDist
+  }
+
   for (let i = 1; i < pathNodes.length - 1; i++) {
     const prev = pathNodes[i - 1]
     const curr = pathNodes[i]
     const next = pathNodes[i + 1]
     
-    // Calculate segment distance
-    const dx = (curr.x - prev.x) * 200 // scale factor
-    const dy = (curr.y - prev.y) * 200
-    const segmentDist = Math.round(Math.sqrt(dx * dx + dy * dy))
+    // Proportional real-world distance for this segment
+    const segmentDist = totalPixelDist > 0
+      ? Math.round((segmentDistances[i - 1] / totalPixelDist) * totalDistance)
+      : 0
     
     // Determine turn direction
     let turn = 'Continue'
@@ -269,7 +280,7 @@ function generateSteps(pathNodes, totalDistance) {
     
     steps.push({
       instruction: `${turn} toward ${curr.name}`,
-      distance: `~${segmentDist}m`
+      distance: segmentDist > 0 ? `~${segmentDist}m` : ''
     })
   }
 

@@ -59,9 +59,21 @@ class CanManageRoom(BasePermission):
         if request.user.role == 'super_admin':
             return True
         # Check room's facility department matches user's department
-        if hasattr(obj, 'facility') and obj.facility and obj.facility.department:
-            return obj.facility.department.code == request.user.department
-        return False
+        # AdminUser.department is a choice string (e.g. 'college_ict')
+        # Facility.department is a FK to core.Department (with .code e.g. 'ICT')
+        # We compare the Department FK id via user's department string
+        user_dept = request.user.department
+        if not user_dept:
+            return False
+        if not hasattr(obj, 'facility') or not obj.facility:
+            return False
+        facility_dept = obj.facility.department
+        if not facility_dept:
+            return False
+        # Match by checking if department name/code is contained in user's department choice
+        # e.g. user.department='college_ict' should match Department whose code contains 'ict'
+        dept_code_lower = (facility_dept.code or '').lower()
+        return dept_code_lower and dept_code_lower in user_dept.lower()
 
 
 class CanApproveAnnouncements(BasePermission):

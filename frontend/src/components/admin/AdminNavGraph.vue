@@ -95,14 +95,14 @@
         </thead>
         <tbody>
           <tr v-for="node in nodes" :key="node.id">
-            <td><code>{{ node.node_id }}</code></td>
+            <td><code>{{ node.map_svg_id }}</code></td>
             <td>{{ node.name }}</td>
             <td>
-              <span :class="['type-badge', 'type-' + node.type]">{{ node.type }}</span>
+              <span :class="['type-badge', 'type-' + node.node_type]">{{ node.node_type }}</span>
             </td>
             <td>{{ node.floor }}</td>
             <td>{{ node.building }}</td>
-            <td>{{ getConnectionCount(node.node_id) }}</td>
+            <td>{{ getConnectionCount(node.id) }}</td>
             <td>
               <div class="action-buttons">
                 <button class="btn-icon" @click="editNode(node)" title="Edit">
@@ -133,12 +133,12 @@
         <div class="modal-body">
           <div class="form-row">
             <div class="form-group">
-              <label>Node ID</label>
-              <input v-model="nodeForm.node_id" type="text" placeholder="e.g., ROOM_101" />
+              <label>SVG ID</label>
+              <input v-model="nodeForm.map_svg_id" type="text" placeholder="e.g., ROOM_101" />
             </div>
             <div class="form-group">
               <label>Type</label>
-              <select v-model="nodeForm.type">
+              <select v-model="nodeForm.node_type">
                 <option value="room">Room</option>
                 <option value="junction">Junction</option>
                 <option value="entrance">Entrance</option>
@@ -155,8 +155,8 @@
           <div class="form-row">
             <div class="form-group">
               <label>Building</label>
-              <select v-model="nodeForm.building">
-                <option v-for="b in buildings" :key="b.id" :value="b.code">{{ b.name }}</option>
+              <select v-model="nodeForm.facility">
+                <option v-for="b in buildings" :key="b.id" :value="b.id">{{ b.name }}</option>
               </select>
             </div>
             <div class="form-group">
@@ -197,17 +197,17 @@ const showEditNodeModal = ref(false)
 
 const nodeForm = ref({
   id: null,
-  node_id: '',
+  map_svg_id: '',
   name: '',
-  type: 'room',
-  building: '',
+  node_type: 'room',
+  facility: null,
   floor: 1,
   x: 0.5,
   y: 0.5
 })
 
 function getConnectionCount(nodeId) {
-  return edges.value.filter(e => e.from === nodeId || e.to === nodeId).length
+  return edges.value.filter(e => e.from_node === nodeId || e.to_node === nodeId).length
 }
 
 function editNode(node) {
@@ -228,7 +228,7 @@ function confirmDeleteNode(node) {
 function closeModal() {
   showAddNodeModal.value = false
   showEditNodeModal.value = false
-  nodeForm.value = { id: null, node_id: '', name: '', type: 'room', building: '', floor: 1, x: 0.5, y: 0.5 }
+  nodeForm.value = { id: null, map_svg_id: '', name: '', node_type: 'room', facility: null, floor: 1, x: 0.5, y: 0.5 }
 }
 
 function resetView() {
@@ -357,8 +357,8 @@ function drawCanvas() {
   ctx.strokeStyle = '#666'
   ctx.lineWidth = 2
   edges.value.forEach(edge => {
-    const fromNode = nodes.value.find(n => n.node_id === edge.from)
-    const toNode = nodes.value.find(n => n.node_id === edge.to)
+    const fromNode = nodes.value.find(n => n.id === edge.from_node)
+    const toNode = nodes.value.find(n => n.id === edge.to_node)
     if (fromNode && toNode) {
       const fromPos = nodeToCanvas(fromNode)
       const toPos = nodeToCanvas(toNode)
@@ -377,7 +377,7 @@ function drawCanvas() {
   nodes.value.forEach(node => {
     const pos = nodeToCanvas(node)
     const isSelected = selectedNode.value?.id === node.id
-    const color = typeColors[node.type] || '#999'
+    const color = typeColors[node.node_type] || '#999'
     
     // Node circle
     ctx.beginPath()
@@ -412,7 +412,7 @@ function drawCanvas() {
     // Node ID below
     ctx.fillStyle = '#333'
     ctx.font = '9px Inter, sans-serif'
-    ctx.fillText(node.node_id, pos.x, pos.y + NODE_RADIUS + 12)
+    ctx.fillText(node.map_svg_id || node.name, pos.x, pos.y + NODE_RADIUS + 12)
   })
   
   // Draw connection line in progress
@@ -526,7 +526,7 @@ function onCanvasMouseDown(e) {
         dragStart.value = { x, y }
       } else if (connectStartNode.value.id !== clickedNode.id) {
         // Create connection and persist to backend
-        createEdge(connectStartNode.value.node_id, clickedNode.node_id)
+        createEdge(connectStartNode.value.id, clickedNode.id)
         connectStartNode.value = null
         isDragging.value = false
         drawCanvas()

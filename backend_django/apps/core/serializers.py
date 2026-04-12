@@ -1,9 +1,8 @@
 from rest_framework import serializers
 from .models import (
-    Department, MapMarker, MapLabel, Rating, FeedbackFlag,
+    Department, MapMarker, MapLabel,
     NotificationType, NotificationPreference, AdminAuditLog,
-    SearchHistory, AppUsage, UsageAnalytics, DevicePreference,
-    AppConfig, ConnectivityLog
+    SearchHistory, AppConfig
 )
 
 
@@ -24,17 +23,6 @@ class MapLabelSerializer(serializers.ModelSerializer):
         model = MapLabel
         fields = '__all__'
 
-
-class RatingSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Rating
-        fields = '__all__'
-
-
-class FeedbackFlagSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = FeedbackFlag
-        fields = '__all__'
 
 
 class NotificationTypeSerializer(serializers.ModelSerializer):
@@ -63,31 +51,7 @@ class SearchHistorySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class AppUsageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = AppUsage
-        fields = '__all__'
-
-
-class UsageAnalyticsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UsageAnalytics
-        fields = '__all__'
-
-
-class DevicePreferenceSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = DevicePreference
-        fields = '__all__'
-
-
 class AppConfigSerializer(serializers.ModelSerializer):
     class Meta:
         model = AppConfig
-        fields = '__all__'
-
-
-class ConnectivityLogSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ConnectivityLog
         fields = '__all__'

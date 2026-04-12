@@ -1,9 +1,21 @@
+import os
 from pathlib import Path
-from decouple import config
+from decouple import config, UndefinedValueError
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = config('SECRET_KEY', default='django-insecure-technopath-seait-dev-key-change-in-production')
+# In production, SECRET_KEY MUST be set via .env — no insecure fallback.
+# In development (DEBUG=True), auto-generate a random key if not set.
+_debug = config('DEBUG', default=True, cast=bool)
+try:
+    SECRET_KEY = config('SECRET_KEY')
+except UndefinedValueError:
+    if _debug:
+        import secrets
+        SECRET_KEY = secrets.token_urlsafe(50)
+        print('[WARNING] SECRET_KEY not set — using auto-generated dev key. Set SECRET_KEY in .env for production.')
+    else:
+        raise RuntimeError('SECRET_KEY environment variable is required in production. Set it in your .env file.')
 DEBUG = config('DEBUG', default=True, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=lambda v: [s.strip() for s in v.split(',')])
 
@@ -76,6 +88,14 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ),
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '30/minute',
+        'user': '120/minute',
+    },
 }
 
 from datetime import timedelta

@@ -12,7 +12,7 @@ class NavigationNode(models.Model):
     node_type = models.CharField(max_length=20, choices=NODE_TYPES)
     facility = models.ForeignKey(Facility, on_delete=models.SET_NULL, null=True, blank=True)
     room = models.ForeignKey(Room, on_delete=models.SET_NULL, null=True, blank=True)
-    map_svg_id = models.CharField(max_length=100, blank=True, null=True)
+    map_svg_id = models.CharField(max_length=100, blank=True, null=True, unique=True)
     x = models.FloatField()
     y = models.FloatField()
     floor = models.IntegerField(default=1)

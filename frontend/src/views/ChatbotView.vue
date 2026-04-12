@@ -144,7 +144,7 @@ const isAIEnabled = computed(() => {
 // Check Flask connection on mount
 async function checkFlaskConnection() {
   try {
-    const response = await fetch(`${import.meta.env.VITE_FLASK_CHATBOT_URL || 'http://localhost:5000'}/health`, {
+    const response = await fetch(`${import.meta.env.VITE_FLASK_CHATBOT_URL || '/chatbot-api'}/health`, {
       method: 'GET',
       mode: 'cors'
     })
