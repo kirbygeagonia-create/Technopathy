@@ -1,5 +1,6 @@
-# Render Blueprint for TechnoPath SEAIT Guide Map - v4
-# Deploys: Frontend (Static Site) + Backend (Web Service) + PostgreSQL Database
+# Render Blueprint for TechnoPath SEAIT Guide Map - v5
+# Deploys: Frontend (Static Site) + Backend (Web Service)
+# Uses existing PostgreSQL database: technopath-db-or73
 
 services:
   # Frontend - Vue.js Static Site
@@ -34,11 +35,5 @@ services:
         value: "https://technopath-frontend.onrender.com,http://localhost:5173"
       - key: DATABASE_URL
         fromDatabase:
-          name: technopath-db
+          name: technopath-db-or73
           property: connectionString
-
-databases:
-  - name: technopath-db
-    plan: free
-    databaseName: technopath
-    user: technopath
