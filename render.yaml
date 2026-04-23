@@ -1,4 +1,4 @@
-# Render Blueprint for TechnoPath SEAIT Guide Map
+# Render Blueprint for TechnoPath SEAIT Guide Map - v2
 # Deploys: Frontend (Static Site) + Backend (Web Service) + Database (SQLite on Disk)
 
 services:
