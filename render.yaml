@@ -1,20 +1,17 @@
-# Render Blueprint for TechnoPath SEAIT Guide Map - v3
+# Render Blueprint for TechnoPath SEAIT Guide Map - v4
 # Deploys: Frontend (Static Site) + Backend (Web Service) + PostgreSQL Database
 
 services:
   # Frontend - Vue.js Static Site
   - type: web
     name: technopath-frontend
-    runtime: static
+    runtime: node
+    plan: free
     buildCommand: cd frontend && npm install && npm run build
-    staticPublishPath: ./frontend/dist
+    startCommand: cd frontend && npx serve -s dist -l $PORT
     envVars:
       - key: VITE_API_BASE_URL
         value: https://technopath-backend.onrender.com/api
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
 
   # Backend - Django Web Service
   - type: web
