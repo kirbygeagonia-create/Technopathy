@@ -196,17 +196,23 @@ class PathManager {
       this.saveToStorage() // Also save to localStorage
       return newPath
     } catch (error) {
-      console.warn('API failed, saving to localStorage:', error)
-      // Fallback to localStorage - preserve visualPoints!
-      this.useApi.value = false
-      const newPath = {
+      console.error('API create failed:', error)
+      // Rethrow so UI can show real error — do NOT silently fall back to localStorage
+      throw error
+    }
+  }
+
+  // Create a local-only path (fallback when API fails)
+  createLocalPath(pathData) {
+    const id = pathData.id || `path_${Date.now()}`
+    const newPath = {
         id,
-        name,
-        description,
-        from,
-        to,
-        points,
-        elementIds,
+        name: pathData.name,
+        description: pathData.description,
+        from: pathData.from,
+        to: pathData.to,
+        points: pathData.points,
+        elementIds: pathData.elementIds,
         visualPoints: pathData.visualPoints || [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
@@ -220,6 +226,31 @@ class PathManager {
 
   // Update an existing path via API
   async updatePath(id, updates) {
+    // Get current path outside try block
+    const currentPath = this.paths.value[id]
+    if (!currentPath) {
+      throw new Error(`Path with ID ${id} not found`)
+    }
+    
+    try {
+      const response = await api.put(`/navigation/paths/${id}/`, this.toApiFormat({ ...currentPath, ...updates }))
+      const updatedPath = this.normalizePath(response.data)
+      this.paths.value[id] = updatedPath
+      this.saveToStorage()
+      return updatedPath
+    } catch (error) {
+      // If 404, path doesn't exist in DB — create it instead
+      if (error.response?.status === 404) {
+        console.warn(`Path ${id} not in DB, creating as new...`)
+        return await this.createPath({ ...currentPath, ...updates })
+      }
+      // Otherwise re-throw
+      throw error
+    }
+  }
+
+  // Legacy updatePath - kept for compatibility
+  async _updatePathLegacy(id, updates) {
     // Get current path outside try block
     const currentPath = this.paths.value[id]
     if (!currentPath) {
