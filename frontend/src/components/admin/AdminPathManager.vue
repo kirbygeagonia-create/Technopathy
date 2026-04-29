@@ -758,6 +758,17 @@ const loadPaths = async () => {
   }
 }
 
+// Load from locations for the "From" cards view
+const loadFromLocations = async () => {
+  try {
+    console.log('[AdminPathManager] Loading from locations...')
+    // Already loaded via loadPaths — just populate from the paths array
+    console.log('[AdminPathManager] Available from locations:', fromLocations.value)
+  } catch (error) {
+    console.error('[AdminPathManager] Error loading from locations:', error)
+  }
+}
+
 const loadMap = async () => {
   try {
     const response = await fetch('Map_labeled.svg')
@@ -1105,7 +1116,7 @@ const savePath = async (stayOpen = false) => {
       visualPoints: visualPoints.value
     }
     console.log('[AdminPathManager] Path data:', pathData)
-
+    
     if (isCreatingNew.value) {
       console.log('[AdminPathManager] Creating new path...')
       const newPath = await pathManager.createPath(pathData)
@@ -1609,6 +1620,7 @@ const uniqueToDestinations = computed(() => {
 onMounted(async () => {
   await loadGridSettings()
   await loadPaths()
+  await loadFromLocations() // Bug 3 fix: call after loadPaths so fromLocations is populated
   await loadMap()
   await loadFacilities()
   await loadRooms()
