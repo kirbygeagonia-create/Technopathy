@@ -1116,7 +1116,6 @@ const savePath = async (stayOpen = false) => {
       visualPoints: visualPoints.value
     }
     console.log('[AdminPathManager] Path data:', pathData)
-    
     if (isCreatingNew.value) {
       console.log('[AdminPathManager] Creating new path...')
       const newPath = await pathManager.createPath(pathData)
