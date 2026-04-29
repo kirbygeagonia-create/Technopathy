@@ -1604,7 +1604,6 @@ const uniqueToDestinations = computed(() => {
   return Array.from(toSet).sort()
 })
 
-// Lifecycle
 onMounted(async () => {
   await loadGridSettings()
   await loadPaths()
