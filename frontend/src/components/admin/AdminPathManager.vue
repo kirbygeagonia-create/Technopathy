@@ -1,3 +1,4 @@
+<!-- Build fix: 2024-01-15 - Removed stale window.pathManagerData code -->
 <template>
   <div class="admin-path-manager">
     <h2>AdminPathManager</h2>
