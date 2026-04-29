@@ -10,6 +10,8 @@ services:
     buildCommand: cd frontend && npm install && npm run build
     startCommand: cd frontend && npx serve -s dist -l $PORT
     envVars:
+      - key: NODE_VERSION
+        value: "18.20.4"
       - key: VITE_API_BASE_URL
         value: https://technopath-backend.onrender.com/api
 

@@ -35,12 +35,8 @@ app.config.errorHandler = (err, instance, info) => {
 
 app.mount('#app')
 
-// Register service worker for PWA
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js')
-    .then(reg => console.log('[SW] Registered:', reg.scope))
-    .catch(err => console.warn('[SW] Registration failed:', err))
-}
+// NOTE: Service worker is now registered by vite-plugin-pwa automatically
+// Do NOT register manually - vite-plugin-pwa handles this
 
 // Register connectivity listener — auto-syncs when device reconnects
 registerConnectivityListener((result) => {

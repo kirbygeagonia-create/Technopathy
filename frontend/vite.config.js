@@ -1,15 +1,16 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-// import { VitePWA } from 'vite-plugin-pwa'  // TEMP: Disabled to fix build
+import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
   base: '/seait-technopath/',
   plugins: [
     vue(),
-    /* VitePWA({ */
+    VitePWA({
       registerType: 'autoUpdate',
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,jpg}'],
+        globIgnores: ['**/sw.js', '**/manifest.json'],
         runtimeCaching: [
           {
             // Use relative URL pattern - works in both dev and production
@@ -35,7 +36,7 @@ export default defineConfig({
           { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' }
         ]
       }
-    */  // PWA disabled temporarily
+    })
   ],
   server: {
     port: 5173,
