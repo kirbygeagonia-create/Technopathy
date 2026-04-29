@@ -1,11 +1,12 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { VitePWA } from 'vite-plugin-pwa'
+// import { VitePWA } from 'vite-plugin-pwa'  // TEMP: Disabled to debug build
 
 export default defineConfig({
   base: '/seait-technopath/',
   plugins: [
-    vue(),
+    vue()
+    /* VitePWA plugin disabled temporarily for debugging
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
@@ -13,7 +14,6 @@ export default defineConfig({
         globIgnores: ['**/sw.js', '**/manifest.json'],
         runtimeCaching: [
           {
-            // Use relative URL pattern - works in both dev and production
             urlPattern: ({ url }) => url.pathname.startsWith('/api/'),
             handler: 'NetworkFirst',
             options: {
@@ -37,6 +37,7 @@ export default defineConfig({
         ]
       }
     })
+    */
   ],
   server: {
     port: 5173,
