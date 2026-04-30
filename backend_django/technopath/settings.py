@@ -113,6 +113,9 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:4175',
     'http://localhost:4176',
     'http://localhost:4177',
+    # Render production URLs
+    'https://technopath-frontend.onrender.com',
+    'https://technopath-backend.onrender.com',
 ]
 CORS_ALLOW_CREDENTIALS = True
 
