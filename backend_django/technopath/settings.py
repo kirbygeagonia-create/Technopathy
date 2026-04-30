@@ -113,12 +113,14 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:4175',
     'http://localhost:4176',
     'http://localhost:4177',
-    # Render production URLs
+    # Render production URLs - include all possible variations
     'https://technopath-frontend.onrender.com',
     'https://technopath-frontend-or73.onrender.com',
     'https://technopath-backend.onrender.com',
+    'https://technopath-backend-or73.onrender.com',
 ]
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = False  # Explicitly set for security
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
