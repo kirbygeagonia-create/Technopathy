@@ -1,0 +1,302 @@
+[
+  {
+    "model": "accounts.user",
+    "pk": null,
+    "fields": {
+      "username": "safety_admin",
+      "email": "safety@seait.edu.ph",
+      "first_name": "Safety",
+      "last_name": "Admin",
+      "role": "SUPER_ADMIN",
+      "department": "Safety and Security Office",
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": true
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": null,
+    "fields": {
+      "username": "dean_seait",
+      "email": "dean@seait.edu.ph",
+      "first_name": "SEAIT",
+      "last_name": "Dean",
+      "role": "DEAN",
+      "department": "Office of the Dean",
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": false
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": null,
+    "fields": {
+      "username": "dean_agriculture",
+      "email": "agri.dean@seait.edu.ph",
+      "first_name": "Agriculture",
+      "last_name": "Dean",
+      "role": "DEAN",
+      "department": "College of Agriculture",
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": false
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": null,
+    "fields": {
+      "username": "dean_criminology",
+      "email": "crim.dean@seait.edu.ph",
+      "first_name": "Criminology",
+      "last_name": "Dean",
+      "role": "DEAN",
+      "department": "College of Criminology",
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": false
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": null,
+    "fields": {
+      "username": "dean_business",
+      "email": "business.dean@seait.edu.ph",
+      "first_name": "Business",
+      "last_name": "Dean",
+      "role": "DEAN",
+      "department": "College of Business",
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": false
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": null,
+    "fields": {
+      "username": "dean_ict",
+      "email": "ict.dean@seait.edu.ph",
+      "first_name": "ICT",
+      "last_name": "Dean",
+      "role": "DEAN",
+      "department": "College of ICT",
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": false
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": null,
+    "fields": {
+      "username": "dean_civil_eng",
+      "email": "civil.dean@seait.edu.ph",
+      "first_name": "Civil Engineering",
+      "last_name": "Dean",
+      "role": "DEAN",
+      "department": "Civil Engineering",
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": false
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": null,
+    "fields": {
+      "username": "dean_teacher_ed",
+      "email": "teached.dean@seait.edu.ph",
+      "first_name": "Teacher Education",
+      "last_name": "Dean",
+      "role": "DEAN",
+      "department": "Teacher Education",
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": false
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": null,
+    "fields": {
+      "username": "dean_tesda",
+      "email": "tesda.dean@seait.edu.ph",
+      "first_name": "TESDA",
+      "last_name": "Dean",
+      "role": "DEAN",
+      "department": "TESDA",
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": false
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": null,
+    "fields": {
+      "username": "dean_gen_ed",
+      "email": "gened.dean@seait.edu.ph",
+      "first_name": "General Education",
+      "last_name": "Dean",
+      "role": "DEAN",
+      "department": "General Education",
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": false
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": null,
+    "fields": {
+      "username": "dean_basic_ed",
+      "email": "basiced.dean@seait.edu.ph",
+      "first_name": "Basic Education",
+      "last_name": "Dean",
+      "role": "DEAN",
+      "department": "Basic Education",
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": false
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": null,
+    "fields": {
+      "username": "head_agriculture",
+      "email": "agri.head@seait.edu.ph",
+      "first_name": "Agriculture",
+      "last_name": "Head",
+      "role": "PROGRAM_HEAD",
+      "department": "College of Agriculture",
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": false
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": null,
+    "fields": {
+      "username": "head_criminology",
+      "email": "crim.head@seait.edu.ph",
+      "first_name": "Criminology",
+      "last_name": "Head",
+      "role": "PROGRAM_HEAD",
+      "department": "College of Criminology",
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": false
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": null,
+    "fields": {
+      "username": "head_business",
+      "email": "business.head@seait.edu.ph",
+      "first_name": "Business",
+      "last_name": "Head",
+      "role": "PROGRAM_HEAD",
+      "department": "College of Business",
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": false
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": null,
+    "fields": {
+      "username": "head_ict",
+      "email": "ict.head@seait.edu.ph",
+      "first_name": "ICT",
+      "last_name": "Head",
+      "role": "PROGRAM_HEAD",
+      "department": "College of ICT",
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": false
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": null,
+    "fields": {
+      "username": "head_civil_eng",
+      "email": "civil.head@seait.edu.ph",
+      "first_name": "Civil Engineering",
+      "last_name": "Head",
+      "role": "PROGRAM_HEAD",
+      "department": "Civil Engineering",
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": false
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": null,
+    "fields": {
+      "username": "head_teacher_ed",
+      "email": "teached.head@seait.edu.ph",
+      "first_name": "Teacher Education",
+      "last_name": "Head",
+      "role": "PROGRAM_HEAD",
+      "department": "Teacher Education",
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": false
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": null,
+    "fields": {
+      "username": "head_tesda",
+      "email": "tesda.head@seait.edu.ph",
+      "first_name": "TESDA",
+      "last_name": "Head",
+      "role": "PROGRAM_HEAD",
+      "department": "TESDA",
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": false
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": null,
+    "fields": {
+      "username": "head_gen_ed",
+      "email": "gened.head@seait.edu.ph",
+      "first_name": "General Education",
+      "last_name": "Head",
+      "role": "PROGRAM_HEAD",
+      "department": "General Education",
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": false
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": null,
+    "fields": {
+      "username": "head_basic_ed",
+      "email": "basiced.head@seait.edu.ph",
+      "first_name": "Basic Education",
+      "last_name": "Head",
+      "role": "PROGRAM_HEAD",
+      "department": "Basic Education",
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": false
+    }
+  }
+]

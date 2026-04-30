@@ -85,9 +85,8 @@ class PathManager {
       this.saveToStorage() // Sync API data to localStorage
       return pathsObj
     } catch (error) {
-      console.warn('API failed, using localStorage:', error)
-      this.useApi.value = false
-      // Fallback to localStorage
+      console.warn('API failed, using localStorage temporarily:', error)
+      // Temporary fallback to localStorage - don't disable API permanently
       const localData = this.loadFromStorage()
       this.paths.value = localData
       return localData
@@ -274,19 +273,10 @@ class PathManager {
       this.saveToStorage() // Also save to localStorage
       return updatedPath
     } catch (error) {
-      console.warn('API failed, saving to localStorage:', error)
-      // Fallback to localStorage - preserve visualPoints!
-      this.useApi.value = false
-      const updatedPath = {
-        ...currentPath,
-        ...updates,
-        visualPoints: updates.visualPoints || currentPath.visualPoints || [],
-        updatedAt: new Date().toISOString()
-      }
-      // Use reactive assignment to trigger Vue updates
-      this.paths.value = { ...this.paths.value, [id]: updatedPath }
-      this.saveToStorage()
-      return updatedPath
+      console.warn('API update failed:', error)
+      // Don't fallback to localStorage - rethrow so UI can show error
+      // This ensures all users see the same data from the API
+      throw error
     }
   }
 

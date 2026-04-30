@@ -72,12 +72,25 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'technopath.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'technopath.db',
+# Database - PostgreSQL in production, SQLite locally
+import os
+
+DATABASE_URL = os.environ.get('DATABASE_URL')
+
+if DATABASE_URL:
+    # Production - use PostgreSQL
+    import dj_database_url
+    DATABASES = {
+        'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
     }
-}
+else:
+    # Local development - use SQLite
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'technopath.db',
+        }
+    }
 
 AUTH_USER_MODEL = 'users.AdminUser'
 
