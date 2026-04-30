@@ -120,7 +120,14 @@ CORS_ALLOWED_ORIGINS = [
     'https://technopath-backend-or73.onrender.com',
 ]
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_ALL_ORIGINS = False  # Explicitly set for security
+
+# Allow additional origins from environment variable (comma-separated)
+_cors_env = config('CORS_ALLOWED_ORIGINS', default='')
+if _cors_env:
+    for origin in _cors_env.split(','):
+        origin = origin.strip()
+        if origin and origin not in CORS_ALLOWED_ORIGINS:
+            CORS_ALLOWED_ORIGINS.append(origin)
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
