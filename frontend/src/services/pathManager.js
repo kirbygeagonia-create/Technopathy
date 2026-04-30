@@ -206,22 +206,21 @@ class PathManager {
   createLocalPath(pathData) {
     const id = pathData.id || `path_${Date.now()}`
     const newPath = {
-        id,
-        name: pathData.name,
-        description: pathData.description,
-        from: pathData.from,
-        to: pathData.to,
-        points: pathData.points,
-        elementIds: pathData.elementIds,
-        visualPoints: pathData.visualPoints || [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }
-      // Use reactive assignment to trigger Vue updates
-      this.paths.value = { ...this.paths.value, [newPath.id]: newPath }
-      this.saveToStorage()
-      return newPath
+      id,
+      name: pathData.name,
+      description: pathData.description,
+      from: pathData.from,
+      to: pathData.to,
+      points: pathData.points,
+      elementIds: pathData.elementIds,
+      visualPoints: pathData.visualPoints || [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     }
+    // Use reactive assignment to trigger Vue updates
+    this.paths.value = { ...this.paths.value, [newPath.id]: newPath }
+    this.saveToStorage()
+    return newPath
   }
 
   // Update an existing path via API
