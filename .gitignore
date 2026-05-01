@@ -84,3 +84,7 @@ _flutter_archive/.dart_tool/
 # Nested repositories
 TECHNOPATH_SEAIT_GUIDE_MAP/
 SEAIT_TechnoPath/
+
+# Binary installers (never commit)
+*.msi
+node-portable.zip

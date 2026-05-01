@@ -26,7 +26,7 @@
       </div>
 
       <div v-else class="favorites-list">
-        <div v-for="item in favorites" :key="item.id" class="favorite-card" @click="goToLocation(item)">
+        <div v-for="item in favorites" :key="item.id" class="favorite-card stagger-card" @click="goToLocation(item)">
           <div class="favorite-icon">
             <span class="material-icons">place</span>
           </div>

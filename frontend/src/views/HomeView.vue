@@ -75,19 +75,19 @@
           <p>Providing excellent technical and vocational education since establishment</p>
         </div>
 
-        <div class="highlight-card">
+        <div class="highlight-card stagger-card">
           <span class="material-icons highlight-icon">engineering</span>
           <h3>Modern Facilities</h3>
           <p>State-of-the-art classrooms, laboratories, and workshop areas</p>
         </div>
 
-        <div class="highlight-card">
+        <div class="highlight-card stagger-card">
           <span class="material-icons highlight-icon">location_on</span>
           <h3>Strategic Location</h3>
           <p>Conveniently located in the heart of the community with easy access</p>
         </div>
 
-        <div class="highlight-card">
+        <div class="highlight-card stagger-card">
           <span class="material-icons highlight-icon">groups</span>
           <h3>Expert Faculty</h3>
           <p>Dedicated instructors and staff committed to student success</p>
@@ -102,10 +102,8 @@
         </h2>
         <!-- Skeleton -->
         <template v-if="announcementsLoading">
-          <div v-for="n in 2" :key="n" class="announcement-card" style="gap:10px;display:flex;flex-direction:column">
-            <div class="skeleton" style="height:12px;width:30%;border-radius:6px"></div>
-            <div class="skeleton" style="height:16px;width:75%;border-radius:6px"></div>
-            <div class="skeleton" style="height:11px;width:90%;border-radius:6px"></div>
+          <div v-for="n in 3" :key="n" class="home-announcement-sk-wrap">
+            <AppSkeleton :loading="true" name="home-announcement" animate="shimmer" />
           </div>
         </template>
         <!-- Real cards -->
@@ -113,7 +111,7 @@
           <div
             v-for="ann in announcementsRef"
             :key="ann.id"
-            class="announcement-card"
+            class="announcement-card stagger-card"
           >
             <div class="announcement-header">
               <span
@@ -370,6 +368,20 @@ import useMapPanZoom from '../composables/useMapPanZoom.js'
 import BottomSheetOverlay from '../components/BottomSheetOverlay.vue'
 import ChatbotView from './ChatbotView.vue'
 import NotificationsView from './NotificationsView.vue'
+import { registerBones } from 'boneyard-js'
+import AppSkeleton from '../components/AppSkeleton.vue'
+
+registerBones({
+  'home-announcement': {
+    width: 400, height: 90,
+    bones: [
+      { x: 0, y: 0,  w: 22, h: 18, r: 9 },
+      { x: 0, y: 26, w: 68, h: 16, r: 6 },
+      { x: 0, y: 50, w: 90, h: 12, r: 5 },
+      { x: 0, y: 68, w: 72, h: 12, r: 5 },
+    ]
+  }
+})
 
 const router = useRouter()
 const route = useRoute()
@@ -1390,6 +1402,14 @@ onMounted(async () => {
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
+}
+
+/* Announcement Skeleton */
+.home-announcement-sk-wrap {
+  height: 90px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 /* Announcements Section */

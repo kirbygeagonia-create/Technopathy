@@ -28,7 +28,7 @@
         <div
           v-for="item in items"
           :key="item.id"
-          class="infoview-item-card"
+          class="infoview-item-card stagger-card"
           @click="selectItem(item)"
         >
           <div class="infoview-item-icon">

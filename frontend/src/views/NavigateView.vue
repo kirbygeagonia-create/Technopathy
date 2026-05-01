@@ -257,11 +257,19 @@
         </g>
       </svg>
 
-      <!-- Map Loading State -->
-      <div v-if="!mapLoaded" class="svg-map-loading">
-        <div class="svg-map-spinner"></div>
-        <p>Loading map...</p>
-        <p v-if="mapError" class="svg-map-error">{{ mapError }}</p>
+      <!-- Map Loading Skeleton + CometSpinner -->
+      <div v-if="!mapLoaded && !mapError" class="svg-map-skeleton-wrap">
+        <AppSkeleton :loading="true" name="navigate-map" animate="shimmer" wrap-class="map-sk-full" />
+        <div class="map-sk-center">
+          <CometSpinner size="52px" />
+          <p class="map-sk-hint">Loading campus map…</p>
+        </div>
+      </div>
+
+      <!-- Map Error State -->
+      <div v-if="mapError" class="svg-map-error-state">
+        <span class="material-icons">map_off</span>
+        <p>{{ mapError }}</p>
       </div>
     </div>
 
@@ -322,6 +330,22 @@ import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import pathManager from '../services/pathManager.js'
 import { useLocations } from '../composables/useLocations.js'
 import api from '../services/api.js'
+import { registerBones } from 'boneyard-js'
+import AppSkeleton from '../components/AppSkeleton.vue'
+import CometSpinner from '../components/CometSpinner.vue'
+
+registerBones({
+  'navigate-map': {
+    width: 390, height: 520,
+    bones: [
+      { x: 0, y: 0,   w: 100, h: 48,  r: 24 },
+      { x: 0, y: 56,  w: 100, h: 340, r: 16 },
+      { x: 0, y: 404, w: 100, h: 72,  r: 16 },
+      { x: 4, y: 420, w: 50,  h: 16,  r: 6  },
+      { x: 4, y: 442, w: 32,  h: 12,  r: 5  },
+    ]
+  }
+})
 
 // DOM References
 const mapContainer = ref(null)
@@ -1582,6 +1606,30 @@ onUnmounted(() => {
   100% { transform: rotate(360deg); }
 }
 
+/* Map Skeleton + CometSpinner styles */
+.svg-map-skeleton-wrap { position: absolute; inset: 0; z-index: 10; }
+.map-sk-full { width: 100%; height: 100%; }
+.map-sk-center {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  pointer-events: none;
+}
+.map-sk-hint {
+  font-size: 13px; font-weight: 500; color: #FF9800;
+  background: linear-gradient(90deg, rgba(255,152,0,0.4), #FF9800 50%, rgba(255,152,0,0.4));
+  background-size: 200% auto;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  animation: mapHintShimmer 2s linear infinite;
+}
+@keyframes mapHintShimmer {
+  0% { background-position: 200% center; } 100% { background-position: -200% center; }
+}
+.svg-map-error-state {
+  position: absolute; inset: 0; z-index: 10;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  background: var(--color-surface, #fff); color: #F44336;
+}
 
 /* Navigation Path Overlay */
 .nav-path-overlay {
