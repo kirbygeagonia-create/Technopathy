@@ -152,7 +152,9 @@
 import { ref, computed, onMounted } from 'vue'
 import api from '../../services/api.js'
 import { showToast } from '../../services/toast.js'
+import { useAuthStore } from '../../stores/authStore.js'
 
+const auth = useAuthStore()
 const feedback = ref([])
 const searchQuery = ref('')
 const filterRating = ref('')
@@ -221,8 +223,18 @@ function closeResponseModal() {
 }
 
 async function loadFeedback() {
+  // Check permissions - only Super Admin or Dean can view feedback
+  if (!auth.canViewAllFeedback && !auth.canViewDeptFeedback) {
+    showToast('You do not have permission to view feedback', 'error')
+    return
+  }
+  
   try {
-    const response = await api.get('/feedback/')
+    // Use department filter for Deans, all feedback for Super Admin
+    const endpoint = auth.canViewAllFeedback 
+      ? '/feedback/' 
+      : `/feedback/?department=${auth.department}`
+    const response = await api.get(endpoint)
     feedback.value = response.data
   } catch (e) {
     console.error('Failed to load feedback:', e)

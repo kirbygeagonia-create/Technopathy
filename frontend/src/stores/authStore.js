@@ -63,16 +63,18 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    logout(router = null, redirectPath = '/') {
+    logout(router = null, redirectPath = '/admin/login') {
       api.post('/users/logout/').catch(() => {})
       this.token = this.refreshToken = this.user = null
       sessionStorage.removeItem('tp_token')
       sessionStorage.removeItem('tp_refresh')
       sessionStorage.removeItem('tp_user')
       
-      // Redirect if router provided
       if (router) {
         router.push(redirectPath)
+      } else {
+        // Hard fallback if no router injected
+        window.location.href = redirectPath
       }
     },
     

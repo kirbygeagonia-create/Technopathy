@@ -36,7 +36,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useAuthStore } from '../stores/authStore.js'
+
+const auth = useAuthStore()
+const isLoggedIn = computed(() => auth.isLoggedIn)
 
 const userName = ref('Guest User')
 const userEmail = ref('guest@seait.edu.ph')
@@ -45,15 +49,29 @@ const department = ref('-')
 const yearLevel = ref('-')
 
 onMounted(() => {
-  // Load user data from localStorage if available
-  const savedProfile = localStorage.getItem('tp_user_profile')
-  if (savedProfile) {
-    const profile = JSON.parse(savedProfile)
-    userName.value = profile.name || userName.value
-    userEmail.value = profile.email || userEmail.value
-    studentId.value = profile.studentId || studentId.value
-    department.value = profile.department || department.value
-    yearLevel.value = profile.yearLevel || yearLevel.value
+  // If user is logged in, use auth store data
+  if (auth.isLoggedIn && auth.user) {
+    userName.value = auth.displayName || auth.user.username || 'Guest User'
+    userEmail.value = auth.user.email || 'guest@seait.edu.ph'
+    department.value = auth.departmentLabel || auth.user.department || '-'
+    // Student ID and year level from profile if available
+    const savedProfile = localStorage.getItem('tp_user_profile')
+    if (savedProfile) {
+      const profile = JSON.parse(savedProfile)
+      studentId.value = profile.studentId || '-'
+      yearLevel.value = profile.yearLevel || '-'
+    }
+  } else {
+    // Load guest profile data from localStorage
+    const savedProfile = localStorage.getItem('tp_user_profile')
+    if (savedProfile) {
+      const profile = JSON.parse(savedProfile)
+      userName.value = profile.name || userName.value
+      userEmail.value = profile.email || userEmail.value
+      studentId.value = profile.studentId || studentId.value
+      department.value = profile.department || department.value
+      yearLevel.value = profile.yearLevel || yearLevel.value
+    }
   }
 })
 </script>
