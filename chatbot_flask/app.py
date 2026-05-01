@@ -29,13 +29,12 @@ else:
 app = Flask(__name__)
 
 # Rate limiter — prevent API abuse and runaway OpenAI costs
-# TEMPORARILY DISABLED FOR DEBUGGING
-# limiter = Limiter(
-#     get_remote_address,
-#     app=app,
-#     default_limits=["60 per minute"],
-#     storage_uri="memory://",
-# )
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["60 per minute"],
+    storage_uri="memory://",
+)
 
 # Restrict CORS to known origins for security
 CORS(app, origins=[
@@ -86,17 +85,25 @@ INSTRUCTIONS:
 - Always mention the specific building location
 - For classrooms like CL1-CL10, mention they're in MST Building 3rd floor"""
 
-def generate_reply(message: str) -> str:
-    """Generate AI-powered response using OpenAI GPT, with rule-based fallback."""
+def generate_reply(message: str, history: list = None) -> str:
+    """Generate AI-powered response using OpenAI GPT, with rule-based fallback.
+    
+    Args:
+        message: The current user message.
+        history: Optional list of prior turns [{role, content}, ...] for context.
+    """
     if not OPENAI_ENABLED or not client:
         return generate_rule_based_reply(message)
     try:
+        # Build message list: system prompt + prior history (last 6 turns) + current message
+        prior = (history or [])[-6:]
+        messages = [{"role": "system", "content": CAMPUS_CONTEXT}]
+        messages.extend({"role": h["role"], "content": str(h["content"])[:500]} for h in prior)
+        messages.append({"role": "user", "content": message})
+        
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": CAMPUS_CONTEXT},
-                {"role": "user", "content": message}
-            ],
+            messages=messages,
             max_tokens=150,
             temperature=0.7
         )
@@ -220,13 +227,15 @@ def get_analytics():
         with sqlite3.connect(DB_PATH) as conn:
             # Total queries in period
             cursor = conn.execute(
-                "SELECT COUNT(*) FROM chat_history WHERE created_at >= datetime('now', '-{} days')".format(days)
+                "SELECT COUNT(*) FROM chat_history WHERE created_at >= datetime('now', ? || ' days')",
+                (f'-{days}',)
             )
             total_queries = cursor.fetchone()[0]
             
             # Get all queries for analysis
             cursor = conn.execute(
-                "SELECT user_message, bot_reply FROM chat_history WHERE created_at >= datetime('now', '-{} days') ORDER BY created_at DESC".format(days)
+                "SELECT user_message, bot_reply FROM chat_history WHERE created_at >= datetime('now', ? || ' days') ORDER BY created_at DESC",
+                (f'-{days}',)
             )
             queries = cursor.fetchall()
         
@@ -279,7 +288,7 @@ def get_analytics():
 
 
 @app.route("/chat", methods=["POST"])
-# @limiter.limit("20 per minute")  # Temporarily disabled
+@limiter.limit("20 per minute")
 def chat():
     """Chat endpoint called from the TechnoPath PWA."""
     data = request.get_json(silent=True) or {}
@@ -289,7 +298,8 @@ def chat():
     if len(message) > 1000:
         return jsonify({"error": "Message too long (max 1000 characters)"}), 400
 
-    reply = generate_reply(message)
+    history = data.get("history", [])
+    reply = generate_reply(message, history=history)
     with sqlite3.connect(DB_PATH) as conn:
         conn.execute(
             "INSERT INTO chat_history (user_message, bot_reply) VALUES (?, ?)",
@@ -303,4 +313,5 @@ def chat():
 if __name__ == "__main__":
     # Initialize DB on startup
     init_db()
-    app.run(host="0.0.0.0", port=5187, debug=True)
+    _flask_debug = os.getenv("FLASK_DEBUG", "false").lower() == "true"
+    app.run(host="0.0.0.0", port=5187, debug=_flask_debug)

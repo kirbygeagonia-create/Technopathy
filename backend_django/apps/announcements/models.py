@@ -84,7 +84,12 @@ class Announcement(models.Model):
     is_deleted        = models.BooleanField(default=False)
     
     def is_visible_to(self, user):
-        """Check if this announcement should be visible to a given user"""
+        """Check if this announcement should be visible to a given user.
+
+        NOTE: 'all_college' and 'basic_ed_only' scopes require student role support
+        (roles: 'college_student', 'basic_ed_student') which is not yet implemented.
+        These scopes will match no users until student auth is added.
+        """
         if self.status != 'published' or self.is_deleted:
             return False
         if self.scope == 'campus_wide':

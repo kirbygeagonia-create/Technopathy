@@ -11,7 +11,9 @@ export default defineConfig({
       injectRegister: 'script',
       workbox: {
         cleanupOutdatedCaches: true,
-        skipWaiting: true,
+        // skipWaiting removed: registerType 'prompt' shows the user a dialog before
+        // activating a new SW. Setting skipWaiting:true would override that dialog
+        // and update immediately, making the prompt meaningless.
         clientsClaim: true,
         globPatterns: ['**/*.{js,css,html,svg,png,jpg}'],
         globIgnores: [

@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Miscellaneous
 *.class
 *.log
@@ -45,20 +44,25 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Node installers — do not commit binary runtimes
+*.msi
+*.zip
+node-installer.msi
+node-portable.zip
+nodejs.msi
+
 # Python
-venv/
 __pycache__/
 *.pyc
 *.pyo
-*.pyd
 .env
 *.db
 *.sqlite3
 
-# Node
-node_modules/
+# Build outputs
 dist/
-.vite/
+node_modules/
+staticfiles/
 
 # Django
 backend_django/staticfiles/
@@ -68,10 +72,6 @@ backend_django/media/
 _flutter_archive/build/
 _flutter_archive/.dart_tool/
 .aider*
-
-# Node Installers (Security - don't commit binaries)
-*.msi
-*.zip
 
 # Credentials (Security - never commit passwords)
 *Acounts.txt

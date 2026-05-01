@@ -24,6 +24,17 @@ const routes = [
   { path: '/employees',       component: () => import('../views/InfoView.vue'), props: { type: 'employees' } },
   { path: '/info/:type',      component: () => import('../views/InfoView.vue'), props: true },
 
+  // 404 — catch all unmatched routes
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: () => import('../views/HomeView.vue'), // Redirect to Home as fallback
+    beforeEnter: (to, from, next) => {
+      console.warn(`[Router] No route matched: ${to.fullPath} — redirecting to home`)
+      next('/')
+    }
+  },
+
   // Admin routes
   { path: '/admin/login', component: () => import('../views/AdminLoginView.vue') },
   {
@@ -39,11 +50,11 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  // Show splash only when directly accessing home (initial load/refresh)
-  // NOT when navigating from other pages like /navigate, /settings, etc.
-  // from.matched.length === 0 means no previous route (initial load)
+  // Show splash only once per browser session (not on every refresh)
   const isInitialLoad = from.matched.length === 0
-  if (to.path === '/' && isInitialLoad) {
+  const hasSeenSplash = sessionStorage.getItem('tp_splash_seen')
+  if (to.path === '/' && isInitialLoad && !hasSeenSplash) {
+    sessionStorage.setItem('tp_splash_seen', '1')
     next('/splash')
     return
   }

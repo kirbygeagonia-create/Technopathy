@@ -28,10 +28,16 @@ class AnnouncementPublicListView(APIView):
         for a in qs:
             if a.scope == 'campus_wide':
                 visible.append(a)
+            # NOTE: 'all_college' and 'basic_ed_only' scopes are reserved for a future
+            # student-facing authentication system. The roles 'college_student' and
+            # 'basic_ed_student' do not currently exist in AdminUser.ROLE_CHOICES.
+            # Until student auth is implemented, announcements with these scopes are
+            # intentionally not shown to any user. Do not add these scopes via the
+            # admin panel without first implementing student role support.
             elif a.scope == 'all_college' and getattr(user, 'role', None) == 'college_student':
-                visible.append(a)
+                visible.append(a)  # Placeholder — no users currently hold this role
             elif a.scope == 'basic_ed_only' and getattr(user, 'role', None) == 'basic_ed_student':
-                visible.append(a)
+                visible.append(a)  # Placeholder — no users currently hold this role
             elif a.scope == 'department' and getattr(user, 'department', None) == a.target_department:
                 visible.append(a)
             elif a.scope == 'specific_users':

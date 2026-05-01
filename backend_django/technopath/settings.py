@@ -6,7 +6,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # In production, SECRET_KEY MUST be set via .env — no insecure fallback.
 # In development (DEBUG=True), auto-generate a random key if not set.
-_debug = config('DEBUG', default=True, cast=bool)
+_debug = config('DEBUG', default=False, cast=bool)
 try:
     SECRET_KEY = config('SECRET_KEY')
 except UndefinedValueError:
@@ -16,7 +16,7 @@ except UndefinedValueError:
         print('[WARNING] SECRET_KEY not set — using auto-generated dev key. Set SECRET_KEY in .env for production.')
     else:
         raise RuntimeError('SECRET_KEY environment variable is required in production. Set it in your .env file.')
-DEBUG = config('DEBUG', default=True, cast=bool)
+DEBUG = config('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=lambda v: [s.strip() for s in v.split(',')])
 
 INSTALLED_APPS = [
@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -78,13 +79,23 @@ import os
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
 if DATABASE_URL:
-    # Production - use PostgreSQL
+    # Production — use PostgreSQL
     import dj_database_url
     DATABASES = {
         'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
     }
+elif not DEBUG:
+    # Safety guard: refuse to start in production without a real database.
+    # Render's free SQLite would be wiped on every restart — all data lost.
+    raise RuntimeError(
+        '\n\n'
+        '  DATABASE_URL is not set and DEBUG=False.\n'
+        '  This means the app is running in production without a database.\n'
+        '  Create a PostgreSQL instance in Render and set DATABASE_URL.\n'
+        '  Never use SQLite in production on Render (it is wiped on restart).\n'
+    )
 else:
-    # Local development - use SQLite
+    # Local development — SQLite is fine
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -106,8 +117,8 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.UserRateThrottle',
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '1000/minute',
-        'user': '1000/minute',
+        'anon': '30/minute',
+        'user': '120/minute',
     },
 }
 
@@ -144,6 +155,7 @@ if _cors_env:
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
