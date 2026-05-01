@@ -94,6 +94,40 @@
         </div>
       </div>
 
+      <!-- Announcements Feed -->
+      <div class="home-announcements">
+        <h2 class="home-section-title">
+          <span class="material-icons">campaign</span>
+          Announcements
+        </h2>
+        <!-- Skeleton -->
+        <template v-if="announcementsLoading">
+          <div v-for="n in 2" :key="n" class="announcement-card" style="gap:10px;display:flex;flex-direction:column">
+            <div class="skeleton" style="height:12px;width:30%;border-radius:6px"></div>
+            <div class="skeleton" style="height:16px;width:75%;border-radius:6px"></div>
+            <div class="skeleton" style="height:11px;width:90%;border-radius:6px"></div>
+          </div>
+        </template>
+        <!-- Real cards -->
+        <template v-else-if="announcementsRef.length > 0">
+          <div
+            v-for="ann in announcementsRef"
+            :key="ann.id"
+            class="announcement-card"
+          >
+            <div class="announcement-header">
+              <span
+                class="announcement-dept-chip"
+                :style="{ background: getDeptColor(ann.department_color) }"
+              >{{ ann.department_label || 'Campus' }}</span>
+              <span class="announcement-date">{{ formatDate(ann.published_at || ann.created_at) }}</span>
+            </div>
+            <h3 class="announcement-title">{{ ann.title }}</h3>
+            <p class="announcement-body" v-if="ann.body">{{ ann.body.substring(0, 120) }}{{ ann.body.length > 120 ? '…' : '' }}</p>
+          </div>
+        </template>
+      </div>
+
       <!-- Interactive Campus Map -->
       <div class="seait-map-section">
         <h2 class="seait-map-title">Interactive Campus Map</h2>
@@ -147,17 +181,22 @@
 
     <!-- Bottom controls - MOBILE ONLY -->
     <div class="bottom-controls mobile-only">
-      <!-- Desktop Floating Action Buttons -->
-      <div class="desktop-fab-container">
-        <button class="desktop-fab-btn desktop-notification-btn" @click="goToNotifications" title="Notifications">
+      <!-- Action Pill Buttons -->
+      <div class="home-action-pills">
+        <button class="home-pill-btn home-pill-notifications" @click="goToNotifications">
           <span class="material-icons">notifications</span>
-          <span v-if="unreadNotifications > 0" class="notification-badge">{{ unreadNotifications > 99 ? '99+' : unreadNotifications }}</span>
+          <span class="home-pill-label">Alerts</span>
+          <span v-if="unreadNotifications > 0" class="home-pill-badge">
+            {{ unreadNotifications > 9 ? '9+' : unreadNotifications }}
+          </span>
         </button>
-        <button class="desktop-fab-btn desktop-ratings-btn" @click="openRateApp" title="Ratings & Feedback">
-          <span class="material-icons">star</span>
-        </button>
-        <button class="desktop-fab-btn desktop-chatbot-btn" @click="goToChatbot" title="Chatbot">
+        <button class="home-pill-btn home-pill-chatbot" @click="goToChatbot">
           <span class="material-icons">smart_toy</span>
+          <span class="home-pill-label">Ask AI</span>
+        </button>
+        <button class="home-pill-btn home-pill-rating" @click="openRateApp">
+          <span class="material-icons">star_rate</span>
+          <span class="home-pill-label">Rate</span>
         </button>
       </div>
 
@@ -177,6 +216,26 @@
           <h3>Menu</h3>
         </div>
         <div class="menu-sheet-content">
+          <!-- Quick Nav Grid -->
+          <div class="menu-quick-nav">
+            <button class="menu-quick-item" @click="() => { showMenu = false; router.push('/map') }">
+              <span class="material-icons">map</span>
+              <span>Map</span>
+            </button>
+            <button class="menu-quick-item" @click="() => { showMenu = false; router.push('/navigate') }">
+              <span class="material-icons">directions</span>
+              <span>Navigate</span>
+            </button>
+            <button class="menu-quick-item" @click="() => { showMenu = false; router.push('/favorites') }">
+              <span class="material-icons">favorite</span>
+              <span>Favorites</span>
+            </button>
+            <button class="menu-quick-item" @click="() => { showMenu = false; router.push('/feedback') }">
+              <span class="material-icons">feedback</span>
+              <span>Feedback</span>
+            </button>
+          </div>
+          <div class="menu-divider"></div>
           <div class="menu-item" @click="goToBuildingInfo">
             <div class="menu-item-icon">
               <span class="material-icons">business</span>
@@ -280,6 +339,20 @@
         <button class="close-btn" @click="searchResults = []">Close</button>
       </div>
     </div>
+
+    <!-- Chatbot Overlay Sheet -->
+    <BottomSheetOverlay v-model="showChatbotSheet" max-height="90vh">
+      <div class="sheet-inner-scroll">
+        <ChatbotView :embedded="true" @close="showChatbotSheet = false" />
+      </div>
+    </BottomSheetOverlay>
+
+    <!-- Notifications Overlay Sheet -->
+    <BottomSheetOverlay v-model="showNotificationsSheet" max-height="88vh">
+      <div class="sheet-inner-scroll">
+        <NotificationsView :embedded="true" @close="showNotificationsSheet = false" />
+      </div>
+    </BottomSheetOverlay>
   </div>
 </template>
 
@@ -294,6 +367,9 @@ import OnboardingTutorial from '../components/OnboardingTutorial.vue'
 import { isOnline } from '../services/sync.js'
 import api from '../services/api.js'
 import useMapPanZoom from '../composables/useMapPanZoom.js'
+import BottomSheetOverlay from '../components/BottomSheetOverlay.vue'
+import ChatbotView from './ChatbotView.vue'
+import NotificationsView from './NotificationsView.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -828,30 +904,23 @@ const showRatingDialog = () => {
 
 
 
+const ratingHint = computed(() => {
+  const hints = ['', 'Very Poor', 'Poor', 'Okay', 'Good', 'Excellent']
+  return hints[rating.value] || ''
+})
+
 const submitRating = async () => {
-
   try {
-
     await api.post('/core/ratings/', {
-
       rating: rating.value,
-
       comment: ratingComment.value,
-
       category: 'app'
-
     })
-
     showRating.value = false
-
     showToast('Thank you for your rating!', 'success')
-
   } catch (error) {
-
     console.error('Error submitting rating:', error)
-
   }
-
 }
 
 
@@ -1114,10 +1183,11 @@ const loadAdditionalSearchData = async () => {
 }
 
 // Navigation
+const showChatbotSheet = ref(false)
+const showNotificationsSheet = ref(false)
 
-const goToNotifications = () => router.push('/notifications')
-
-const goToChatbot = () => router.push('/chatbot')
+const goToNotifications = () => { showNotificationsSheet.value = true }
+const goToChatbot = () => { showChatbotSheet.value = true }
 
 const goToBuildingInfo = () => { showMenu.value = false; router.push('/building-info') }
 
@@ -1140,6 +1210,38 @@ const openLink = (url) => { showMenu.value = false; window.open(url, '_blank') }
 const onboardingRef = ref(null)
 
 const showOnboarding = ref(false)
+
+// Announcements feed
+const announcementsRef = ref([])
+const announcementsLoading = ref(true)
+
+async function loadAnnouncements() {
+  announcementsLoading.value = true
+  try {
+    const res = await api.get('/announcements/')
+    announcementsRef.value = (res.data || [])
+      .filter(a => a.status === 'published')
+      .slice(0, 3) // Show max 3 on home
+  } catch { /* silent fail */ } finally {
+    announcementsLoading.value = false
+  }
+}
+
+function getDeptColor(colorName) {
+  const colors = {
+    orange: '#FF9800', teal: '#009688', blue: '#2196F3',
+    green: '#4CAF50', red: '#F44336', purple: '#9C27B0',
+    amber: '#FFC107', charcoal: '#607D8B', dark_blue: '#1565C0',
+    brown: '#795548', indigo: '#3F51B5', dark_green: '#2E7D32',
+  }
+  return colors[colorName] || '#FF9800'
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return ''
+  const d = new Date(dateStr)
+  return d.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
+}
 
 
 
@@ -1170,17 +1272,13 @@ const onOnboardingSkip = () => {
 // Lifecycle
 
 onMounted(async () => {
-
   await loadData()
-
   handleDeepLink()
-
   loadNotificationCount()
+  loadAnnouncements()
 
   if (!syncStore.lastSyncedAt) {
-
     syncStore.sync()
-
   }
 
   // Note: Removed 5-second aggressive polling
@@ -1203,76 +1301,171 @@ onMounted(async () => {
 
 </script>
 
-
-
 <style>
-
 /* Styles moved to external file: src/assets/homeview.css */
-
 @import '../assets/homeview.css';
 
-/* Desktop Floating Action Buttons - Aligned to the right */
-.desktop-fab-container {
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
+/* Action Pill Buttons */
+.home-action-pills {
   display: flex;
-  gap: 12px;
-  z-index: 100;
+  gap: 8px;
+  padding: 0 4px;
+  justify-content: flex-end;
 }
 
-.desktop-notification-btn,
-.desktop-chatbot-btn {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: #1a2b3c;
+.home-pill-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
   border: none;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  border-radius: 99px;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
+.home-pill-btn:active { transform: scale(0.96); }
+.home-pill-btn .material-icons { font-size: 18px; }
 
-.desktop-notification-btn:hover,
-.desktop-chatbot-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+.home-pill-notifications {
+  background: var(--color-primary, #FF9800);
+  color: #fff;
 }
-
-.desktop-notification-btn .material-icons,
-.desktop-chatbot-btn .material-icons {
-  font-size: 24px;
-  color: white;
+.home-pill-chatbot {
+  background: #1565C0;
+  color: #fff;
 }
-
-.notification-badge {
+.home-pill-rating {
+  background: #fff;
+  color: var(--color-primary, #FF9800);
+  border: 1.5px solid var(--color-primary, #FF9800);
+}
+.home-pill-badge {
   position: absolute;
-  top: -4px;
-  right: -4px;
-  background: #ff4444;
-  color: white;
-  font-size: 11px;
-  font-weight: bold;
+  top: -4px; right: -4px;
+  background: #F44336;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 99px;
   min-width: 18px;
-  height: 18px;
-  border-radius: 9px;
+  text-align: center;
+}
+
+/* Menu Quick Nav */
+.menu-quick-nav {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding: 8px 0 16px;
+}
+.menu-quick-item {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 0 5px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  gap: 6px;
+  padding: 14px 8px;
+  background: var(--color-surface, #f5f5f5);
+  border: none;
+  border-radius: 16px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-primary-text, #333);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.menu-quick-item:active { background: var(--color-surface-2, #e0e0e0); }
+.menu-quick-item .material-icons {
+  font-size: 24px;
+  color: var(--color-primary, #FF9800);
 }
 
-@media (max-width: 768px) {
-  .desktop-fab-container {
-    bottom: 20px;
-    right: 20px;
-    left: auto;
-  }
+/* Sheet Inner Scroll */
+.sheet-inner-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
+/* Announcements Section */
+.home-announcements { padding: 16px; }
+.home-section-title {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 18px; font-weight: 600;
+  color: var(--color-primary-text, #333);
+  margin-bottom: 12px;
+}
+.announcement-card {
+  background: var(--color-bg, #fff);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border-left: 4px solid var(--color-primary, #FF9800);
+}
+.announcement-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px;
+}
+.announcement-dept-chip {
+  font-size: 11px; font-weight: 600; color: #fff;
+  padding: 3px 10px; border-radius: 99px; letter-spacing: 0.3px;
+}
+.announcement-date { font-size: 12px; color: var(--color-text-secondary, #666); }
+.announcement-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+.announcement-body { font-size: 13px; color: var(--color-text-secondary, #666); line-height: 1.5; }
+
+/* Rating Sheet Styles */
+.rating-sheet-content {
+  padding: 20px 24px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+.rating-sheet-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-primary-text, #333);
+}
+.star-rating { display: flex; gap: 8px; }
+.star { font-size: 40px; cursor: pointer; color: #ccc; transition: color 0.15s; }
+.star.filled { color: #FF9800; }
+.rating-hint { font-size: 14px; color: var(--color-text-secondary, #666); min-height: 20px; }
+.rating-textarea {
+  width: 100%;
+  border: 1px solid var(--color-border, #e0e0e0);
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 14px;
+  resize: none;
+  font-family: inherit;
+}
+.rating-actions { display: flex; gap: 12px; width: 100%; }
+.rating-cancel-btn {
+  flex: 1;
+  padding: 14px;
+  border: 1px solid var(--color-border, #e0e0e0);
+  border-radius: 12px;
+  background: transparent;
+  font-size: 15px;
+  cursor: pointer;
+}
+.rating-submit-btn {
+  flex: 2;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  background: var(--color-primary, #FF9800);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
 </style>
 

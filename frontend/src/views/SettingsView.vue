@@ -77,7 +77,7 @@
             </div>
             <div class="settings-item-text">
               <div class="settings-item-title">Scan to Access</div>
-              <div class="settings-item-subtitle">QR code to open the app</div>
+              <div class="settings-item-subtitle">Share app link via QR code</div>
             </div>
           </div>
           <div class="qr-code-container">
@@ -217,6 +217,12 @@ const copyUrl = async () => {
 }
 
 const goToAdminLogin = () => router.push('/admin/login')
+
+function restartTutorial() {
+  localStorage.removeItem('tp_onboarding_completed')
+  localStorage.removeItem('tp_onboarding_skipped')
+  router.push('/')
+}
 
 // Watch for dark mode changes and show toast
 watch(() => themeStore.isDarkMode, (newVal, oldVal) => {

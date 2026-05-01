@@ -9,9 +9,15 @@
     </header>
 
     <div class="infoview-content">
-      <div v-if="loading" class="infoview-loading">
-        <div class="infoview-spinner"></div>
-        <p>Loading...</p>
+      <!-- Skeleton loading state -->
+      <div v-if="loading" class="infoview-skeleton-list">
+        <div v-for="n in 5" :key="n" class="infoview-skeleton-card">
+          <div class="skeleton skeleton-icon"></div>
+          <div class="skeleton-text-block">
+            <div class="skeleton skeleton-title"></div>
+            <div class="skeleton skeleton-subtitle"></div>
+          </div>
+        </div>
       </div>
 
       <div v-else-if="items.length === 0" class="infoview-empty">

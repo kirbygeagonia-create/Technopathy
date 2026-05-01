@@ -1,7 +1,8 @@
-from rest_framework import generics, permissions, filters
+from rest_framework import generics, permissions, filters, status as http_status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
+from rest_framework.views import APIView
 from django_filters.rest_framework import DjangoFilterBackend
 from apps.users.permissions import ReadOnlyOrSuperAdmin, CanViewAuditLog
 from .models import (
@@ -15,6 +16,26 @@ from .serializers import (
     NotificationPreferenceSerializer, AdminAuditLogSerializer,
     SearchHistorySerializer, AppConfigSerializer
 )
+
+
+class AppRatingView(APIView):
+    """Public endpoint for app ratings submitted from HomeView."""
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        rating = request.data.get('rating')
+        comment = request.data.get('comment', '')
+        if not rating or not isinstance(rating, int) or not (1 <= rating <= 5):
+            return Response({'error': 'rating must be an integer 1–5'},
+                            status=http_status.HTTP_400_BAD_REQUEST)
+        # Store as a Feedback entry so it appears in the admin Feedback panel
+        from apps.feedback.models import Feedback
+        Feedback.objects.create(
+            rating=rating,
+            comment=comment,
+            category='general',
+        )
+        return Response({'message': 'Rating submitted. Thank you!'}, status=http_status.HTTP_201_CREATED)
 
 
 # Department Views

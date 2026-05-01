@@ -8,7 +8,18 @@
     </header>
 
     <div class="favorites-content">
-      <div v-if="favorites.length === 0" class="empty-state">
+      <!-- Skeleton Loading -->
+      <div v-if="isLoading" class="favorites-skeleton">
+        <div v-for="n in 4" :key="n" class="fav-skeleton-card">
+          <div class="skeleton" style="width:48px;height:48px;border-radius:12px;flex-shrink:0"></div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+            <div class="skeleton" style="height:14px;width:55%;border-radius:6px"></div>
+            <div class="skeleton" style="height:11px;width:35%;border-radius:6px"></div>
+          </div>
+        </div>
+      </div>
+
+      <div v-else-if="favorites.length === 0" class="empty-state">
         <span class="material-icons">favorite_border</span>
         <p>No favorites yet</p>
         <p class="sub">Tap the star icon on locations to save them here</p>
@@ -21,7 +32,7 @@
           </div>
           <div class="favorite-info">
             <h3>{{ item.name }}</h3>
-            <p>{{ item.type }}</p>
+            <p>{{ item.description || formatFavoriteType(item.type) }}</p>
           </div>
           <button class="remove-btn" @click.stop="removeFavorite(item.id)">
             <span class="material-icons">close</span>
@@ -38,16 +49,24 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const favorites = ref([])
+const isLoading = ref(true)
 
 onMounted(() => {
   loadFavorites()
 })
 
 function loadFavorites() {
+  isLoading.value = true
   const saved = localStorage.getItem('tp_favorites')
   if (saved) {
     favorites.value = JSON.parse(saved)
   }
+  isLoading.value = false
+}
+
+function formatFavoriteType(type) {
+  const labels = { facility: 'Building / Facility', room: 'Room', building: 'Building' }
+  return labels[type] || type || 'Location'
 }
 
 function removeFavorite(id) {
@@ -56,10 +75,17 @@ function removeFavorite(id) {
 }
 
 function goToLocation(item) {
-  if (item.type === 'building') {
-    router.push(`/map?building=${item.id}`)
+  // Handles composite IDs saved as "facility_123" or "room_456"
+  // Also handles legacy 'building' type for backward compatibility
+  if (item.type === 'facility' || item.type === 'building') {
+    // Navigate to map and highlight the facility by its svg_id or name
+    const target = item.map_svg_id || item.svgId || item.name || ''
+    router.push({ path: '/map', query: { highlight: target } })
   } else if (item.type === 'room') {
-    router.push(`/navigate?room=${item.id}`)
+    router.push({ path: '/navigate', query: { to: item.map_svg_id || item.name || item.id } })
+  } else {
+    // Fallback: go to map
+    router.push('/map')
   }
 }
 </script>

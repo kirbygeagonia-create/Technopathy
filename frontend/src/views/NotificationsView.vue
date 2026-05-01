@@ -68,6 +68,11 @@ import api from '../services/api.js'
 import { isOnline } from '../services/sync.js'
 import { showToast } from '../services/toast.js'
 
+const props = defineProps({
+  embedded: { type: Boolean, default: false }
+})
+const emit = defineEmits(['close'])
+
 const router        = useRouter()
 const notifications = ref([])
 

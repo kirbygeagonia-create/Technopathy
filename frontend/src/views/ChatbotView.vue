@@ -1,8 +1,8 @@
 <template>
   <div class="chatbot-view">
     <!-- Header -->
-    <header class="chatbot-header">
-      <button class="chatbot-back-btn" @click="goBack">
+    <header class="chatbot-header" :class="{ 'chatbot-header-embedded': props.embedded }">
+      <button v-if="!props.embedded" class="chatbot-back-btn" @click="goBack">
         <span class="material-icons">arrow_back</span>
       </button>
       <div class="chatbot-header-content">
@@ -116,6 +116,12 @@ import aiChatbot from '../services/aiChatbot.js'
 import { isOnline } from '../services/sync.js'
 import { getFAQEntries } from '../services/offlineData.js'
 import db from '../services/db.js'
+
+// Props for embedded mode
+const props = defineProps({
+  embedded: { type: Boolean, default: false }
+})
+const emit = defineEmits(['close'])
 
 const router = useRouter()
 
@@ -314,4 +320,8 @@ onMounted(async () => {
 
 <style>
 @import '../assets/chatbot.css';
+
+.chatbot-header-embedded {
+  padding-top: 8px;  /* Less top padding when inside sheet (handle already provides space) */
+}
 </style>
