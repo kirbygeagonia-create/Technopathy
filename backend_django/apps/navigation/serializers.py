@@ -36,13 +36,13 @@ class PathSerializer(serializers.ModelSerializer):
     points_input = serializers.ListField(child=serializers.ListField(child=serializers.FloatField()), write_only=True, required=False)
     facility_name = serializers.CharField(source='facility.name', read_only=True, allow_null=True)
     room_name = serializers.CharField(source='room.name', read_only=True, allow_null=True)
-    
+
     class Meta:
         model = Path
         fields = ['id', 'name', 'description', 'facility', 'facility_name', 'room', 'room_name',
                   'floor', 'created_by', 'from_location', 'to_location', 'points', 'element_ids',
-                  'is_deleted', 'created_at', 'updated_at']
-        read_only_fields = ['created_by']
+                  'is_deleted', 'created_at', 'updated_at', 'map_version']
+        read_only_fields = ['created_by', 'map_version']
     
     def create(self, validated_data):
         element_ids = validated_data.pop('element_ids', [])

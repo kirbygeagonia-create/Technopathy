@@ -175,7 +175,7 @@
         :style="{ transform: `rotate(${rotation}deg)` }"
       >
         <!-- Map content will be loaded dynamically -->
-        <g v-if="mapLoaded" v-html="svgContent"></g>
+        <g v-if="mapLoaded" v-html="safeSvgContent"></g>
         
         <!-- Navigation Path Overlay -->
         <g v-if="isNavigating && pathPositions.length > 0" class="nav-path-overlay">
@@ -333,6 +333,7 @@ import api from '../services/api.js'
 import { registerBones } from 'boneyard-js'
 import AppSkeleton from '../components/AppSkeleton.vue'
 import CometSpinner from '../components/CometSpinner.vue'
+import DOMPurify from 'dompurify'
 
 registerBones({
   'navigate-map': {
@@ -374,6 +375,14 @@ const loadNotificationCount = async () => {
   }
 }
 const mapError = ref(null)
+
+// Sanitize SVG content for safe v-html rendering
+const safeSvgContent = computed(() =>
+  DOMPurify.sanitize(svgContent.value || '', {
+    USE_PROFILES: { svg: true },
+    ADD_TAGS: ['use', 'symbol', 'defs', 'clipPath'],
+  })
+)
 
 // Destination info panel minimized state
 const isDestPreviewMinimized = ref(false)

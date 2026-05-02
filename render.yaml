@@ -14,6 +14,8 @@ services:
         value: "18.20.4"
       - key: VITE_API_BASE_URL
         value: https://technopath-backend-or73.onrender.com/api
+      - key: VITE_FLASK_CHATBOT_URL
+        value: https://technopath-chatbot.onrender.com
 
   # Backend - Django Web Service
   - type: web
@@ -39,6 +41,7 @@ services:
       # DO NOT use sqlite:///tmp/ — /tmp is wiped on every restart (all data lost).
       # - key: DATABASE_URL
       #   value: (set in Render dashboard, never commit this)
+    healthCheckPath: /api/health/
 
   # Chatbot - Flask AI Service
   - type: web

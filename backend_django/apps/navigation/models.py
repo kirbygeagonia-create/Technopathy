@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from apps.facilities.models import Facility
 from apps.rooms.models import Room
@@ -51,6 +52,10 @@ class Path(models.Model):
     floor = models.IntegerField(default=1)
     created_by = models.ForeignKey('users.AdminUser', on_delete=models.SET_NULL, null=True, blank=True)
     is_deleted = models.BooleanField(default=False)
+
+    # Cache busting version — auto-updated on every save
+    map_version = models.UUIDField(default=uuid.uuid4, help_text='Auto-updated on every save for cache busting.')
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -60,6 +65,10 @@ class Path(models.Model):
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        self.map_version = uuid.uuid4()  # Regenerate on every save
+        super().save(*args, **kwargs)
 
     @property
     def from_location(self):

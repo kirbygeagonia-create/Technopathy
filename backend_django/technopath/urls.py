@@ -5,6 +5,7 @@ from django.conf.urls.static import static
 from rest_framework_simplejwt.views import TokenRefreshView
 from django.http import JsonResponse
 from apps.chatbot import views as chatbot_views
+from apps.core.views import health_check
 
 
 def api_root(request):
@@ -48,4 +49,5 @@ urlpatterns = [
     path('api/feedback/',      include('apps.feedback.urls')),
     path('api/core/',          include('apps.core.urls')),
     path('api/announcements/', include('apps.announcements.urls')),
+    path('api/health/', health_check, name='health-check'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

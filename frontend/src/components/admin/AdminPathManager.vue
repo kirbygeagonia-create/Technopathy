@@ -424,7 +424,7 @@
             <!-- Map content - pointer events disabled in add mode to allow clicking through -->
             <g 
               v-if="mapLoaded" 
-              v-html="svgContent" 
+              v-html="safeSvgContent" 
               :style="editorMode === 'add' ? 'pointer-events: none;' : ''"
             ></g>
             
@@ -641,6 +641,7 @@ import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import pathManager from '../../services/pathManager.js'
 import api from '../../services/api.js'
+import DOMPurify from 'dompurify'
 
 const router = useRouter()
 
@@ -649,6 +650,14 @@ const paths = ref([])
 const mapLoaded = ref(false)
 const svgContent = ref('')
 const editingPathId = ref(null)
+
+// Sanitize SVG content for safe v-html rendering
+const safeSvgContent = computed(() =>
+  DOMPurify.sanitize(svgContent.value || '', {
+    USE_PROFILES: { svg: true },
+    ADD_TAGS: ['use', 'symbol', 'defs', 'clipPath'],
+  })
+)
 const isCreatingNew = ref(false)
 const importFile = ref(null)
 const previewContainer = ref(null)

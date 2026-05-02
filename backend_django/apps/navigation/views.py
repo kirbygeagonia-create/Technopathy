@@ -559,7 +559,10 @@ class NavigationPathDetailView(APIView):
         if not path:
             return Response({'error': 'Path not found'}, status=status.HTTP_404_NOT_FOUND)
         serializer = PathSerializer(path)
-        return Response(serializer.data)
+        response = Response(serializer.data)
+        response['ETag'] = str(path.map_version)
+        response['Cache-Control'] = 'no-cache'
+        return response
 
     def put(self, request, pk):
         """Update a path."""

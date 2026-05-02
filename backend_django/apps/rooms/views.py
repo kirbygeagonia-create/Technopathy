@@ -1,3 +1,4 @@
+from django.db.models import Q
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from .models import Room
@@ -7,9 +8,20 @@ from apps.facilities.models import Facility
 
 
 class RoomListView(generics.ListCreateAPIView):
-    queryset = Room.objects.filter(is_deleted=False)
     serializer_class = RoomSerializer
     permission_classes = [CanManageRoom]
+
+    def get_queryset(self):
+        qs = Room.objects.select_related('facility').filter(is_deleted=False)
+        q = self.request.query_params.get('q', '').strip()
+        if q:
+            qs = qs.filter(
+                Q(name__icontains=q) |
+                Q(description__icontains=q) |
+                Q(room_number__icontains=q) |
+                Q(facility__name__icontains=q)
+            )
+        return qs.order_by('facility__name', 'name')
 
     def perform_create(self, serializer):
         """

@@ -18,6 +18,19 @@ class Room(models.Model):
     search_count = models.IntegerField(default=0)
     is_deleted = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
+
+    # Room occupancy/availability status
+    STATUS_CHOICES = [
+        ('available',    'Available'),
+        ('occupied',     'Occupied'),
+        ('maintenance',  'Under Maintenance'),
+        ('restricted',   'Restricted Access'),
+        ('closed',       'Closed'),
+    ]
+    status      = models.CharField(max_length=20, choices=STATUS_CHOICES, default='available')
+    status_note = models.CharField(max_length=200, blank=True, help_text='Optional note about current status.')
+    status_updated_at = models.DateTimeField(auto_now=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

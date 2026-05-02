@@ -45,6 +45,11 @@ CORS(app, origins=[
     # Production domains - add your deployed URLs here
     # "https://yourdomain.com",
 ], supports_credentials=True)
+
+# NOTE: chatbot.db is a local SQLite file. On Render's free tier, this file is
+# wiped on every deployment and restart — chat history is non-persistent.
+# For production persistence, migrate chat_history to your PostgreSQL database.
+# See: backend_django/apps/chatbot/ for the Django-managed chat history model.
 DB_PATH = Path(__file__).parent / "chatbot.db"
 
 

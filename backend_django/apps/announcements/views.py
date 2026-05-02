@@ -1,4 +1,5 @@
 from django.utils import timezone
+from django.db import models
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status as http_status
@@ -18,9 +19,11 @@ class AnnouncementPublicListView(APIView):
         user_id = str(getattr(user, 'id', ''))
         username = getattr(user, 'username', '') or getattr(user, 'email', '')
         
-        # Get all published announcements
+        # Get all published announcements (exclude archived and apply schedule)
         qs = Announcement.objects.filter(
-            status='published', is_deleted=False
+            status='published', is_deleted=False, is_archived=False
+        ).filter(
+            models.Q(publish_at__isnull=True) | models.Q(publish_at__lte=timezone.now())
         ).order_by('-created_at')[:200]
         
         # Filter to only show visible announcements
@@ -247,3 +250,21 @@ class AnnouncementArchiveView(APIView):
         a.archive(archived_by_user=request.user)
         write_audit(request.user, 'archive', 'announcement', a.id, a.title, request=request)
         return Response({'message': 'Announcement archived.'})
+
+
+# Soft-delete (archive) endpoint as requested in TASK-B02
+from rest_framework.decorators import api_view, permission_classes
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def archive_announcement(request, pk):
+    """Soft-delete an announcement (hide without permanent deletion)."""
+    try:
+        ann = Announcement.objects.get(pk=pk)
+    except Announcement.DoesNotExist:
+        return Response({'error': 'Not found'}, status=404)
+    ann.is_archived = True
+    ann.archived_at = timezone.now()
+    ann.archived_by = request.user if hasattr(request.user, 'role') else None
+    ann.save(update_fields=['is_archived', 'archived_at', 'archived_by'])
+    return Response({'status': 'archived', 'id': pk})

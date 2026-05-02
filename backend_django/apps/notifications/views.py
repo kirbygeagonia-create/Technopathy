@@ -199,3 +199,38 @@ class NotificationHistoryView(APIView):
         ).order_by('-created_at')[:50]
         serializer = NotificationSerializer(notifications, many=True)
         return Response(serializer.data)
+
+
+# Function-based view as specified in TASK-B04
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def mark_all_read(request):
+    """Mark all unread notifications for the current user as read."""
+    from .models import NotificationReadStatus
+    updated = Notification.objects.filter(
+        ~Exists(
+            NotificationReadStatus.objects.filter(
+                user=request.user,
+                notification=OuterRef('pk')
+            )
+        )
+    ).count()
+    # Bulk create read status for all unread notifications
+    unread_notifications = Notification.objects.filter(
+        ~Exists(
+            NotificationReadStatus.objects.filter(
+                user=request.user,
+                notification=OuterRef('pk')
+            )
+        )
+    )
+    status_objects = [
+        NotificationReadStatus(user=request.user, notification=n)
+        for n in unread_notifications
+    ]
+    if status_objects:
+        NotificationReadStatus.objects.bulk_create(status_objects, ignore_conflicts=True)
+    return Response({'marked_read': updated})

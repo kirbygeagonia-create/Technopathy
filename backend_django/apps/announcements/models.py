@@ -82,6 +82,13 @@ class Announcement(models.Model):
 
     # Soft delete
     is_deleted        = models.BooleanField(default=False)
+    is_archived       = models.BooleanField(default=False, help_text='Archived announcements are hidden from public but not deleted.')
+
+    # Scheduled publishing
+    publish_at = models.DateTimeField(
+        null=True, blank=True,
+        help_text='If set, the announcement will not be visible until this datetime. Leave blank to publish immediately.'
+    )
     
     def is_visible_to(self, user):
         """Check if this announcement should be visible to a given user.

@@ -154,21 +154,45 @@ class AppConfigDetailView(generics.RetrieveUpdateDestroyAPIView):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def dashboard_stats(request):
-    """Return dashboard statistics for admin panel"""
+    """Returns a snapshot of key system stats for the admin dashboard homepage."""
     from apps.facilities.models import Facility
     from apps.rooms.models import Room
-    from apps.users.models import AdminUser
-    from apps.notifications.models import Notification
+    from apps.announcements.models import Announcement
     from apps.feedback.models import Feedback
-    
-    stats = {
-        'total_facilities': Facility.objects.filter(is_deleted=False).count(),
-        'total_rooms': Room.objects.filter(is_deleted=False).count(),
-        'total_users': AdminUser.objects.filter(is_active=True).count(),
-        'total_notifications': Notification.objects.count(),
-        'unread_notifications': Notification.objects.filter(is_read=False).count(),
-        'total_feedback': Feedback.objects.count(),
-        'recent_feedback': Feedback.objects.order_by('-created_at')[:5].count(),
-        'audit_logs_count': AdminAuditLog.objects.count(),
-    }
-    return Response(stats)
+    from apps.notifications.models import Notification
+    from django.db.models import Avg
+
+    return Response({
+        'facilities':     Facility.objects.count(),
+        'rooms':          Room.objects.count(),
+        'announcements':  Announcement.objects.filter(is_archived=False).count(),
+        'feedback': {
+            'total':      Feedback.objects.count(),
+            'flagged':    Feedback.objects.filter(is_flagged=True).count(),
+            'avg_rating': Feedback.objects.aggregate(avg=Avg('rating'))['avg'],
+        },
+        'notifications': {
+            'total':      Notification.objects.count(),
+            'unread':     Notification.objects.filter(is_read=False).count(),
+        },
+    })
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def health_check(request):
+    """Lightweight health check for Render, uptime monitors, and frontend PWA."""
+    from django.db import connection
+    db_ok = False
+    try:
+        connection.ensure_connection()
+        db_ok = True
+    except Exception:
+        pass
+
+    return Response({
+        'status':    'ok' if db_ok else 'degraded',
+        'database':  'connected' if db_ok else 'error',
+        'timestamp': timezone.now().isoformat(),
+        'version':   '1.0.0',
+    }, status=200 if db_ok else 503)
